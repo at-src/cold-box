@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Used by git when pushing over HTTPS with GITHUB_TOKEN in environment.
+case "$1" in
+  *[Uu]sername*) echo "${GITHUB_USERNAME:?GITHUB_USERNAME not set}" ;;
+  *[Pp]assword*) echo "${GITHUB_TOKEN:?GITHUB_TOKEN not set}" ;;
+  *) echo "${GITHUB_TOKEN:?GITHUB_TOKEN not set}" ;;
+esac

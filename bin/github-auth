@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Load GITHUB_USERNAME + GITHUB_TOKEN from repo .env for git/gh API calls.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ENV_FILE="$ROOT/.env"
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Missing $ENV_FILE — copy .env.example to .env and add your PAT." >&2
+  exit 1
+fi
+
+# shellcheck disable=SC1090
+source "$ENV_FILE"
+
+if [[ -z "${GITHUB_USERNAME:-}" || -z "${GITHUB_TOKEN:-}" ]]; then
+  echo "Set GITHUB_USERNAME and GITHUB_TOKEN in $ENV_FILE" >&2
+  exit 1
+fi
+
+if [[ "$GITHUB_TOKEN" == *paste_your* ]]; then
+  echo "Replace the placeholder PAT in $ENV_FILE" >&2
+  exit 1
+fi
+
+export GITHUB_USERNAME GITHUB_TOKEN
+export GH_TOKEN="$GITHUB_TOKEN"
+export GIT_ASKPASS="$ROOT/bin/git-askpass"
+export GIT_TERMINAL_PROMPT=0
