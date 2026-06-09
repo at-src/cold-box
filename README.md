@@ -91,6 +91,23 @@ export AMCACHE_PARSER=AmcacheParser
 export MFTECMD=MFTECmd
 ```
 
+## Step 5 — verifier (R1)
+
+Deterministic contradiction checks on tool outputs — no LLM.
+
+**R1 `hidden_process`:** process in psscan absent from pslist, or same PID with mismatched name (offsets may differ between Vol plugins).
+
+```bash
+# JSON files can be mem_pslist/mem_psscan tool responses (with optional audit_id wrapper)
+cold-box-verify r1 \
+  --pslist examples/sample-verifier/r1-pslist.json \
+  --psscan examples/sample-verifier/r1-psscan.json
+
+cold-box-verify run --pslist pslist.json --psscan psscan.json
+```
+
+Bundled synthetic demo where R1 fires: `examples/sample-verifier/r1-*.json`.
+
 ## License
 
 MIT (to be added before public release)

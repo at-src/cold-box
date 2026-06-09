@@ -1,0 +1,33 @@
+{
+  "source": "/evidence/synthetic-r1/memdump.mem",
+  "plugin": "windows.pslist",
+  "process_count": 2,
+  "processes": [
+    {
+      "pid": 4,
+      "ppid": 0,
+      "name": "System",
+      "offset": "0x82000010",
+      "threads": 100,
+      "handles": 500,
+      "session_id": "N/A",
+      "wow64": false,
+      "create_time": "2015-08-23 20:27:20.000000 UTC",
+      "exit_time": "N/A",
+      "file_output": "Disabled"
+    },
+    {
+      "pid": 620,
+      "ppid": 532,
+      "name": "lsass.exe",
+      "offset": "0x83942020",
+      "threads": 19,
+      "handles": 628,
+      "session_id": "0",
+      "wow64": false,
+      "create_time": "2015-08-23 20:29:18.000000 UTC",
+      "exit_time": "N/A",
+      "file_output": "Disabled"
+    }
+  ]
+}
