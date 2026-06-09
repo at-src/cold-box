@@ -16,6 +16,10 @@ def load_cached_tool(cache_dir: Path, tool: str) -> dict[str, Any] | None:
     if not path.is_file():
         return None
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if isinstance(payload, dict) and "data" in payload:
+    if isinstance(payload, dict) and isinstance(payload.get("data"), dict):
+        inner = payload["data"]
+        if "processes" in inner or "connections" in inner or "rows" in inner:
+            return inner
+    if isinstance(payload, dict) and "processes" in payload:
         return payload
-    return {"ok": True, "data": payload, "source": f"cache:{path}"}
+    return payload if isinstance(payload, dict) else None
