@@ -49,6 +49,23 @@ cold-box-audit lookup /cases/sample/audit.jsonl <audit_id>
 cold-box-audit summary /cases/sample/audit.jsonl
 ```
 
+## Step 3 — MCP (first tool)
+
+FastMCP server with audited tools. Every call writes to `CASE_OUTPUT/<case_id>/audit.jsonl`
+and returns structured JSON including `audit_id`.
+
+```bash
+export EVIDENCE_ROOT=/evidence
+export CASE_OUTPUT=/cases
+export VOL3=/opt/postmortem/bin/vol   # optional
+
+# stdio MCP server (Cursor / Claude Desktop)
+cold-box-mcp
+
+# Tool: mem_pslist(case_id, memory_relpath, iteration=0)
+# Example memory path: ali-hadi-1/memdump/memdump.mem
+```
+
 ## License
 
 MIT (to be added before public release)

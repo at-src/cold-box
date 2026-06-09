@@ -9,6 +9,7 @@ description = "Autonomous DFIR investigator for SIFT (cold-box)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+dependencies = ["fastmcp>=2.14"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
@@ -16,10 +17,11 @@ dev = ["pytest>=8.0"]
 [project.scripts]
 cold-box-evidence = "postmortem_evidence.cli:main"
 cold-box-audit = "postmortem_audit.cli:main"
+cold-box-mcp = "postmortem_mcp.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["postmortem_evidence*", "postmortem_audit*"]
+include = ["postmortem_evidence*", "postmortem_audit*", "postmortem_mcp*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
