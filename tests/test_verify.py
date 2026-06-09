@@ -82,12 +82,64 @@ def test_synthetic_fixture_fires_r1() -> None:
     assert any(src.get("name") == "evil.exe" for src in result.sources)
 
 
-def test_run_verifier_returns_r1_only() -> None:
+def test_run_verifier_returns_all_rules() -> None:
     processes = [_process(4, "System", "0x1")]
     ctx = VerifyContext(pslist_processes=processes, psscan_processes=processes)
     results = run_verifier(ctx)
-    assert len(results) == 1
-    assert results[0].rule_id == "R1"
+    assert len(results) == 5
+    assert [result.rule_id for result in results] == ["R1", "R2", "R4", "R5", "R6"]
+
+
+def test_r2_contradiction_without_execution_trail() -> None:
+    pslist = json.loads((REPO_ROOT / "examples/sample-verifier/r2-pslist.json").read_text())
+    amcache = json.loads((REPO_ROOT / "examples/sample-verifier/r2-amcache.json").read_text())
+    prefetch = json.loads((REPO_ROOT / "examples/sample-verifier/r2-prefetch.json").read_text())
+    ctx = VerifyContext.from_tool_payloads(
+        pslist_data=pslist,
+        psscan_data=pslist,
+        amcache_data=amcache,
+        prefetch_data=prefetch,
+    )
+    from postmortem_verify.rules import rule_r2_no_execution_trail
+
+    result = rule_r2_no_execution_trail(ctx)
+    assert result.status == "contradiction"
+    assert "ghostrunner.exe" in result.detail
+
+
+def test_r4_contradiction_on_timestomp_fixture() -> None:
+    mft = json.loads((REPO_ROOT / "examples/sample-verifier/r4-mft.json").read_text())
+    ctx = VerifyContext.from_tool_payloads(mft_data=mft)
+    from postmortem_verify.rules import rule_r4_timestomp
+
+    result = rule_r4_timestomp(ctx)
+    assert result.status == "contradiction"
+
+
+def test_r5_contradiction_on_missing_binary() -> None:
+    prefetch = json.loads((REPO_ROOT / "examples/sample-verifier/r5-prefetch.json").read_text())
+    ctx = VerifyContext.from_tool_payloads(
+        pslist_data={"processes": []},
+        psscan_data={"processes": []},
+        prefetch_data=prefetch,
+        evidence_root=REPO_ROOT / "examples" / "sample-evidence",
+    )
+    from postmortem_verify.rules import rule_r5_ghost_binary
+
+    result = rule_r5_ghost_binary(ctx)
+    assert result.status == "contradiction"
+    assert "STAGE-RUNNER.EXE" in result.detail
+
+
+def test_r6_contradiction_on_orphan_connection() -> None:
+    pslist = json.loads((REPO_ROOT / "examples/sample-verifier/r6-pslist.json").read_text())
+    netscan = json.loads((REPO_ROOT / "examples/sample-verifier/r6-netscan.json").read_text())
+    ctx = VerifyContext.from_tool_payloads(pslist_data=pslist, netscan_data=netscan)
+    from postmortem_verify.rules import rule_r6_orphan_connection
+
+    result = rule_r6_orphan_connection(ctx)
+    assert result.status == "contradiction"
+    assert "31337" in result.detail
 
 
 def test_cli_r1_on_synthetic_fixture() -> None:

@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
-from postmortem_verify.models import RuleResult, VerifyContext
+from postmortem_mcp.timestomp import detect_timestomp_rows
+from postmortem_verify.models import VerifyContext, _connection_pid
+from postmortem_verify.models import RuleResult
 
 
 def _process_ref(proc: dict[str, Any]) -> dict[str, Any]:
     return {
         "type": "process",
         "pid": proc.get("pid"),
-        "name": proc.get("name"),
+        "name": proc.get("name") or proc.get("process") or proc.get("Image"),
         "offset": proc.get("offset"),
         "ppid": proc.get("ppid"),
     }
@@ -24,6 +27,39 @@ def _audit_ref(audit_id: str | None, tool: str, source: str | None) -> dict[str,
     if source:
         ref["source"] = source
     return ref
+
+
+def _normalize_exe(name: str) -> str:
+    base = os.path.basename(name.strip()).lower()
+    if base.endswith(".exe"):
+        return base
+    return base
+
+
+def _process_exe_name(proc: dict[str, Any]) -> str | None:
+    raw = proc.get("name") or proc.get("process") or proc.get("Image") or proc.get("image")
+    if not raw:
+        return None
+    return _normalize_exe(str(raw))
+
+
+def _amcache_executables(records: list[dict[str, Any]]) -> set[str]:
+    names: set[str] = set()
+    for row in records:
+        for key in ("FullPath", "Path", "path", "FileName", "file_name", "Name", "name"):
+            value = row.get(key)
+            if value:
+                names.add(_normalize_exe(str(value)))
+    return names
+
+
+def _prefetch_executables(entries: list[dict[str, Any]]) -> set[str]:
+    names: set[str] = set()
+    for entry in entries:
+        exe = entry.get("executable") or entry.get("Executable")
+        if exe:
+            names.add(_normalize_exe(str(exe)))
+    return names
 
 
 def rule_r1_hidden_process(ctx: VerifyContext) -> RuleResult:
@@ -45,18 +81,23 @@ def rule_r1_hidden_process(ctx: VerifyContext) -> RuleResult:
             sources=[],
         )
 
-    pslist_by_pid = {proc["pid"]: proc for proc in ctx.pslist_processes}
+    pslist_by_pid = {proc["pid"]: proc for proc in ctx.pslist_processes if "pid" in proc}
+
     pslist_pids = set(pslist_by_pid)
 
     hidden: list[dict[str, Any]] = []
     for proc in ctx.psscan_processes:
-        pid = proc["pid"]
+        pid = proc.get("pid")
+        if pid is None:
+            continue
         if pid not in pslist_pids:
             hidden.append({"reason": "absent_from_pslist", "process": proc})
             continue
 
         listed = pslist_by_pid[pid]
-        if listed.get("name") != proc.get("name"):
+        listed_name = listed.get("name") or listed.get("process")
+        proc_name = proc.get("name") or proc.get("process")
+        if listed_name != proc_name:
             hidden.append(
                 {
                     "reason": "name_mismatch",
@@ -98,4 +139,187 @@ def rule_r1_hidden_process(ctx: VerifyContext) -> RuleResult:
         status="pass",
         detail=f"All {len(ctx.psscan_processes)} psscan process(es) reconcile with pslist",
         sources=sources,
+    )
+
+
+def rule_r2_no_execution_trail(ctx: VerifyContext) -> RuleResult:
+    """R2: process in memory with no prefetch and no amcache trail for its binary."""
+    if not ctx.pslist_processes:
+        return RuleResult("R2", "no_execution_trail", "skipped", "pslist missing", [])
+    if ctx.amcache_records is None and ctx.prefetch_entries is None:
+        return RuleResult(
+            "R2",
+            "no_execution_trail",
+            "skipped",
+            "amcache and prefetch inputs missing",
+            [],
+        )
+
+    amcache_names = _amcache_executables(ctx.amcache_records or [])
+    prefetch_names = _prefetch_executables(ctx.prefetch_entries or [])
+
+    untrailed: list[dict[str, Any]] = []
+    for proc in ctx.pslist_processes:
+        exe = _process_exe_name(proc)
+        if not exe or not exe.endswith(".exe"):
+            continue
+        if exe in {"system", "smss.exe", "csrss.exe", "wininit.exe", "services.exe"}:
+            continue
+        if exe in amcache_names or exe in prefetch_names:
+            continue
+        untrailed.append(proc)
+
+    sources: list[dict[str, Any]] = []
+    for tool, audit_id, source in (
+        ("mem_pslist", ctx.pslist_audit_id, ctx.pslist_source),
+        ("disk_parse_amcache", ctx.amcache_audit_id, ctx.amcache_source),
+        ("disk_parse_prefetch", ctx.prefetch_audit_id, ctx.prefetch_source),
+    ):
+        ref = _audit_ref(audit_id, tool, source)
+        if ref:
+            sources.append(ref)
+    for proc in untrailed:
+        sources.append(_process_ref(proc))
+
+    if untrailed:
+        names = ", ".join(sorted({_process_exe_name(p) or "?" for p in untrailed})[:5])
+        return RuleResult(
+            "R2",
+            "no_execution_trail",
+            "contradiction",
+            f"{len(untrailed)} process(es) in memory without prefetch/amcache trail ({names})",
+            sources,
+        )
+
+    return RuleResult(
+        "R2",
+        "no_execution_trail",
+        "pass",
+        f"All checked processes have prefetch or amcache execution trail",
+        sources,
+    )
+
+
+def rule_r4_timestomp(ctx: VerifyContext) -> RuleResult:
+    """R4: MFT $SI timestamp predates or contradicts $FN for the same entry."""
+    findings: list[dict[str, Any]] = []
+    if ctx.timestomp_findings is not None:
+        findings = list(ctx.timestomp_findings)
+    elif ctx.mft_records:
+        findings = detect_timestomp_rows(
+            ctx.mft_records,
+            tolerance_seconds=ctx.timestomp_tolerance_seconds,
+        )
+    else:
+        return RuleResult("R4", "timestomp", "skipped", "MFT/timestomp inputs missing", [])
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.mft_audit_id, "disk_detect_timestomp", ctx.mft_source)
+    if audit:
+        sources.append(audit)
+    for item in findings[:10]:
+        sources.append({"type": "mft_anomaly", **item})
+
+    if findings:
+        return RuleResult(
+            "R4",
+            "timestomp",
+            "contradiction",
+            f"{len(findings)} MFT timestomp anomaly/anomalies detected",
+            sources,
+        )
+
+    return RuleResult(
+        "R4",
+        "timestomp",
+        "pass",
+        f"No timestomp anomalies in scanned MFT evidence",
+        sources,
+    )
+
+
+def rule_r5_ghost_binary(ctx: VerifyContext) -> RuleResult:
+    """R5: prefetch references an executable absent from the evidence tree."""
+    if not ctx.prefetch_entries:
+        return RuleResult("R5", "ghost_binary", "skipped", "prefetch input missing", [])
+    if not ctx.evidence_basenames:
+        return RuleResult("R5", "ghost_binary", "skipped", "evidence file index missing", [])
+
+    ghosts: list[dict[str, Any]] = []
+    for entry in ctx.prefetch_entries:
+        exe = entry.get("executable") or entry.get("Executable")
+        if not exe:
+            continue
+        normalized = _normalize_exe(str(exe))
+        if normalized not in ctx.evidence_basenames:
+            ghosts.append({"executable": exe, "normalized": normalized, "prefetch": entry})
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.prefetch_audit_id, "disk_parse_prefetch", ctx.prefetch_source)
+    if audit:
+        sources.append(audit)
+    for ghost in ghosts:
+        sources.append({"type": "ghost_binary", **ghost})
+
+    if ghosts:
+        names = ", ".join(item["executable"] for item in ghosts[:5])
+        return RuleResult(
+            "R5",
+            "ghost_binary",
+            "contradiction",
+            f"{len(ghosts)} prefetch executable(s) missing on disk ({names})",
+            sources,
+        )
+
+    return RuleResult(
+        "R5",
+        "ghost_binary",
+        "pass",
+        f"All {len(ctx.prefetch_entries)} prefetch executable(s) exist in evidence",
+        sources,
+    )
+
+
+def rule_r6_orphan_connection(ctx: VerifyContext) -> RuleResult:
+    """R6: netscan socket owner PID absent from pslist."""
+    if not ctx.netscan_connections:
+        return RuleResult("R6", "orphan_connection", "skipped", "netscan connections missing", [])
+    if not ctx.pslist_processes:
+        return RuleResult("R6", "orphan_connection", "skipped", "pslist missing", [])
+
+    pslist_pids = {proc.get("pid") for proc in ctx.pslist_processes if proc.get("pid") is not None}
+    orphans: list[dict[str, Any]] = []
+    for conn in ctx.netscan_connections:
+        pid = _connection_pid(conn)
+        if pid is None or pid <= 0:
+            continue
+        if pid not in pslist_pids:
+            orphans.append(conn)
+
+    sources: list[dict[str, Any]] = []
+    for tool, audit_id, source in (
+        ("mem_netscan", ctx.netscan_audit_id, ctx.netscan_source),
+        ("mem_pslist", ctx.pslist_audit_id, ctx.pslist_source),
+    ):
+        ref = _audit_ref(audit_id, tool, source)
+        if ref:
+            sources.append(ref)
+    for conn in orphans[:10]:
+        sources.append({"type": "connection", **conn})
+
+    if orphans:
+        pids = ", ".join(str(_connection_pid(c)) for c in orphans[:5])
+        return RuleResult(
+            "R6",
+            "orphan_connection",
+            "contradiction",
+            f"{len(orphans)} connection(s) owned by PID(s) absent from pslist ({pids})",
+            sources,
+        )
+
+    return RuleResult(
+        "R6",
+        "orphan_connection",
+        "pass",
+        f"All {len(ctx.netscan_connections)} netscan connection(s) reconcile with pslist",
+        sources,
     )

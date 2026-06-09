@@ -3,7 +3,21 @@
 from __future__ import annotations
 
 from postmortem_verify.models import RuleResult, VerifyContext
-from postmortem_verify.rules import rule_r1_hidden_process
+from postmortem_verify.rules import (
+    rule_r1_hidden_process,
+    rule_r2_no_execution_trail,
+    rule_r4_timestomp,
+    rule_r5_ghost_binary,
+    rule_r6_orphan_connection,
+)
+
+ALL_RULES = [
+    rule_r1_hidden_process,
+    rule_r2_no_execution_trail,
+    rule_r4_timestomp,
+    rule_r5_ghost_binary,
+    rule_r6_orphan_connection,
+]
 
 
 def run_r1(ctx: VerifyContext) -> RuleResult:
@@ -12,4 +26,4 @@ def run_r1(ctx: VerifyContext) -> RuleResult:
 
 def run_verifier(ctx: VerifyContext) -> list[RuleResult]:
     """Run all implemented verifier rules."""
-    return [run_r1(ctx)]
+    return [rule(ctx) for rule in ALL_RULES]
