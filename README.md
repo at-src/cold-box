@@ -37,6 +37,18 @@ cold-box-evidence integrity-begin examples/sample-evidence
 cold-box-evidence integrity-check examples/sample-evidence
 ```
 
+## Step 2 — audit log
+
+Every tool call gets an append-only `audit.jsonl` entry with `audit_id`, timestamp,
+tool name, args, result digest, and iteration. Lines are hash-chained for tamper detection.
+
+```bash
+# After a run writes /cases/<case-id>/audit.jsonl
+cold-box-audit verify /cases/sample/audit.jsonl
+cold-box-audit lookup /cases/sample/audit.jsonl <audit_id>
+cold-box-audit summary /cases/sample/audit.jsonl
+```
+
 ## License
 
 MIT (to be added before public release)

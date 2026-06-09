@@ -15,10 +15,11 @@ dev = ["pytest>=8.0"]
 
 [project.scripts]
 cold-box-evidence = "postmortem_evidence.cli:main"
+cold-box-audit = "postmortem_audit.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["postmortem_evidence*"]
+include = ["postmortem_evidence*", "postmortem_audit*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
