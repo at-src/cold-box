@@ -8,8 +8,8 @@ from typing import Any, Literal
 
 from postmortem_verify.models import RuleResult
 
-RunMode = Literal["deterministic", "synthetic", "llm"]
-InvestigationProfile = Literal["r1", "lab", "ali-hadi"]
+RunMode = Literal["autonomous", "llm", "synthetic"]
+InvestigationProfile = Literal["autonomous"]
 
 
 @dataclass
@@ -24,19 +24,21 @@ class AgentConfig:
     registry_relpath: str | None = None
     search_root_relpath: str | None = None
     search_patterns: list[str] | None = None
-    security_fixture: str | None = None
-    mode: RunMode = "deterministic"
-    profile: InvestigationProfile = "r1"
-    max_iterations: int = 10
+    mode: RunMode = "autonomous"
+    profile: InvestigationProfile = "autonomous"
+    max_iterations: int = 25
     fixture_dir: Path | None = None
     cache_dir: Path | None = None
     artifact_root: Path | None = None
     extracted_root: Path | None = None
     llm_model: str | None = None
+    use_fixtures: bool = False
 
     def __post_init__(self) -> None:
-        if self.mode == "synthetic" and self.fixture_dir is None:
-            self.fixture_dir = Path("examples/sample-verifier")
+        if self.mode == "synthetic":
+            self.use_fixtures = True
+            if self.fixture_dir is None:
+                self.fixture_dir = Path("examples/sample-verifier")
 
 
 @dataclass
@@ -50,10 +52,25 @@ class InvestigationState:
     iteration: int = 0
     done: bool = False
     self_corrected: bool = False
-    tool_results: dict[str, dict[str, Any]] = field(default_factory=dict)
+    survey: dict[str, Any] = field(default_factory=dict)
+    lessons: list[str] = field(default_factory=list)
+    tool_results: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     verifier_results: list[RuleResult] = field(default_factory=list)
     last_notes: str = ""
     llm_transcript: list[dict[str, Any]] = field(default_factory=list)
+
+    def _latest_ok(self, tool: str) -> dict[str, Any] | None:
+        runs = self.tool_results.get(tool) or []
+        for result in reversed(runs):
+            if result.get("ok"):
+                return result
+        return None
+
+    def _tool_data(self, tool: str) -> dict[str, Any] | None:
+        result = self._latest_ok(tool)
+        if not result:
+            return None
+        return result.get("data")
 
     def pslist_payload(self) -> dict[str, Any] | None:
         return self._tool_data("mem_pslist")
@@ -62,16 +79,14 @@ class InvestigationState:
         return self._tool_data("mem_psscan")
 
     def security_payload(self) -> dict[str, Any] | None:
-        return self._tool_data("security_events")
-
-    def _tool_data(self, tool: str) -> dict[str, Any] | None:
-        result = self.tool_results.get(tool)
-        if not result or not result.get("ok"):
-            return None
-        return result.get("data")
+        for tool in ("disk_evtx_filter", "disk_parse_evtx"):
+            data = self._tool_data(tool)
+            if data:
+                return data
+        return None
 
     def audit_id(self, tool: str) -> str | None:
-        result = self.tool_results.get(tool)
+        result = self._latest_ok(tool)
         if not result:
             return None
         return result.get("audit_id")
@@ -79,9 +94,10 @@ class InvestigationState:
     def all_audit_ids(self) -> list[str]:
         ids: list[str] = []
         seen: set[str] = set()
-        for result in self.tool_results.values():
-            aid = result.get("audit_id") if result else None
-            if aid and aid not in seen:
-                seen.add(aid)
-                ids.append(aid)
+        for runs in self.tool_results.values():
+            for result in runs:
+                aid = result.get("audit_id") if result else None
+                if aid and aid not in seen:
+                    seen.add(aid)
+                    ids.append(aid)
         return ids

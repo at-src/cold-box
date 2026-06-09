@@ -22,11 +22,9 @@ rm -rf "${CASE_OUTPUT}/${CASE_ID}"
 cold-box-agent run \
   --case-id "$CASE_ID" \
   --evidence-case ali-hadi-1 \
-  --memory ali-hadi-1/memdump/memdump.mem \
-  --profile ali-hadi \
   --from-cache "$CACHE" \
-  --artifact-root "${CASE_OUTPUT}/ali-hadi-1" \
-  --max-iterations 20
+  --extracted-root "${CASE_OUTPUT}/ali-hadi-1/extracted" \
+  --max-iterations 30
 
 echo "--- findings ---"
 python3 -c "import json,sys; f=json.load(open('${CASE_OUTPUT}/${CASE_ID}/findings.json')); print(len(f['findings']),'findings'); [print(' ',x.get('tags'), x['claim'][:75]) for x in f['findings']]"

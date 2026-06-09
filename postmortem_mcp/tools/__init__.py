@@ -13,6 +13,8 @@ from postmortem_mcp.tools.disk import (
     disk_parse_mft,
     disk_parse_prefetch,
 )
+from postmortem_mcp.catalog import tool_catalog
+from postmortem_mcp.survey import evidence_survey
 from postmortem_mcp.tools.evidence import evidence_manifest
 from postmortem_mcp.tools.memory import (
     mem_cmdline,
@@ -52,7 +54,12 @@ WAVE3_TOOLS = [
     disk_search_artifacts,
 ]
 
-ALL_TOOLS = WAVE1_TOOLS + WAVE2_TOOLS + WAVE3_TOOLS
+META_TOOLS = [
+    evidence_survey,
+    tool_catalog,
+]
+
+ALL_TOOLS = WAVE1_TOOLS + WAVE2_TOOLS + WAVE3_TOOLS + META_TOOLS
 
 __all__ = [
     fn.__name__
