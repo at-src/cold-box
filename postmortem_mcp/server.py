@@ -25,7 +25,14 @@ Wave 2 tools:
 - mem_malfind, mem_netscan — injection and network triage from memory
 - disk_detect_timestomp — MFT $SI vs $FN anti-forensics (T1070.006)
 
-Configure backends via env: VOL3, PREFETCH_PARSER, EVTX_ECMD, AMCACHE_PARSER, MFTECMD.
+Wave 3 tools (breadth + depth):
+- mem_pstree, mem_dlllist, mem_svcscan — process tree, DLL loads, service persistence
+- disk_evtx_filter — auth-focused EVTX with Event ID summary
+- disk_parse_registry — RECmd Run-key / persistence sweep
+- disk_correlate_timeline — cross-source disk+memory timeline join
+- disk_search_artifacts — IOC string search across evidence tree
+
+Configure backends via env: VOL3, PREFETCH_PARSER, EVTX_ECMD, AMCACHE_PARSER, MFTECMD, RECMD.
 """.strip()
 
 

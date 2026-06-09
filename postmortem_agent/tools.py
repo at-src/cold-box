@@ -28,7 +28,31 @@ FIXTURE_ALIASES = {
     "mem_pslist_r2": "r2-pslist.json",
 }
 
-MEMORY_TOOLS = frozenset({"mem_pslist", "mem_psscan", "mem_cmdline", "mem_netscan", "mem_malfind"})
+MEMORY_TOOLS = frozenset({
+    "mem_pslist",
+    "mem_psscan",
+    "mem_cmdline",
+    "mem_netscan",
+    "mem_malfind",
+    "mem_pstree",
+    "mem_dlllist",
+    "mem_svcscan",
+})
+
+DISK_ARTIFACT_TOOLS = frozenset({
+    "disk_parse_prefetch",
+    "disk_parse_amcache",
+    "disk_parse_mft",
+    "disk_detect_timestomp",
+    "disk_parse_evtx",
+    "disk_evtx_filter",
+    "disk_parse_registry",
+})
+
+ANALYSIS_TOOLS = frozenset({
+    "disk_correlate_timeline",
+    "disk_search_artifacts",
+})
 
 
 def _fixture_map(config: AgentConfig) -> dict[str, str]:
@@ -139,15 +163,35 @@ def invoke_tool(
             raise RuntimeError(f"{tool} requires --memory")
         return fn(config.case_id, config.memory_relpath, iteration=iteration)
 
-    if tool == "disk_parse_prefetch" and config.prefetch_relpath:
-        return fn(config.case_id, config.prefetch_relpath, iteration=iteration)
-    if tool == "disk_parse_amcache" and config.amcache_relpath:
-        return fn(config.case_id, config.amcache_relpath, iteration=iteration)
-    if tool == "disk_parse_mft" and config.mft_relpath:
-        return fn(config.case_id, config.mft_relpath, iteration=iteration)
-    if tool == "disk_detect_timestomp" and config.mft_relpath:
-        return fn(config.case_id, config.mft_relpath, iteration=iteration)
-    if tool == "disk_parse_evtx" and config.evtx_relpath:
-        return fn(config.case_id, config.evtx_relpath, iteration=iteration)
+    if tool in DISK_ARTIFACT_TOOLS:
+        if tool == "disk_parse_prefetch" and config.prefetch_relpath:
+            return fn(config.case_id, config.prefetch_relpath, iteration=iteration)
+        if tool == "disk_parse_amcache" and config.amcache_relpath:
+            return fn(config.case_id, config.amcache_relpath, iteration=iteration)
+        if tool in {"disk_parse_mft", "disk_detect_timestomp"} and config.mft_relpath:
+            return fn(config.case_id, config.mft_relpath, iteration=iteration)
+        if tool in {"disk_parse_evtx", "disk_evtx_filter"} and config.evtx_relpath:
+            return fn(config.case_id, config.evtx_relpath, iteration=iteration)
+        if tool == "disk_parse_registry" and config.registry_relpath:
+            return fn(config.case_id, config.registry_relpath, iteration=iteration)
+
+    if tool == "disk_correlate_timeline":
+        return fn(
+            config.case_id,
+            evtx_relpath=config.evtx_relpath,
+            mft_relpath=config.mft_relpath,
+            memory_relpath=config.memory_relpath,
+            iteration=iteration,
+        )
+
+    if tool == "disk_search_artifacts":
+        patterns = config.search_patterns or ["cmd.exe", "powershell", "php", "shell"]
+        root = config.search_root_relpath or config.evidence_case
+        return fn(
+            config.case_id,
+            root,
+            patterns,
+            iteration=iteration,
+        )
 
     raise RuntimeError(f"Agent cannot invoke {tool} without explicit artifact paths")

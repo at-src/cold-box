@@ -29,7 +29,14 @@ run_tool() {
   echo "Running $tool (slow) ..."
   python3 - <<PY
 import json
-from postmortem_mcp.tools.memory import mem_pslist, mem_psscan, mem_cmdline, mem_malfind, mem_netscan
+from postmortem_mcp.tools.memory import (
+    mem_cmdline,
+    mem_malfind,
+    mem_netscan,
+    mem_pslist,
+    mem_psscan,
+    mem_pstree,
+)
 
 TOOLS = {
     "mem_pslist": mem_pslist,
@@ -37,6 +44,7 @@ TOOLS = {
     "mem_cmdline": mem_cmdline,
     "mem_malfind": mem_malfind,
     "mem_netscan": mem_netscan,
+    "mem_pstree": mem_pstree,
 }
 fn = TOOLS["$tool"]
 result = fn(
@@ -51,7 +59,7 @@ print(f"Wrote {path}")
 PY
 }
 
-for t in mem_pslist mem_psscan mem_cmdline mem_malfind mem_netscan; do
+for t in mem_pslist mem_psscan mem_cmdline mem_malfind mem_netscan mem_pstree; do
   run_tool "$t"
 done
 

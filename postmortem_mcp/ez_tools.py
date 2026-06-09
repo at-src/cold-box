@@ -158,3 +158,100 @@ def parse_amcache(
         "parser": "AmcacheParser",
         **capped,
     }
+
+
+def parse_evtx_filtered(
+    evtx_path: Path,
+    *,
+    binary: str,
+    scratch_dir: Path,
+    event_ids: list[int],
+    max_records: int,
+    timeout_sec: int = 600,
+) -> dict[str, Any]:
+    """Parse EVTX with Event ID filter and structured auth summary."""
+    if not event_ids:
+        raise ValueError("event_ids must not be empty")
+    out_dir = scratch_dir / f"evtx-filter-{secrets.token_hex(4)}"
+    csv_name = f"{evtx_path.stem}-filtered.csv"
+    inc = ",".join(str(eid) for eid in event_ids)
+    run_json_tool(
+        binary=binary,
+        input_path=evtx_path,
+        output_dir=out_dir,
+        args=[
+            "-f",
+            str(evtx_path),
+            "--csv",
+            str(out_dir),
+            "--csvf",
+            csv_name,
+            "--inc",
+            inc,
+        ],
+        timeout_sec=timeout_sec,
+    )
+    records = _load_csv_records(out_dir)
+    capped = cap_records(records, max_records)
+    counts: dict[str, int] = {}
+    for row in records:
+        eid = str(row.get("EventId") or row.get("Event ID") or "")
+        if eid:
+            counts[eid] = counts.get(eid, 0) + 1
+    return {
+        "source": str(evtx_path),
+        "parser": "EvtxECmd-filtered",
+        "event_ids": event_ids,
+        "event_id_counts": counts,
+        "total_matching": len(records),
+        **capped,
+    }
+
+
+def parse_registry_hive(
+    hive_path: Path,
+    *,
+    binary: str,
+    scratch_dir: Path,
+    key_path: str | None = None,
+    search_string: str | None = None,
+    max_records: int = 500,
+    timeout_sec: int = 600,
+) -> dict[str, Any]:
+    """Parse registry hive via RECmd — persistence run keys or string search."""
+    out_dir = scratch_dir / f"reg-{secrets.token_hex(4)}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    csv_name = f"{hive_path.stem}-registry.csv"
+    args = ["-f", str(hive_path), "--csv", str(out_dir), "--csvf", csv_name]
+    if key_path:
+        args.extend(["--kn", key_path])
+    elif search_string:
+        args.extend(["--sa", search_string])
+    else:
+        args.extend(["--kn", "Microsoft\\Windows\\CurrentVersion\\Run"])
+
+    run_json_tool(
+        binary=binary,
+        input_path=hive_path,
+        output_dir=out_dir,
+        args=args,
+        timeout_sec=timeout_sec,
+    )
+    records = _load_csv_records(out_dir)
+    capped = cap_records(records, max_records)
+    persistence_hits = [
+        r
+        for r in records
+        if any(
+            k in str(r.get("KeyPath") or r.get("Key Name") or "").lower()
+            for k in ("run", "runonce", "services")
+        )
+    ]
+    return {
+        "source": str(hive_path),
+        "parser": "RECmd",
+        "query_key": key_path or "Microsoft\\Windows\\CurrentVersion\\Run",
+        "search_string": search_string,
+        "persistence_candidates": len(persistence_hits),
+        **capped,
+    }

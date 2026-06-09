@@ -47,7 +47,11 @@ def run_ali_hadi_profile(
         ("verify", None, None),
         ("challenge", "mem_malfind", None),
         ("self_correction", "mem_cmdline", None),
-        ("disk", "disk_parse_evtx", None),
+        ("memory_depth", "mem_pstree", None),
+        ("memory_depth", "mem_dlllist", None),
+        ("memory_depth", "mem_svcscan", None),
+        ("disk", "disk_evtx_filter", None),
+        ("disk", "disk_correlate_timeline", None),
         ("disk", "disk_detect_timestomp", None),
         ("finalize", None, None),
     ]
@@ -138,9 +142,23 @@ def run_ali_hadi_profile(
             step_index += 1
             continue
 
+        if phase == "memory_depth" and tool:
+            result = invoke_tool(tool, config=config, iteration=state.iteration)
+            state.tool_results[tool] = result
+            _write_progress(state, progress_path, f"executed {tool}: ok={result.get('ok')}")
+            step_index += 1
+            continue
+
         if phase == "disk" and tool:
-            with _artifact_evidence_env(artifact_root):
-                result = invoke_tool(tool, config=config, iteration=state.iteration)
+            if tool == "disk_correlate_timeline":
+                saved_memory = config.memory_relpath
+                config.memory_relpath = None
+                with _artifact_evidence_env(artifact_root):
+                    result = invoke_tool(tool, config=config, iteration=state.iteration)
+                config.memory_relpath = saved_memory
+            else:
+                with _artifact_evidence_env(artifact_root):
+                    result = invoke_tool(tool, config=config, iteration=state.iteration)
             state.tool_results[tool] = result
             _write_progress(state, progress_path, f"executed {tool}: ok={result.get('ok')}")
             step_index += 1
@@ -272,12 +290,17 @@ def build_ali_hadi_findings(state: InvestigationState, *, partial: bool) -> list
         )
         idx += 1
 
-    evtx = state.tool_results.get("disk_parse_evtx", {}).get("data") or {}
-    records = evtx.get("records") or []
-    if records:
-        ids = Counter(str(r.get("EventId", "")) for r in records)
-        logon_fail = ids.get("4625", 0)
-        logon_ok = ids.get("4624", 0)
+    evtx = (
+        state.tool_results.get("disk_evtx_filter", {}).get("data")
+        or state.tool_results.get("disk_parse_evtx", {}).get("data")
+        or {}
+    )
+    counts = evtx.get("event_id_counts") or {}
+    if not counts and evtx.get("records"):
+        counts = Counter(str(r.get("EventId", "")) for r in evtx.get("records") or [])
+    if counts:
+        logon_fail = int(counts.get("4625", 0))
+        logon_ok = int(counts.get("4624", 0))
         findings.append(
             {
                 "id": f"f-{idx}",
@@ -305,8 +328,48 @@ def build_ali_hadi_findings(state: InvestigationState, *, partial: bool) -> list
                     "status": "confirmed",
                     "tags": ["AH-2", "logon-failure"],
                 }
-                )
+            )
             idx += 1
+
+    timeline = state.tool_results.get("disk_correlate_timeline", {}).get("data") or {}
+    if timeline.get("event_count", 0) > 0:
+        findings.append(
+            {
+                "id": f"f-{idx}",
+                "claim": (
+                    f"Cross-source timeline: {timeline.get('event_count')} correlated events "
+                    f"from {', '.join(timeline.get('sources') or [])} "
+                    f"({timeline.get('cross_source_summary', '')})"
+                ),
+                "audit_ids": audit_ids,
+                "confidence": 0.82,
+                "status": "confirmed",
+                "tags": ["AH-6", "timeline", "cross-source"],
+            }
+        )
+        idx += 1
+
+    svc = state.tool_results.get("mem_svcscan", {}).get("data") or {}
+    running = [
+        s
+        for s in (svc.get("services") or [])
+        if str(s.get("State", "")).upper().endswith("RUNNING")
+    ]
+    if running:
+        findings.append(
+            {
+                "id": f"f-{idx}",
+                "claim": (
+                    f"Service persistence triage: {len(running)} running service(s) enumerated "
+                    "from memory via svcscan"
+                ),
+                "audit_ids": audit_ids,
+                "confidence": 0.72,
+                "status": "inference",
+                "tags": ["persistence", "services"],
+            }
+        )
+        idx += 1
 
     cmd_hits = [
         c for c in cmdlines if "cmd.exe" in (c.get("process", "") + c.get("args", "")).lower()

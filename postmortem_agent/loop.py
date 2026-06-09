@@ -36,6 +36,7 @@ LAB_DISK_STEPS = [
     _Step("disk", "disk_detect_timestomp"),
     _Step("disk", "mem_netscan"),
     _Step("disk", "security_events"),
+    _Step("disk", "disk_correlate_timeline"),
     _Step("validate", "mem_pslist", "r3-pslist.json"),
 ]
 
@@ -166,6 +167,11 @@ def _run_lab_profile(
             result = invoke_tool(step.tool, config=config, iteration=state.iteration)
         elif step.tool == "disk_detect_timestomp":
             result = invoke_tool(step.tool, config=config, iteration=state.iteration)
+        elif step.tool == "disk_correlate_timeline":
+            saved_evtx = config.evtx_relpath
+            config.evtx_relpath = None
+            result = invoke_tool(step.tool, config=config, iteration=state.iteration)
+            config.evtx_relpath = saved_evtx
         elif step.tool == "security_events":
             result = invoke_tool(
                 "security_events",

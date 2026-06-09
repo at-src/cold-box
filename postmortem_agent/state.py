@@ -21,6 +21,9 @@ class AgentConfig:
     amcache_relpath: str | None = None
     mft_relpath: str | None = None
     evtx_relpath: str | None = None
+    registry_relpath: str | None = None
+    search_root_relpath: str | None = None
+    search_patterns: list[str] | None = None
     security_fixture: str | None = None
     mode: RunMode = "deterministic"
     profile: InvestigationProfile = "r1"
@@ -75,21 +78,10 @@ class InvestigationState:
 
     def all_audit_ids(self) -> list[str]:
         ids: list[str] = []
-        for tool in (
-            "evidence_manifest",
-            "mem_pslist",
-            "mem_psscan",
-            "mem_cmdline",
-            "mem_netscan",
-            "mem_malfind",
-            "disk_parse_prefetch",
-            "disk_parse_amcache",
-            "disk_parse_mft",
-            "disk_detect_timestomp",
-            "disk_parse_evtx",
-            "security_events",
-        ):
-            aid = self.audit_id(tool)
-            if aid:
+        seen: set[str] = set()
+        for result in self.tool_results.values():
+            aid = result.get("audit_id") if result else None
+            if aid and aid not in seen:
+                seen.add(aid)
                 ids.append(aid)
         return ids

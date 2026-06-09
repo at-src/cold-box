@@ -7,7 +7,16 @@ from typing import Any
 from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.config import vol3_binary
 from postmortem_mcp.paths import resolve_memory_path
-from postmortem_mcp.vol import run_cmdline, run_malfind, run_netscan, run_pslist, run_psscan
+from postmortem_mcp.vol import (
+    run_cmdline,
+    run_dlllist,
+    run_malfind,
+    run_netscan,
+    run_pslist,
+    run_psscan,
+    run_pstree,
+    run_svcscan,
+)
 
 
 def _cap_rows(data: dict[str, Any], key: str, count_key: str, max_records: int) -> dict[str, Any]:
@@ -53,6 +62,12 @@ def _memory_tool(
             return _cap_rows(data, "connections", "connection_count", max_records)
         if tool == "mem_malfind":
             return _cap_rows(data, "findings", "finding_count", max_records)
+        if tool == "mem_pstree":
+            return _cap_rows(data, "nodes", "node_count", max_records)
+        if tool == "mem_dlllist":
+            return _cap_rows(data, "dlls", "dll_count", max_records)
+        if tool == "mem_svcscan":
+            return _cap_rows(data, "services", "service_count", max_records)
         return _cap_rows(data, "cmdlines", "cmdline_count", max_records)
 
     return run_audited_tool(
@@ -151,4 +166,58 @@ def mem_malfind(
         iteration=iteration,
         max_records=max_records,
         runner=run_malfind,
+    )
+
+
+def mem_pstree(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 500,
+) -> dict:
+    """Build parent/child process tree from memory (Volatility pstree)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_pstree",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_pstree,
+    )
+
+
+def mem_dlllist(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 1000,
+) -> dict:
+    """List loaded DLLs per process — injection and hollowing follow-up (Volatility dlllist)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_dlllist",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_dlllist,
+    )
+
+
+def mem_svcscan(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 500,
+) -> dict:
+    """Enumerate Windows services from memory — persistence triage (Volatility svcscan)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_svcscan",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_svcscan,
     )

@@ -14,11 +14,13 @@ PREFETCH_PARSER_ENV = "PREFETCH_PARSER"
 EVTX_ECMD_ENV = "EVTX_ECMD"
 AMCACHE_PARSER_ENV = "AMCACHE_PARSER"
 MFTECMD_ENV = "MFTECMD"
+RECMD_ENV = "RECMD"
 DEFAULT_VOL3 = "/opt/postmortem/bin/vol"
 DEFAULT_PREFETCH_PARSER = "/opt/postmortem/tools/parse_prefetch.py"
 DEFAULT_EVTX_ECMD = "EvtxECmd"
 DEFAULT_AMCACHE_PARSER = "AmcacheParser"
 DEFAULT_MFTECMD = "MFTECmd"
+DEFAULT_RECMD = "RECmd"
 CASE_ID_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$")
 
 
@@ -74,6 +76,10 @@ def amcache_parser_binary() -> str:
 
 def mftecmd_binary() -> str:
     return os.environ.get(MFTECMD_ENV, DEFAULT_MFTECMD).strip() or DEFAULT_MFTECMD
+
+
+def recmd_binary() -> str:
+    return os.environ.get(RECMD_ENV, DEFAULT_RECMD).strip() or DEFAULT_RECMD
 
 
 def scratch_dir(case_id: str) -> Path:

@@ -1,5 +1,11 @@
 """MCP tool exports."""
 
+from postmortem_mcp.tools.analysis import (
+    disk_correlate_timeline,
+    disk_evtx_filter,
+    disk_parse_registry,
+    disk_search_artifacts,
+)
 from postmortem_mcp.tools.disk import (
     disk_detect_timestomp,
     disk_parse_amcache,
@@ -10,10 +16,13 @@ from postmortem_mcp.tools.disk import (
 from postmortem_mcp.tools.evidence import evidence_manifest
 from postmortem_mcp.tools.memory import (
     mem_cmdline,
+    mem_dlllist,
     mem_malfind,
     mem_netscan,
     mem_pslist,
     mem_psscan,
+    mem_pstree,
+    mem_svcscan,
 )
 
 WAVE1_TOOLS = [
@@ -33,6 +42,19 @@ WAVE2_TOOLS = [
     disk_detect_timestomp,
 ]
 
-ALL_TOOLS = WAVE1_TOOLS + WAVE2_TOOLS
+WAVE3_TOOLS = [
+    mem_pstree,
+    mem_dlllist,
+    mem_svcscan,
+    disk_evtx_filter,
+    disk_parse_registry,
+    disk_correlate_timeline,
+    disk_search_artifacts,
+]
 
-__all__ = [fn.__name__ for fn in ALL_TOOLS] + ["WAVE1_TOOLS", "WAVE2_TOOLS", "ALL_TOOLS"]
+ALL_TOOLS = WAVE1_TOOLS + WAVE2_TOOLS + WAVE3_TOOLS
+
+__all__ = [
+    fn.__name__
+    for fn in ALL_TOOLS
+] + ["WAVE1_TOOLS", "WAVE2_TOOLS", "WAVE3_TOOLS", "ALL_TOOLS"]

@@ -268,5 +268,107 @@ def run_malfind(
     return data
 
 
+def parse_pstree_table(output: str) -> list[dict[str, Any]]:
+    """Parse windows.pstree output with optional tree depth markers."""
+    lines = output.splitlines()
+    header_idx = None
+    headers: list[str] = []
+    for idx, line in enumerate(lines):
+        if line.startswith("PID\t") and "PPID" in line and "ImageFileName" in line:
+            header_idx = idx
+            headers = line.split("\t")
+            break
+    if header_idx is None:
+        raise RuntimeError("vol pstree output missing PID header row")
+
+    nodes: list[dict[str, Any]] = []
+    for line in lines[header_idx + 1 :]:
+        if not line.strip() or line.startswith("Progress:") or line.startswith("Volatility"):
+            continue
+        depth = len(line) - len(line.lstrip("*"))
+        stripped = line.lstrip("* \t")
+        parts = stripped.split("\t")
+        if len(parts) != len(headers):
+            continue
+        row = dict(zip(headers, parts, strict=False))
+        nodes.append(
+            {
+                "depth": depth,
+                "pid": int(row["PID"]),
+                "ppid": int(row["PPID"]),
+                "name": row["ImageFileName"],
+                "cmd": row.get("Cmd") or row.get("Cmdline") or "",
+                "path": row.get("Path") or "",
+                "create_time": row.get("CreateTime"),
+            }
+        )
+    return nodes
+
+
+def parse_dlllist_table(output: str) -> list[dict[str, Any]]:
+    return parse_vol_tab_table(output, required_columns={"PID", "Process", "Name", "Path"})
+
+
+def parse_svcscan_table(output: str) -> list[dict[str, Any]]:
+    return parse_vol_tab_table(
+        output,
+        required_columns={"Offset", "PID", "Name", "State", "Binary"},
+    )
+
+
+def run_pstree(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.pstree",
+        vol_binary=vol_binary,
+        parser=parse_pstree_table,
+        timeout_sec=timeout_sec,
+    )
+    data["node_count"] = data["row_count"]
+    data["nodes"] = data.pop("rows")
+    return data
+
+
+def run_dlllist(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.dlllist",
+        vol_binary=vol_binary,
+        parser=parse_dlllist_table,
+        timeout_sec=timeout_sec,
+    )
+    data["dll_count"] = data["row_count"]
+    data["dlls"] = data.pop("rows")
+    return data
+
+
+def run_svcscan(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.svcscan",
+        vol_binary=vol_binary,
+        parser=parse_svcscan_table,
+        timeout_sec=timeout_sec,
+    )
+    data["service_count"] = data["row_count"]
+    data["services"] = data.pop("rows")
+    return data
+
+
 # Backward-compatible alias used in tests
 parse_pslist_table = parse_vol_process_table

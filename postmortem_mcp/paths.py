@@ -11,6 +11,8 @@ PREFETCH_SUFFIXES = {".pf"}
 AMCACHE_SUFFIXES = {".hve"}
 EVTX_SUFFIXES = {".evtx"}
 MFT_NAMES = {"$mft", "mft"}
+REGISTRY_SUFFIXES = {".dat", ".hve", ".log", ".reg"}
+REGISTRY_BASENAMES = {"software", "system", "sam", "security", "ntuser.dat"}
 
 
 def resolve_memory_path(relpath: str) -> Path:
@@ -54,6 +56,16 @@ def resolve_mft_path(relpath: str) -> Path:
     name = path.name.lower()
     if path.suffix.lower() not in {".mft", ".csv", ""} and name not in MFT_NAMES:
         raise EvidencePathError(f"Expected MFT file; got {path.name!r}")
+    return path
+
+
+def resolve_registry_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"Registry hive must be a file: {path}")
+    name = path.name.lower()
+    if path.suffix.lower() not in REGISTRY_SUFFIXES and name not in REGISTRY_BASENAMES:
+        raise EvidencePathError(f"Expected registry hive; got {path.name!r}")
     return path
 
 

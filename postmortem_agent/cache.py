@@ -20,7 +20,17 @@ def load_cached_tool(cache_dir: Path, tool: str) -> dict[str, Any] | None:
         inner = payload["data"]
         if any(
             k in inner
-            for k in ("processes", "connections", "rows", "findings", "cmdlines", "finding_count")
+            for k in (
+                "processes",
+                "connections",
+                "rows",
+                "findings",
+                "cmdlines",
+                "finding_count",
+                "nodes",
+                "dlls",
+                "services",
+            )
         ):
             return inner
     if isinstance(payload, dict) and "processes" in payload:
