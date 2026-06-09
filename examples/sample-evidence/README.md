@@ -25,13 +25,13 @@ Real runs use paths like:
 
 ```bash
 # Repo-local sample (no EVIDENCE_ROOT required)
-postmortem-evidence manifest examples/sample-evidence --local
+cold-box-evidence manifest examples/sample-evidence --local
 
 # Production evidence under /evidence
 export EVIDENCE_ROOT=/evidence
-postmortem-evidence manifest ali-hadi-1
-postmortem-evidence integrity-begin ali-hadi-1 --save /cases/ali-hadi-1/baseline.json
-postmortem-evidence integrity-check ali-hadi-1 --baseline /cases/ali-hadi-1/baseline.json
+cold-box-evidence manifest ali-hadi-1
+cold-box-evidence integrity-begin ali-hadi-1 --save /cases/ali-hadi-1/baseline.json
+cold-box-evidence integrity-check ali-hadi-1 --baseline /cases/ali-hadi-1/baseline.json
 ```
 
 ## Integrity rule

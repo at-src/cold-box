@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "postmortem"
+name = "cold-box"
 version = "0.1.0"
-description = "Autonomous postmortem investigator for SIFT"
+description = "Autonomous DFIR investigator for SIFT (cold-box)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -14,7 +14,7 @@ license = { text = "MIT" }
 dev = ["pytest>=8.0"]
 
 [project.scripts]
-postmortem-evidence = "postmortem_evidence.cli:main"
+cold-box-evidence = "postmortem_evidence.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

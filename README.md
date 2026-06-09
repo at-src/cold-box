@@ -1,6 +1,6 @@
-# postmortem
+# cold-box
 
-Autonomous postmortem investigator for the SANS FIND EVIL! hackathon.
+Autonomous DFIR investigator for the SANS FIND EVIL! hackathon.
 
 ## Requirements
 
@@ -10,7 +10,8 @@ Autonomous postmortem investigator for the SANS FIND EVIL! hackathon.
 ## Install (development)
 
 ```bash
-cd /opt/postmortem
+git clone https://github.com/at-src/cold-box.git
+cd cold-box
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
@@ -29,11 +30,11 @@ See `examples/sample-evidence/README.md` for bundled demo evidence layout.
 
 ```bash
 # Manifest (SHA-256 all files under a case directory)
-postmortem-evidence manifest examples/sample-evidence
+cold-box-evidence manifest examples/sample-evidence
 
 # Pre/post integrity check (e.g. before and after an investigation run)
-postmortem-evidence integrity-begin examples/sample-evidence
-postmortem-evidence integrity-check examples/sample-evidence
+cold-box-evidence integrity-begin examples/sample-evidence
+cold-box-evidence integrity-check examples/sample-evidence
 ```
 
 ## License

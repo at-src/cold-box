@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Vol3 with postmortem sparse-PAE DTB stacker + user symbol cache.
+# Vol3 with cold-box sparse-PAE DTB stacker + user symbol cache.
 set -euo pipefail
 PLUGIN_DIR="/opt/postmortem/tools/vol_plugins"
 SYMBOL_DIR="${HOME}/.cache/volatility3/symbols"
