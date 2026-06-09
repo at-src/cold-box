@@ -1,0 +1,9 @@
+{
+  "source": "network/capture.pcap",
+  "parser": "fixture-http",
+  "requests": [{"host": "c2.evil.example", "size": 512, "dst_port": 80}],
+  "request_count": 1,
+  "periodic_same_size": [
+    {"host": "c2.evil.example", "size": 512, "count": 5}
+  ]
+}

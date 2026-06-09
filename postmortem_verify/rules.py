@@ -408,3 +408,97 @@ def rule_r6_orphan_connection(ctx: VerifyContext) -> RuleResult:
         f"All {len(ctx.netscan_connections)} netscan connection(s) reconcile with pslist",
         sources,
     )
+
+
+def rule_r8_dns_exfil(ctx: VerifyContext) -> RuleResult:
+    """R8: high-volume or high-entropy DNS queries suggest tunneling/exfil."""
+    queries = ctx.dns_queries or []
+    if not queries:
+        return RuleResult("R8", "dns_exfil", "skipped", "DNS query input missing", [])
+
+    domain_counts: dict[str, int] = {}
+    long_labels = 0
+    for row in queries:
+        q = str(row.get("query") or row.get("domain") or "")
+        if not q:
+            continue
+        base = q.lower().rstrip(".")
+        domain_counts[base] = domain_counts.get(base, 0) + 1
+        if len(base) > 48 or base.count(".") >= 5:
+            long_labels += 1
+
+    sources: list[dict[str, Any]] = []
+    if ctx.dns_audit_id:
+        sources.append(_audit_ref(ctx.dns_audit_id, "net_dns_extract", ctx.dns_source))
+
+    hot = max(domain_counts.values()) if domain_counts else 0
+    hot_domain = next((d for d, c in domain_counts.items() if c == hot), "?")
+
+    if hot >= 10 or long_labels >= 3:
+        detail = (
+            f"DNS anomaly: {hot} queries to {hot_domain!r}, {long_labels} long/high-entropy labels"
+        )
+        sources.append({"type": "dns", "top_domain": hot_domain, "count": hot})
+        return RuleResult("R8", "dns_exfil", "contradiction", detail, sources)
+
+    return RuleResult(
+        "R8",
+        "dns_exfil",
+        "pass",
+        f"No DNS exfil pattern in {len(queries)} queries",
+        sources,
+    )
+
+
+def rule_r9_http_beacon(ctx: VerifyContext) -> RuleResult:
+    """R9: periodic same-size HTTP requests suggest beaconing."""
+    periodic = ctx.http_periodic or []
+    if not periodic and not ctx.http_requests:
+        return RuleResult("R9", "http_beacon", "skipped", "HTTP request input missing", [])
+
+    sources: list[dict[str, Any]] = []
+    if ctx.http_audit_id:
+        sources.append(_audit_ref(ctx.http_audit_id, "net_http_extract", ctx.http_source))
+
+    if periodic:
+        item = periodic[0]
+        host = item.get("host", "?")
+        size = item.get("size", "?")
+        count = item.get("count", len(periodic))
+        sources.append({"type": "http_beacon", **item})
+        return RuleResult(
+            "R9",
+            "http_beacon",
+            "contradiction",
+            f"{count} same-size HTTP request(s) to {host} (size={size})",
+            sources,
+        )
+
+    return RuleResult("R9", "http_beacon", "pass", "No periodic same-size HTTP beacon pattern", sources)
+
+
+def rule_r10_linux_persistence(ctx: VerifyContext) -> RuleResult:
+    """R10: Linux persistence indicators in cron/bash/history scans."""
+    findings = ctx.linux_persistence_findings or []
+    if not findings:
+        return RuleResult("R10", "linux_persistence", "skipped", "Linux persistence input missing", [])
+
+    sources: list[dict[str, Any]] = []
+    if ctx.linux_audit_id:
+        sources.append(_audit_ref(ctx.linux_audit_id, "linux_persistence", ctx.linux_source))
+
+    suspicious = [f for f in findings if isinstance(f, dict)]
+    for item in suspicious[:10]:
+        sources.append({"type": "linux_persistence", **item})
+
+    if suspicious:
+        sample = suspicious[0].get("line") or suspicious[0].get("command") or "?"
+        return RuleResult(
+            "R10",
+            "linux_persistence",
+            "contradiction",
+            f"{len(suspicious)} Linux persistence indicator(s) ({str(sample)[:60]})",
+            sources,
+        )
+
+    return RuleResult("R10", "linux_persistence", "pass", "No Linux persistence indicators", sources)

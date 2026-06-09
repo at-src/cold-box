@@ -24,6 +24,10 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         security_data=state.security_payload(),
         malfind_data=_data(state, "mem_malfind"),
         evtx_data=_data(state, "disk_parse_evtx") or _data(state, "disk_evtx_filter"),
+        dns_data=_data(state, "net_dns_extract"),
+        http_data=_data(state, "net_http_extract"),
+        linux_persistence_data=_data(state, "linux_persistence") or _data(state, "linux_cron"),
+        linux_history_data=_data(state, "linux_bash_history"),
         evidence_root=evidence_root,
         pslist_audit_id=state.audit_id("mem_pslist"),
         psscan_audit_id=state.audit_id("mem_psscan"),
@@ -34,6 +38,11 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         security_audit_id=state.audit_id("disk_evtx_filter") or state.audit_id("disk_parse_evtx"),
         malfind_audit_id=state.audit_id("mem_malfind"),
         evtx_audit_id=state.audit_id("disk_parse_evtx") or state.audit_id("disk_evtx_filter"),
+        dns_audit_id=state.audit_id("net_dns_extract"),
+        http_audit_id=state.audit_id("net_http_extract"),
+        linux_audit_id=state.audit_id("linux_persistence")
+        or state.audit_id("linux_bash_history")
+        or state.audit_id("linux_cron"),
     )
 
 

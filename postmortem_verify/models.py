@@ -37,6 +37,10 @@ class VerifyContext:
     malfind_finding_count: int = 0
     evtx_records: list[dict[str, Any]] | None = None
     evidence_basenames: set[str] | None = None
+    dns_queries: list[dict[str, Any]] | None = None
+    http_requests: list[dict[str, Any]] | None = None
+    http_periodic: list[dict[str, Any]] | None = None
+    linux_persistence_findings: list[dict[str, Any]] | None = None
 
     pslist_audit_id: str | None = None
     psscan_audit_id: str | None = None
@@ -47,6 +51,9 @@ class VerifyContext:
     security_audit_id: str | None = None
     malfind_audit_id: str | None = None
     evtx_audit_id: str | None = None
+    dns_audit_id: str | None = None
+    http_audit_id: str | None = None
+    linux_audit_id: str | None = None
 
     pslist_source: str | None = None
     psscan_source: str | None = None
@@ -55,6 +62,9 @@ class VerifyContext:
     mft_source: str | None = None
     netscan_source: str | None = None
     security_source: str | None = None
+    dns_source: str | None = None
+    http_source: str | None = None
+    linux_source: str | None = None
 
     timestomp_tolerance_seconds: int = 1
 
@@ -72,6 +82,10 @@ class VerifyContext:
         security_data: dict[str, Any] | None = None,
         malfind_data: dict[str, Any] | None = None,
         evtx_data: dict[str, Any] | None = None,
+        dns_data: dict[str, Any] | None = None,
+        http_data: dict[str, Any] | None = None,
+        linux_persistence_data: dict[str, Any] | None = None,
+        linux_history_data: dict[str, Any] | None = None,
         evidence_root: str | Path | None = None,
         pslist_audit_id: str | None = None,
         psscan_audit_id: str | None = None,
@@ -82,6 +96,9 @@ class VerifyContext:
         security_audit_id: str | None = None,
         malfind_audit_id: str | None = None,
         evtx_audit_id: str | None = None,
+        dns_audit_id: str | None = None,
+        http_audit_id: str | None = None,
+        linux_audit_id: str | None = None,
         timestomp_tolerance_seconds: int = 1,
     ) -> VerifyContext:
         mft_records = _extract_mft_records(mft_data)
@@ -104,6 +121,12 @@ class VerifyContext:
             malfind_finding_count=int((malfind_data or {}).get("finding_count") or 0),
             evtx_records=_extract_records(evtx_data),
             evidence_basenames=basenames,
+            dns_queries=_extract_dns_queries(dns_data),
+            http_requests=_extract_http_requests(http_data),
+            http_periodic=_extract_http_periodic(http_data),
+            linux_persistence_findings=_extract_linux_findings(
+                linux_persistence_data, linux_history_data
+            ),
             pslist_audit_id=pslist_audit_id,
             psscan_audit_id=psscan_audit_id,
             amcache_audit_id=amcache_audit_id,
@@ -113,6 +136,9 @@ class VerifyContext:
             security_audit_id=security_audit_id,
             malfind_audit_id=malfind_audit_id,
             evtx_audit_id=evtx_audit_id,
+            dns_audit_id=dns_audit_id,
+            http_audit_id=http_audit_id,
+            linux_audit_id=linux_audit_id or (linux_persistence_data or {}).get("audit_id"),
             pslist_source=(pslist_data or {}).get("source"),
             psscan_source=(psscan_data or {}).get("source"),
             amcache_source=(amcache_data or {}).get("source"),
@@ -120,6 +146,9 @@ class VerifyContext:
             mft_source=(mft_data or timestomp_data or {}).get("source"),
             netscan_source=(netscan_data or {}).get("source"),
             security_source=(security_data or {}).get("source"),
+            dns_source=(dns_data or {}).get("source"),
+            http_source=(http_data or {}).get("source"),
+            linux_source=(linux_persistence_data or linux_history_data or {}).get("source"),
             timestomp_tolerance_seconds=timestomp_tolerance_seconds,
         )
 
@@ -214,6 +243,55 @@ def _extract_malfind(payload: dict[str, Any] | None) -> list[dict[str, Any]] | N
     if count:
         return [{"finding_count": count}]
     return None
+
+
+def _extract_dns_queries(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    queries = payload.get("queries")
+    if isinstance(queries, list):
+        return list(queries)
+    top = payload.get("top_domains")
+    if isinstance(top, list):
+        return [{"query": row.get("domain"), "count": row.get("count")} for row in top]
+    return None
+
+
+def _extract_http_requests(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    requests = payload.get("requests")
+    if isinstance(requests, list):
+        return list(requests)
+    return None
+
+
+def _extract_http_periodic(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    periodic = payload.get("periodic_same_size")
+    if isinstance(periodic, list):
+        return list(periodic)
+    return None
+
+
+def _extract_linux_findings(
+    persistence: dict[str, Any] | None,
+    history: dict[str, Any] | None,
+) -> list[dict[str, Any]] | None:
+    rows: list[dict[str, Any]] = []
+    if persistence:
+        findings = persistence.get("findings")
+        if isinstance(findings, list):
+            rows.extend(findings)
+        entries = persistence.get("entries")
+        if isinstance(entries, list):
+            rows.extend(entries)
+    if history:
+        hits = history.get("hits")
+        if isinstance(hits, list):
+            rows.extend(hits)
+    return rows or None
 
 
 def _extract_security_events(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:

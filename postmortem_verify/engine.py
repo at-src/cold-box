@@ -5,12 +5,15 @@ from __future__ import annotations
 from postmortem_verify.models import RuleResult, VerifyContext
 from postmortem_verify.rules import (
     rule_r1_hidden_process,
+    rule_r10_linux_persistence,
     rule_r2_no_execution_trail,
     rule_r3_phantom_logon,
     rule_r4_timestomp,
     rule_r5_ghost_binary,
     rule_r6_orphan_connection,
     rule_r7_memory_injection,
+    rule_r8_dns_exfil,
+    rule_r9_http_beacon,
 )
 
 ALL_RULES = [
@@ -21,6 +24,9 @@ ALL_RULES = [
     rule_r5_ghost_binary,
     rule_r6_orphan_connection,
     rule_r7_memory_injection,
+    rule_r8_dns_exfil,
+    rule_r9_http_beacon,
+    rule_r10_linux_persistence,
 ]
 
 

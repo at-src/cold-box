@@ -55,7 +55,9 @@ def classify_file(relpath: str, path: Path) -> str:
             return "registry_hive"
     if name == "srudb.dat":
         return "srum"
-    if name in LINUX_LOG_NAMES or "var/log" in "/".join(parts_lower):
+    if name in LINUX_LOG_NAMES or "bash_history" in name or name.endswith(".cron"):
+        return "linux_log"
+    if "var/log" in "/".join(parts_lower):
         return "linux_log"
     if suffix == ".csv" and "$mft" in name:
         return "mft"

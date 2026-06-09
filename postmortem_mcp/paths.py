@@ -74,3 +74,30 @@ def resolve_case_directory(relpath: str) -> Path:
     if not path.is_dir():
         raise EvidencePathError(f"Case path must be a directory: {path}")
     return path
+
+
+def resolve_readonly_file(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"Artifact must be a file: {path}")
+    return path
+
+
+def resolve_pcap_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"PCAP must be a file: {path}")
+    if path.suffix.lower() not in {".pcap", ".pcapng"}:
+        raise EvidencePathError(f"Expected .pcap/.pcapng; got {path.name!r}")
+    return path
+
+
+def resolve_linux_log_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"Linux log must be a file: {path}")
+    name = path.name.lower()
+    allowed = {"auth.log", "secure", "syslog", "messages", "kern.log", "auditd_sample.txt"}
+    if name not in allowed and "log" not in name:
+        raise EvidencePathError(f"Expected Linux log file; got {path.name!r}")
+    return path

@@ -1,0 +1,3 @@
+Mar 15 14:20:01 host sshd[2222]: Failed password for invalid user admin from 203.0.113.50 port 4444 ssh2
+Mar 15 14:21:10 host sshd[2223]: Accepted password for user from 203.0.113.50 port 4445 ssh2
+Mar 15 14:22:00 host sudo: user : TTY=pts/0 ; PWD=/tmp ; USER=root ; COMMAND=/bin/bash

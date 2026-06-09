@@ -16,6 +16,9 @@ FOLLOWUP: dict[str, tuple[str, ...]] = {
     "R4": ("disk_detect_timestomp", "disk_parse_mft"),
     "R5": ("disk_search_artifacts", "disk_parse_prefetch"),
     "R2": ("disk_parse_amcache", "disk_parse_prefetch"),
+    "R8": ("net_dns_extract", "net_conversations"),
+    "R9": ("net_http_extract", "net_conversations"),
+    "R10": ("linux_persistence", "linux_bash_history", "linux_cron"),
 }
 
 PRIORITY_TOOLS = ("evidence_manifest", "mem_pslist", "mem_psscan")

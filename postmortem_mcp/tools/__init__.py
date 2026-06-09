@@ -16,6 +16,19 @@ from postmortem_mcp.tools.disk import (
 from postmortem_mcp.catalog import tool_catalog
 from postmortem_mcp.survey import evidence_survey
 from postmortem_mcp.tools.evidence import evidence_manifest
+from postmortem_mcp.tools.linux import (
+    linux_auth_log,
+    linux_bash_history,
+    linux_cron,
+    linux_persistence,
+    linux_syslog,
+)
+from postmortem_mcp.tools.network import (
+    net_conversations,
+    net_dns_extract,
+    net_http_extract,
+    net_pcap_summary,
+)
 from postmortem_mcp.tools.memory import (
     mem_cmdline,
     mem_dlllist,
@@ -59,7 +72,19 @@ META_TOOLS = [
     tool_catalog,
 ]
 
-ALL_TOOLS = WAVE1_TOOLS + WAVE2_TOOLS + WAVE3_TOOLS + META_TOOLS
+WAVE4_TOOLS = [
+    net_pcap_summary,
+    net_dns_extract,
+    net_http_extract,
+    net_conversations,
+    linux_auth_log,
+    linux_syslog,
+    linux_bash_history,
+    linux_cron,
+    linux_persistence,
+]
+
+ALL_TOOLS = WAVE1_TOOLS + WAVE2_TOOLS + WAVE3_TOOLS + META_TOOLS + WAVE4_TOOLS
 
 __all__ = [
     fn.__name__
