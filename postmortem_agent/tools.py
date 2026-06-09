@@ -4,28 +4,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from postmortem_agent.state import AgentConfig
-from postmortem_mcp.tools.disk import (
-    disk_parse_amcache,
-    disk_parse_evtx,
-    disk_parse_mft,
-    disk_parse_prefetch,
-)
-from postmortem_mcp.tools.evidence import evidence_manifest
-from postmortem_mcp.tools.memory import mem_cmdline, mem_pslist, mem_psscan
-
-TOOL_REGISTRY: dict[str, Callable[..., dict]] = {
-    "evidence_manifest": evidence_manifest,
-    "mem_pslist": mem_pslist,
-    "mem_psscan": mem_psscan,
-    "mem_cmdline": mem_cmdline,
-    "disk_parse_prefetch": disk_parse_prefetch,
-    "disk_parse_amcache": disk_parse_amcache,
-    "disk_parse_evtx": disk_parse_evtx,
-    "disk_parse_mft": disk_parse_mft,
-}
+from postmortem_mcp.dispatch import TOOL_REGISTRY
 
 SYNTHETIC_FIXTURES = {
     "mem_pslist": "r1-pslist.json",
@@ -88,8 +70,16 @@ def invoke_tool(
                 execute=execute,
             )
         return fn(config.case_id, config.evidence_case, iteration=iteration)
-    if tool in {"mem_pslist", "mem_psscan", "mem_cmdline"}:
+    if tool in {"mem_pslist", "mem_psscan", "mem_cmdline", "mem_netscan", "mem_malfind"}:
         if not config.memory_relpath:
             raise RuntimeError(f"{tool} requires --memory")
         return fn(config.case_id, config.memory_relpath, iteration=iteration)
+    if tool == "disk_parse_prefetch" and config.prefetch_relpath:
+        return fn(config.case_id, config.prefetch_relpath, iteration=iteration)
+    if tool == "disk_parse_amcache" and config.amcache_relpath:
+        return fn(config.case_id, config.amcache_relpath, iteration=iteration)
+    if tool == "disk_parse_mft" and config.mft_relpath:
+        return fn(config.case_id, config.mft_relpath, iteration=iteration)
+    if tool == "disk_detect_timestomp" and config.mft_relpath:
+        return fn(config.case_id, config.mft_relpath, iteration=iteration)
     raise RuntimeError(f"Agent cannot invoke {tool} without explicit artifact paths")

@@ -15,7 +15,8 @@ from postmortem_mcp.config import (
     prefetch_parser,
     scratch_dir,
 )
-from postmortem_mcp.ez_tools import parse_amcache, parse_evtx, parse_mft
+from postmortem_mcp.ez_tools import parse_amcache, parse_evtx, parse_mft, parse_mft_csv
+from postmortem_mcp.timestomp import detect_timestomp_rows
 from postmortem_mcp.paths import (
     resolve_amcache_path,
     resolve_evtx_path,
@@ -33,6 +34,12 @@ def _parse_prefetch_file(path) -> dict[str, Any]:
         timeout=120,
     )
     if proc.returncode != 0:
+        sidecar = path.with_suffix(".json")
+        if sidecar.is_file():
+            payload = json.loads(sidecar.read_text(encoding="utf-8"))
+            payload.setdefault("source", str(path))
+            payload["parser"] = "sidecar-json"
+            return payload
         raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or "prefetch parse failed")
     return json.loads(proc.stdout)
 
@@ -154,6 +161,61 @@ def disk_parse_mft(
     return run_audited_tool(
         case_id=case_id,
         tool="disk_parse_mft",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def disk_detect_timestomp(
+    case_id: str,
+    artifact_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 5000,
+    tolerance_seconds: int = 1,
+    executables_only: bool = False,
+) -> dict:
+    """Detect MFT $SI vs $FN timestomp anomalies (T1070.006)."""
+    args = {
+        "case_id": case_id,
+        "artifact_relpath": artifact_relpath,
+        "max_records": max_records,
+        "tolerance_seconds": tolerance_seconds,
+        "executables_only": executables_only,
+    }
+
+    def execute() -> dict[str, Any]:
+        path = resolve_mft_path(artifact_relpath)
+        args["artifact_path"] = str(path)
+        if path.suffix.lower() == ".csv":
+            parsed = parse_mft_csv(path, max_records=max_records)
+        else:
+            parsed = parse_mft(
+                path,
+                binary=mftecmd_binary(),
+                scratch_dir=scratch_dir(case_id),
+                max_records=max_records,
+            )
+        rows = parsed.get("records") or []
+        findings = detect_timestomp_rows(
+            rows,
+            tolerance_seconds=tolerance_seconds,
+            executables_only=executables_only,
+        )
+        return {
+            "source": str(path),
+            "parser": "mftecmd+timestomp",
+            "rows_scanned": len(rows),
+            "findings": findings,
+            "findings_count": len(findings),
+            "tolerance_seconds": tolerance_seconds,
+            "executables_only": executables_only,
+        }
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="disk_detect_timestomp",
         args=args,
         iteration=iteration,
         execute=execute,

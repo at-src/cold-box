@@ -158,5 +158,115 @@ def run_cmdline(
     return data
 
 
+def parse_vol_tab_table(output: str, *, required_columns: set[str]) -> list[dict[str, Any]]:
+    """Parse generic Volatility tabular output into row dicts."""
+    lines = output.splitlines()
+    header_idx = None
+    headers: list[str] = []
+    for idx, line in enumerate(lines):
+        if not line.strip() or line.startswith("Progress:") or line.startswith("Volatility"):
+            continue
+        cols = line.split("\t")
+        if required_columns.issubset(set(cols)):
+            header_idx = idx
+            headers = cols
+            break
+
+    if header_idx is None:
+        raise RuntimeError(f"vol output missing columns {sorted(required_columns)}")
+
+    rows: list[dict[str, Any]] = []
+    for line in lines[header_idx + 1 :]:
+        if not line.strip() or line.startswith("Progress:") or line.startswith("Volatility"):
+            continue
+        parts = line.split("\t")
+        if len(parts) != len(headers):
+            continue
+        row = dict(zip(headers, parts, strict=False))
+        if "PID" in row:
+            try:
+                row["pid"] = int(row["PID"])
+            except ValueError:
+                row["pid"] = row["PID"]
+        rows.append(row)
+    return rows
+
+
+def parse_netscan_table(output: str) -> list[dict[str, Any]]:
+    return parse_vol_tab_table(
+        output,
+        required_columns={"PID", "Foreign Address", "Local Address"},
+    )
+
+
+def parse_malfind_blocks(output: str) -> list[dict[str, Any]]:
+    """Parse windows.malfind block output into structured rows."""
+    rows: list[dict[str, Any]] = []
+    current: dict[str, Any] = {}
+    for line in output.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            if current:
+                rows.append(current)
+                current = {}
+            continue
+        if stripped.startswith("Process:"):
+            if current:
+                rows.append(current)
+            current = {"process": stripped.split(":", 1)[1].strip()}
+            continue
+        if ":" not in stripped:
+            continue
+        key, value = stripped.split(":", 1)
+        key_norm = key.strip().lower().replace(" ", "_")
+        value = value.strip()
+        if key_norm == "pid":
+            try:
+                current["pid"] = int(value)
+            except ValueError:
+                current["pid"] = value
+        else:
+            current[key_norm] = value
+    if current:
+        rows.append(current)
+    return rows
+
+
+def run_netscan(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.netscan",
+        vol_binary=vol_binary,
+        parser=parse_netscan_table,
+        timeout_sec=timeout_sec,
+    )
+    data["connection_count"] = data["row_count"]
+    data["connections"] = data.pop("rows")
+    return data
+
+
+def run_malfind(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.malfind",
+        vol_binary=vol_binary,
+        parser=parse_malfind_blocks,
+        timeout_sec=timeout_sec,
+    )
+    data["finding_count"] = data["row_count"]
+    data["findings"] = data.pop("rows")
+    return data
+
+
 # Backward-compatible alias used in tests
 parse_pslist_table = parse_vol_process_table

@@ -52,7 +52,7 @@ def resolve_mft_path(relpath: str) -> Path:
     if not path.is_file():
         raise EvidencePathError(f"MFT artifact must be a file: {path}")
     name = path.name.lower()
-    if path.suffix.lower() not in {".mft", ""} and name not in MFT_NAMES:
+    if path.suffix.lower() not in {".mft", ".csv", ""} and name not in MFT_NAMES:
         raise EvidencePathError(f"Expected MFT file; got {path.name!r}")
     return path
 

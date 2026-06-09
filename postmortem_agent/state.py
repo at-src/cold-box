@@ -16,6 +16,9 @@ class AgentConfig:
     case_id: str
     evidence_case: str
     memory_relpath: str | None = None
+    prefetch_relpath: str | None = None
+    amcache_relpath: str | None = None
+    mft_relpath: str | None = None
     mode: AgentMode = "live"
     max_iterations: int = 10
     fixture_dir: Path | None = None

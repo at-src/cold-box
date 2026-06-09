@@ -6,7 +6,7 @@ from collections.abc import Callable
 
 from fastmcp import FastMCP
 
-from postmortem_mcp.tools import WAVE1_TOOLS
+from postmortem_mcp.tools import ALL_TOOLS
 
 INSTRUCTIONS = """
 cold-box MCP exposes deterministic DFIR tools for dead-host disk + memory analysis.
@@ -21,6 +21,10 @@ Wave 1 tools:
 - disk_parse_prefetch (.pf), disk_parse_amcache (.hve), disk_parse_evtx (.evtx), disk_parse_mft
 - evidence_manifest — SHA-256 manifest for a case directory under EVIDENCE_ROOT
 
+Wave 2 tools:
+- mem_malfind, mem_netscan — injection and network triage from memory
+- disk_detect_timestomp — MFT $SI vs $FN anti-forensics (T1070.006)
+
 Configure backends via env: VOL3, PREFETCH_PARSER, EVTX_ECMD, AMCACHE_PARSER, MFTECMD.
 """.strip()
 
@@ -28,7 +32,7 @@ Configure backends via env: VOL3, PREFETCH_PARSER, EVTX_ECMD, AMCACHE_PARSER, MF
 def create_server() -> FastMCP:
     mcp = FastMCP(name="cold-box", instructions=INSTRUCTIONS)
 
-    for tool_fn in WAVE1_TOOLS:
+    for tool_fn in ALL_TOOLS:
         _register_tool(mcp, tool_fn)
 
     return mcp

@@ -12,7 +12,7 @@ from postmortem_audit import verify_chain
 from postmortem_mcp.config import audit_log_path
 from postmortem_mcp.ez_tools import cap_records
 from postmortem_mcp.server import create_server
-from postmortem_mcp.tools import WAVE1_TOOLS
+from postmortem_mcp.tools import ALL_TOOLS, WAVE1_TOOLS, WAVE2_TOOLS
 from postmortem_mcp.tools.disk import disk_parse_prefetch
 from postmortem_mcp.tools.evidence import evidence_manifest
 from postmortem_mcp.tools.memory import mem_cmdline, mem_psscan
@@ -43,11 +43,20 @@ def test_wave1_tool_count() -> None:
     }
 
 
-def test_mcp_server_registers_wave1_tools() -> None:
+def test_wave2_tool_count() -> None:
+    assert len(WAVE2_TOOLS) == 3
+    assert {fn.__name__ for fn in WAVE2_TOOLS} == {
+        "mem_malfind",
+        "mem_netscan",
+        "disk_detect_timestomp",
+    }
+
+
+def test_mcp_server_registers_all_tools() -> None:
     mcp = create_server()
     tools = asyncio.run(mcp.list_tools())
     names = {tool.name for tool in tools}
-    assert names == {fn.__name__ for fn in WAVE1_TOOLS}
+    assert names == {fn.__name__ for fn in ALL_TOOLS}
 
 
 def test_parse_cmdline_table() -> None:

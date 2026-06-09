@@ -7,7 +7,7 @@ from typing import Any
 from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.config import vol3_binary
 from postmortem_mcp.paths import resolve_memory_path
-from postmortem_mcp.vol import run_cmdline, run_pslist, run_psscan
+from postmortem_mcp.vol import run_cmdline, run_malfind, run_netscan, run_pslist, run_psscan
 
 
 def _cap_rows(data: dict[str, Any], key: str, count_key: str, max_records: int) -> dict[str, Any]:
@@ -49,6 +49,10 @@ def _memory_tool(
             return _cap_rows(data, "processes", "process_count", max_records)
         if tool == "mem_psscan":
             return _cap_rows(data, "processes", "process_count", max_records)
+        if tool == "mem_netscan":
+            return _cap_rows(data, "connections", "connection_count", max_records)
+        if tool == "mem_malfind":
+            return _cap_rows(data, "findings", "finding_count", max_records)
         return _cap_rows(data, "cmdlines", "cmdline_count", max_records)
 
     return run_audited_tool(
@@ -111,4 +115,40 @@ def mem_cmdline(
         iteration=iteration,
         max_records=max_records,
         runner=run_cmdline,
+    )
+
+
+def mem_netscan(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 500,
+) -> dict:
+    """List network connections and sockets from a memory image (Volatility netscan)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_netscan",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_netscan,
+    )
+
+
+def mem_malfind(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 200,
+) -> dict:
+    """Find injected / RWX memory regions (Volatility malfind)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_malfind",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_malfind,
     )

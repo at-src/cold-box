@@ -127,4 +127,4 @@ def test_mcp_server_registers_mem_pslist() -> None:
     tools = asyncio.run(list_tools())
     names = {tool.name for tool in tools}
     assert "mem_pslist" in names
-    assert len(names) == 8
+    assert len(names) == 11

@@ -98,6 +98,17 @@ def parse_evtx(
     }
 
 
+def parse_mft_csv(mft_csv_path: Path, *, max_records: int) -> dict[str, Any]:
+    with mft_csv_path.open(newline="", encoding="utf-8") as handle:
+        records = list(csv.DictReader(handle))
+    capped = cap_records(records, max_records)
+    return {
+        "source": str(mft_csv_path),
+        "parser": "mft-csv",
+        **capped,
+    }
+
+
 def parse_mft(
     mft_path: Path,
     *,
