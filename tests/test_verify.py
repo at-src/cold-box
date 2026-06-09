@@ -86,8 +86,8 @@ def test_run_verifier_returns_all_rules() -> None:
     processes = [_process(4, "System", "0x1")]
     ctx = VerifyContext(pslist_processes=processes, psscan_processes=processes)
     results = run_verifier(ctx)
-    assert len(results) == 5
-    assert [result.rule_id for result in results] == ["R1", "R2", "R4", "R5", "R6"]
+    assert len(results) == 6
+    assert [result.rule_id for result in results] == ["R1", "R2", "R3", "R4", "R5", "R6"]
 
 
 def test_r2_contradiction_without_execution_trail() -> None:
@@ -105,6 +105,17 @@ def test_r2_contradiction_without_execution_trail() -> None:
     result = rule_r2_no_execution_trail(ctx)
     assert result.status == "contradiction"
     assert "ghostrunner.exe" in result.detail
+
+
+def test_r3_phantom_logon_fixture() -> None:
+    pslist = json.loads((REPO_ROOT / "examples/sample-verifier/r3-pslist.json").read_text())
+    security = json.loads((REPO_ROOT / "examples/sample-verifier/r3-security.json").read_text())
+    ctx = VerifyContext.from_tool_payloads(pslist_data=pslist, security_data=security)
+    from postmortem_verify.rules import rule_r3_phantom_logon
+
+    result = rule_r3_phantom_logon(ctx)
+    assert result.status == "contradiction"
+    assert "phantom.admin" in result.detail
 
 
 def test_r4_contradiction_on_timestomp_fixture() -> None:

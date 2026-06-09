@@ -1,0 +1,10 @@
+{
+  "case_id": "cold-box-lab",
+  "lab_expected": [
+    {"id": "LAB-R1", "tags": ["R1", "self-correction"], "keywords": ["hidden", "psscan", "pslist"]},
+    {"id": "LAB-R3", "tags": ["R3", "phantom_logon"], "keywords": ["logon", "session", "phantom"]},
+    {"id": "LAB-R4", "tags": ["R4", "timestomp"], "keywords": ["timestomp", "mft"]},
+    {"id": "LAB-R5", "tags": ["R5", "ghost_binary"], "keywords": ["prefetch", "ghost", "missing"]},
+    {"id": "LAB-R6", "tags": ["R6", "orphan_connection"], "keywords": ["orphan", "connection", "netscan"]}
+  ]
+}

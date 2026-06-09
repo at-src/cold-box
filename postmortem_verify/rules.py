@@ -200,6 +200,62 @@ def rule_r2_no_execution_trail(ctx: VerifyContext) -> RuleResult:
     )
 
 
+def rule_r3_phantom_logon(ctx: VerifyContext) -> RuleResult:
+    """R3: successful logon in security events with no matching memory session."""
+    if not ctx.security_events:
+        return RuleResult("R3", "phantom_logon", "skipped", "security event input missing", [])
+    if not ctx.pslist_processes:
+        return RuleResult("R3", "phantom_logon", "skipped", "pslist missing", [])
+
+    memory_sessions: set[str] = set()
+    for proc in ctx.pslist_processes:
+        sid = proc.get("session_id")
+        if sid is not None and str(sid).strip() not in {"", "0"}:
+            memory_sessions.add(str(sid))
+
+    phantoms: list[dict[str, Any]] = []
+    for event in ctx.security_events:
+        if int(event.get("event_id", 0)) != 4624:
+            continue
+        logon_type = int(event.get("logon_type", 0))
+        if logon_type not in {2, 3, 10}:
+            continue
+        session_id = event.get("session_id")
+        if session_id is None:
+            continue
+        sid = str(session_id)
+        if sid not in memory_sessions:
+            phantoms.append(event)
+
+    sources: list[dict[str, Any]] = []
+    sec_ref = _audit_ref(ctx.security_audit_id, "disk_parse_evtx", ctx.security_source)
+    ps_ref = _audit_ref(ctx.pslist_audit_id, "mem_pslist", ctx.pslist_source)
+    if sec_ref:
+        sources.append(sec_ref)
+    if ps_ref:
+        sources.append(ps_ref)
+    for event in phantoms:
+        sources.append({"type": "logon_event", **event})
+
+    if phantoms:
+        users = ", ".join(str(e.get("user", "?")) for e in phantoms[:5])
+        return RuleResult(
+            "R3",
+            "phantom_logon",
+            "contradiction",
+            f"{len(phantoms)} successful logon(s) with no memory session ({users})",
+            sources,
+        )
+
+    return RuleResult(
+        "R3",
+        "phantom_logon",
+        "pass",
+        "All checked logons have matching memory session activity",
+        sources,
+    )
+
+
 def rule_r4_timestomp(ctx: VerifyContext) -> RuleResult:
     """R4: MFT $SI timestamp predates or contradicts $FN for the same entry."""
     findings: list[dict[str, Any]] = []

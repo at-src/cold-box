@@ -1,0 +1,31 @@
+{
+  "source": "synthetic-r3",
+  "processes": [
+    {
+      "pid": 412,
+      "ppid": 4,
+      "name": "explorer.exe",
+      "offset": "0xdeadbeef",
+      "threads": 12,
+      "handles": 400,
+      "session_id": "1",
+      "wow64": false,
+      "create_time": "2026-04-02T14:00:00",
+      "exit_time": "",
+      "file_output": "Disabled"
+    },
+    {
+      "pid": 888,
+      "ppid": 412,
+      "name": "cmd.exe",
+      "offset": "0xcafebabe",
+      "threads": 1,
+      "handles": 20,
+      "session_id": "1",
+      "wow64": false,
+      "create_time": "2026-04-02T14:10:05",
+      "exit_time": "",
+      "file_output": "Disabled"
+    }
+  ]
+}

@@ -31,7 +31,7 @@ def test_synthetic_run_self_correction(tmp_path: Path, monkeypatch: pytest.Monke
     assert state.done is True
     assert state.self_corrected is True
     assert state.phase == "finalize"
-    assert state.confidence == 0.9
+    assert state.confidence == 0.88
     assert "hidden" in state.hypothesis.lower() or "unlinked" in state.hypothesis.lower()
 
     out = case_dir(config.case_id)
@@ -78,6 +78,25 @@ def test_max_iterations_partial_closeout(tmp_path: Path, monkeypatch: pytest.Mon
     state = run_investigation(config)
     assert state.done is True
     assert "partial" in state.last_notes or state.iteration == 1
+
+
+def test_lab_profile_multi_finding(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CASE_OUTPUT", str(tmp_path / "cases"))
+    monkeypatch.setenv("EVIDENCE_ROOT", str(REPO_ROOT / "examples" / "sample-evidence"))
+    config = AgentConfig(
+        case_id="agent-lab",
+        evidence_case=".",
+        mode="deterministic",
+        profile="lab",
+        max_iterations=30,
+        fixture_dir=FIXTURE_DIR,
+    )
+    state = run_investigation(config)
+    assert state.done is True
+    assert state.self_corrected is True
+    assert len(state.findings) >= 4
+    tags = {tag for f in state.findings for tag in f.get("tags", [])}
+    assert "R1" in tags or any("hidden" in f["claim"].lower() for f in state.findings)
 
 
 def test_cli_synthetic(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

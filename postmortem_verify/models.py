@@ -32,6 +32,7 @@ class VerifyContext:
     mft_records: list[dict[str, Any]] | None = None
     timestomp_findings: list[dict[str, Any]] | None = None
     netscan_connections: list[dict[str, Any]] | None = None
+    security_events: list[dict[str, Any]] | None = None
     evidence_basenames: set[str] | None = None
 
     pslist_audit_id: str | None = None
@@ -40,6 +41,7 @@ class VerifyContext:
     prefetch_audit_id: str | None = None
     mft_audit_id: str | None = None
     netscan_audit_id: str | None = None
+    security_audit_id: str | None = None
 
     pslist_source: str | None = None
     psscan_source: str | None = None
@@ -47,6 +49,7 @@ class VerifyContext:
     prefetch_source: str | None = None
     mft_source: str | None = None
     netscan_source: str | None = None
+    security_source: str | None = None
 
     timestomp_tolerance_seconds: int = 1
 
@@ -61,6 +64,7 @@ class VerifyContext:
         mft_data: dict[str, Any] | None = None,
         netscan_data: dict[str, Any] | None = None,
         timestomp_data: dict[str, Any] | None = None,
+        security_data: dict[str, Any] | None = None,
         evidence_root: str | Path | None = None,
         pslist_audit_id: str | None = None,
         psscan_audit_id: str | None = None,
@@ -68,6 +72,7 @@ class VerifyContext:
         prefetch_audit_id: str | None = None,
         mft_audit_id: str | None = None,
         netscan_audit_id: str | None = None,
+        security_audit_id: str | None = None,
         timestomp_tolerance_seconds: int = 1,
     ) -> VerifyContext:
         mft_records = _extract_mft_records(mft_data)
@@ -85,6 +90,7 @@ class VerifyContext:
             mft_records=mft_records,
             timestomp_findings=timestomp_findings,
             netscan_connections=_extract_connections(netscan_data),
+            security_events=_extract_security_events(security_data),
             evidence_basenames=basenames,
             pslist_audit_id=pslist_audit_id,
             psscan_audit_id=psscan_audit_id,
@@ -92,12 +98,14 @@ class VerifyContext:
             prefetch_audit_id=prefetch_audit_id,
             mft_audit_id=mft_audit_id or (timestomp_data or {}).get("audit_id"),
             netscan_audit_id=netscan_audit_id,
+            security_audit_id=security_audit_id,
             pslist_source=(pslist_data or {}).get("source"),
             psscan_source=(psscan_data or {}).get("source"),
             amcache_source=(amcache_data or {}).get("source"),
             prefetch_source=(prefetch_data or {}).get("source"),
             mft_source=(mft_data or timestomp_data or {}).get("source"),
             netscan_source=(netscan_data or {}).get("source"),
+            security_source=(security_data or {}).get("source"),
             timestomp_tolerance_seconds=timestomp_tolerance_seconds,
         )
 
@@ -180,6 +188,19 @@ def _extract_timestomp_rows_as_mft(payload: dict[str, Any]) -> list[dict[str, An
             row["FullPath"] = row["path"]
         rows.append(row)
     return rows or None
+
+
+def _extract_security_events(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    events = payload.get("events")
+    if events is None:
+        records = payload.get("records")
+        if isinstance(records, list):
+            events = records
+    if events is None:
+        return None
+    return list(events)
 
 
 def _extract_connections(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:

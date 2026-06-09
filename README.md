@@ -146,6 +146,56 @@ cold-box-report generate --case-id synthetic-demo
 
 `report.md` includes executive summary, timeline (from progress.jsonl), confirmed / inference / unresolved sections, and audit chain status.
 
+## Quick demos
+
+```bash
+# R1 self-correction (~4s, synthetic fixtures)
+bash examples/demo-run.sh
+
+# Multi-finding lab (disk + memory correlation, 7 findings)
+bash examples/demo-lab-run.sh
+
+# Accuracy + bypass
+python scripts/measure_accuracy.py --agent
+
+# Ali Hadi (requires /evidence + cache — see docs/CASE-ALI-HADI.md)
+bash scripts/extract_ali_hadi_disk.sh
+bash scripts/cache_ali_hadi_memory.sh
+bash examples/demo-ali-hadi.sh
+```
+
+## Agent modes
+
+| Flag | Behavior |
+|------|----------|
+| `--synthetic` | Fixture-backed R1 self-correction (CI) |
+| `--profile lab` | Multi-finding cold-box-lab playbook |
+| `--mode llm` | Anthropic-driven tool loop + verifier feedback |
+| `--from-cache DIR` | Replay cached Vol JSON on real memory |
+
+```bash
+export ANTHROPIC_API_KEY=...   # see .env.example
+cold-box-agent run --mode llm --case-id live-1 \
+  --evidence-case ali-hadi-1 \
+  --memory ali-hadi-1/memdump/memdump.mem \
+  --from-cache "$HOME/cases/ali-hadi-1/cache"
+```
+
+## Verifier R1–R6
+
+Deterministic cross-source rules — **not** the LLM. See `docs/ARCHITECTURE.md`.
+
+## Submission map
+
+| Hackathon item | Location |
+|----------------|----------|
+| Architecture | `docs/ARCHITECTURE.md` |
+| Datasets | `docs/DATASETS.md` |
+| Accuracy | `docs/ACCURACY-REPORT.md`, `docs/accuracy-latest.json` |
+| Skills | `skills/` |
+| Bypass proof | `tests/test_mcp_bypass.py` |
+| License | `LICENSE` |
+
 ## License
 
-MIT (to be added before public release)
+MIT — see [LICENSE](LICENSE).

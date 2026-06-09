@@ -1,4 +1,4 @@
-"""Deterministic investigation loop (scripted phases, no LLM)."""
+"""Deterministic and profile-driven investigation loops."""
 
 from __future__ import annotations
 
@@ -10,30 +10,57 @@ from typing import Any
 from postmortem_agent.progress import append_progress, progress_log_path
 from postmortem_agent.state import AgentConfig, InvestigationState
 from postmortem_agent.tools import invoke_tool
+from postmortem_agent.verifier_bridge import build_verify_context, run_lab_verifier
 from postmortem_mcp.config import case_dir
 from postmortem_report.gate import validate_findings
 from postmortem_report.report import write_report
-from postmortem_verify import VerifyContext, run_verifier
+from postmortem_verify import run_verifier
+from postmortem_verify.models import RuleResult
 
 
 @dataclass
 class _Step:
     phase: str
     tool: str
+    fixture: str | None = None
 
 
-DEFAULT_PLAN = [
+R1_PLAN = [
     _Step("triage", "evidence_manifest"),
     _Step("hypothesis", "mem_pslist"),
     _Step("validate", "mem_psscan"),
 ]
 
+LAB_DISK_STEPS = [
+    _Step("disk", "disk_parse_prefetch"),
+    _Step("disk", "disk_detect_timestomp"),
+    _Step("disk", "mem_netscan"),
+    _Step("disk", "security_events"),
+    _Step("validate", "mem_pslist", "r3-pslist.json"),
+]
+
 
 def run_investigation(config: AgentConfig) -> InvestigationState:
+    if config.mode == "llm":
+        from postmortem_agent.live import run_llm_investigation
+
+        return run_llm_investigation(config)
+
     state = InvestigationState()
     out_dir = case_dir(config.case_id)
     progress_path = progress_log_path(out_dir)
 
+    if config.profile == "lab":
+        return _run_lab_profile(state, config, out_dir, progress_path)
+    return _run_r1_profile(state, config, out_dir, progress_path)
+
+
+def _run_r1_profile(
+    state: InvestigationState,
+    config: AgentConfig,
+    out_dir: Path,
+    progress_path: Path,
+) -> InvestigationState:
     plan_index = 0
     awaiting_self_correction = False
 
@@ -46,13 +73,18 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
             _finalize(state, out_dir, progress_path, case_id=config.case_id, partial=False)
             continue
 
-        if plan_index >= len(DEFAULT_PLAN):
+        if plan_index >= len(R1_PLAN):
             _finalize(state, out_dir, progress_path, case_id=config.case_id, partial=False)
             break
 
-        step = DEFAULT_PLAN[plan_index]
+        step = R1_PLAN[plan_index]
         state.phase = step.phase
-        result = invoke_tool(step.tool, config=config, iteration=state.iteration)
+        result = invoke_tool(
+            step.tool,
+            config=config,
+            iteration=state.iteration,
+            fixture_override=step.fixture,
+        )
         state.tool_results[step.tool] = result
 
         notes = f"executed {step.tool}: ok={result.get('ok')}"
@@ -67,8 +99,8 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
             notes = "initial hypothesis from mem_pslist"
 
         if step.phase == "validate" and result.get("ok"):
-            notes = _run_verifier(state)
-            r1 = state.verifier_results[0] if state.verifier_results else None
+            notes = _run_verifier_r1(state, config)
+            r1 = _rule(state, "R1")
             if r1 and r1.status == "contradiction":
                 state.unresolved.append(f"R1 hidden_process: {r1.detail}")
                 state.confidence = 0.4
@@ -88,14 +120,91 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
     return state
 
 
-def _run_verifier(state: InvestigationState) -> str:
-    ctx = VerifyContext.from_tool_payloads(
-        pslist_data=state.pslist_payload(),
-        psscan_data=state.psscan_payload(),
-        pslist_audit_id=state.audit_id("mem_pslist"),
-        psscan_audit_id=state.audit_id("mem_psscan"),
-    )
-    state.verifier_results = run_verifier(ctx)
+def _run_lab_profile(
+    state: InvestigationState,
+    config: AgentConfig,
+    out_dir: Path,
+    progress_path: Path,
+) -> InvestigationState:
+    config.prefetch_relpath = config.prefetch_relpath or "disk/Windows/Prefetch/COLDLOADER.EXE-B1C2D3E4.pf"
+    config.mft_relpath = config.mft_relpath or "disk/$MFT.csv"
+
+    plan = list(R1_PLAN)
+    awaiting_self_correction = False
+    plan_index = 0
+    post_r1 = False
+
+    while not state.done and state.iteration < config.max_iterations:
+        state.iteration += 1
+
+        if awaiting_self_correction:
+            _run_self_correction(state, config, progress_path)
+            awaiting_self_correction = False
+            post_r1 = True
+            plan_index = 0
+            continue
+
+        if post_r1:
+            if plan_index >= len(LAB_DISK_STEPS):
+                state.verifier_results = run_lab_verifier(state, config)
+                notes = _summarize_verifier(state)
+                _write_progress(state, progress_path, notes)
+                _finalize(state, out_dir, progress_path, case_id=config.case_id, partial=False)
+                break
+            step = LAB_DISK_STEPS[plan_index]
+        else:
+            if plan_index >= len(plan):
+                break
+            step = plan[plan_index]
+
+        state.phase = step.phase
+        if step.tool == "disk_parse_prefetch":
+            result = invoke_tool(step.tool, config=config, iteration=state.iteration)
+        elif step.tool == "disk_detect_timestomp":
+            result = invoke_tool(step.tool, config=config, iteration=state.iteration)
+        elif step.tool == "security_events":
+            result = invoke_tool(
+                "security_events",
+                config=config,
+                iteration=state.iteration,
+                fixture_override="r3-security.json",
+            )
+        else:
+            result = invoke_tool(
+                step.tool,
+                config=config,
+                iteration=state.iteration,
+                fixture_override=step.fixture,
+            )
+        state.tool_results[step.tool] = result
+
+        notes = f"executed {step.tool}: ok={result.get('ok')}"
+        if step.phase == "hypothesis" and result.get("ok"):
+            state.hypothesis = "Operator workstation looks routine; low suspicion"
+            state.confidence = 0.55
+
+        if not post_r1 and step.phase == "validate" and result.get("ok"):
+            notes = _run_verifier_r1(state, config)
+            r1 = _rule(state, "R1")
+            if r1 and r1.status == "contradiction":
+                state.confidence = 0.35
+                notes = "self-correction: R1 fired before disk correlation"
+                awaiting_self_correction = True
+                _write_progress(state, progress_path, notes)
+                plan_index += 1
+                continue
+
+        _write_progress(state, progress_path, notes)
+        plan_index += 1
+
+    if not state.done:
+        _finalize(state, out_dir, progress_path, case_id=config.case_id, partial=True)
+    return state
+
+
+def _run_verifier_r1(state: InvestigationState, config: AgentConfig) -> str:
+    ctx = build_verify_context(state, config)
+    state.verifier_results = [run_verifier(ctx)[0]]
     r1 = state.verifier_results[0]
     if r1.status == "pass":
         state.hypothesis = "No hidden-process contradiction between pslist and psscan"
@@ -118,11 +227,25 @@ def _run_self_correction(
     state.hypothesis = (
         "Hidden/unlinked process in psscan absent from pslist; cmdline evidence collected"
     )
-    state.confidence = 0.9
-    state.unresolved = [item for item in state.unresolved if not item.startswith("R1 hidden_process:")]
+    state.confidence = 0.88
+    state.unresolved = [u for u in state.unresolved if not u.startswith("R1 hidden_process:")]
     notes = "self-correction: hypothesis revised after R1 contradiction and mem_cmdline"
     state.last_notes = notes
     _write_progress(state, progress_path, notes)
+
+
+def _rule(state: InvestigationState, rule_id: str) -> RuleResult | None:
+    for result in state.verifier_results:
+        if result.rule_id == rule_id:
+            return result
+    return None
+
+
+def _summarize_verifier(state: InvestigationState) -> str:
+    contradictions = [r.rule_id for r in state.verifier_results if r.status == "contradiction"]
+    if contradictions:
+        return f"verifier contradictions: {', '.join(contradictions)}"
+    return "verifier pass on all rules with inputs present"
 
 
 def _write_progress(state: InvestigationState, progress_path: Path, notes: str) -> None:
@@ -165,38 +288,65 @@ def _finalize(
 
 
 def _build_findings(state: InvestigationState, *, partial: bool) -> list[dict[str, Any]]:
+    audit_ids = state.all_audit_ids()
     findings: list[dict[str, Any]] = []
-    audit_ids = [
-        aid
-        for tool in ("evidence_manifest", "mem_pslist", "mem_psscan", "mem_cmdline")
-        if (aid := state.audit_id(tool))
-    ]
+    idx = 1
 
     if state.self_corrected:
         findings.append(
             {
-                "id": "f-1",
+                "id": f"f-{idx}",
                 "claim": state.hypothesis,
                 "audit_ids": audit_ids,
                 "confidence": state.confidence,
                 "status": "confirmed",
+                "tags": ["R1", "self-correction"],
             }
         )
-    elif state.verifier_results and state.verifier_results[0].status == "pass":
-        findings.append(
-            {
-                "id": "f-1",
-                "claim": state.hypothesis,
-                "audit_ids": audit_ids,
-                "confidence": state.confidence,
-                "status": "confirmed",
-            }
-        )
+        idx += 1
 
-    for idx, item in enumerate(state.unresolved, start=1):
+    rule_claims = {
+        "R3": "Successful logon events lack matching memory session (phantom logon)",
+        "R4": "MFT timestomp anomaly detected on disk",
+        "R5": "Prefetch references executable missing from evidence tree",
+        "R6": "Network connection owned by PID absent from pslist",
+        "R2": "Process in memory without disk execution trail",
+    }
+
+    for result in state.verifier_results:
+        if result.status != "contradiction":
+            continue
+        claim = rule_claims.get(result.rule_id, result.detail)
         findings.append(
             {
-                "id": f"u-{idx}",
+                "id": f"f-{idx}",
+                "claim": claim,
+                "audit_ids": audit_ids,
+                "confidence": 0.85,
+                "status": "confirmed",
+                "tags": [result.rule_id, result.rule_name],
+            }
+        )
+        idx += 1
+
+    if not findings and state.verifier_results:
+        r1 = _rule(state, "R1")
+        if r1 and r1.status == "pass":
+            findings.append(
+                {
+                    "id": "f-1",
+                    "claim": state.hypothesis,
+                    "audit_ids": audit_ids,
+                    "confidence": state.confidence,
+                    "status": "confirmed",
+                    "tags": ["R1"],
+                }
+            )
+
+    for uidx, item in enumerate(state.unresolved, start=1):
+        findings.append(
+            {
+                "id": f"u-{uidx}",
                 "claim": item,
                 "audit_ids": audit_ids,
                 "confidence": state.confidence,

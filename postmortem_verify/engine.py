@@ -6,6 +6,7 @@ from postmortem_verify.models import RuleResult, VerifyContext
 from postmortem_verify.rules import (
     rule_r1_hidden_process,
     rule_r2_no_execution_trail,
+    rule_r3_phantom_logon,
     rule_r4_timestomp,
     rule_r5_ghost_binary,
     rule_r6_orphan_connection,
@@ -14,6 +15,7 @@ from postmortem_verify.rules import (
 ALL_RULES = [
     rule_r1_hidden_process,
     rule_r2_no_execution_trail,
+    rule_r3_phantom_logon,
     rule_r4_timestomp,
     rule_r5_ghost_binary,
     rule_r6_orphan_connection,
