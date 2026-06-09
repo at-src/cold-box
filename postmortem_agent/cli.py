@@ -24,6 +24,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     fixture_dir = Path(args.fixture_dir) if args.fixture_dir else None
     cache_dir = Path(args.from_cache).expanduser() if args.from_cache else None
     extracted = Path(args.extracted_root).expanduser() if args.extracted_root else None
+    artifact_root = Path(args.artifact_root).expanduser() if args.artifact_root else None
 
     config = AgentConfig(
         case_id=args.case_id,
@@ -38,6 +39,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         max_iterations=args.max_iterations,
         fixture_dir=fixture_dir,
         cache_dir=cache_dir,
+        artifact_root=artifact_root,
         extracted_root=extracted,
         llm_model=args.llm_model,
     )
@@ -107,6 +109,10 @@ def main(argv: list[str] | None = None) -> int:
     p_run.add_argument(
         "--from-cache",
         help="Directory with cached mem_*.json for fast replay on real cases",
+    )
+    p_run.add_argument(
+        "--artifact-root",
+        help="Writable case root containing extracted/ and cache/ (Ali Hadi disk tools)",
     )
     p_run.add_argument(
         "--extracted-root",

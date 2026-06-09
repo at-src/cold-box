@@ -27,6 +27,7 @@ class AgentConfig:
     max_iterations: int = 10
     fixture_dir: Path | None = None
     cache_dir: Path | None = None
+    artifact_root: Path | None = None
     extracted_root: Path | None = None
     llm_model: str | None = None
 

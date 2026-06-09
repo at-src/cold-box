@@ -47,7 +47,7 @@ def _load_json_records(output_dir: Path) -> list[dict[str, Any]]:
 def _load_csv_records(output_dir: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for csv_path in sorted(output_dir.glob("*.csv")):
-        with csv_path.open(newline="", encoding="utf-8") as handle:
+        with csv_path.open(newline="", encoding="utf-8-sig") as handle:
             records.extend(dict(row) for row in csv.DictReader(handle))
     return records
 
@@ -82,24 +82,25 @@ def parse_evtx(
     timeout_sec: int = 600,
 ) -> dict[str, Any]:
     out_dir = scratch_dir / f"evtx-{secrets.token_hex(4)}"
+    csv_name = f"{evtx_path.stem}.csv"
     run_json_tool(
         binary=binary,
         input_path=evtx_path,
         output_dir=out_dir,
-        args=["-f", str(evtx_path), "--json", str(out_dir)],
+        args=["-f", str(evtx_path), "--csv", str(out_dir), "--csvf", csv_name],
         timeout_sec=timeout_sec,
     )
-    records = _load_json_records(out_dir)
+    records = _load_csv_records(out_dir)
     capped = cap_records(records, max_records)
     return {
         "source": str(evtx_path),
-        "parser": "EvtxECmd",
+        "parser": "EvtxECmd-csv",
         **capped,
     }
 
 
 def parse_mft_csv(mft_csv_path: Path, *, max_records: int) -> dict[str, Any]:
-    with mft_csv_path.open(newline="", encoding="utf-8") as handle:
+    with mft_csv_path.open(newline="", encoding="utf-8-sig") as handle:
         records = list(csv.DictReader(handle))
     capped = cap_records(records, max_records)
     return {

@@ -86,8 +86,8 @@ def test_run_verifier_returns_all_rules() -> None:
     processes = [_process(4, "System", "0x1")]
     ctx = VerifyContext(pslist_processes=processes, psscan_processes=processes)
     results = run_verifier(ctx)
-    assert len(results) == 6
-    assert [result.rule_id for result in results] == ["R1", "R2", "R3", "R4", "R5", "R6"]
+    assert len(results) == 7
+    assert [result.rule_id for result in results] == ["R1", "R2", "R3", "R4", "R5", "R6", "R7"]
 
 
 def test_r2_contradiction_without_execution_trail() -> None:
@@ -116,6 +116,15 @@ def test_r3_phantom_logon_fixture() -> None:
     result = rule_r3_phantom_logon(ctx)
     assert result.status == "contradiction"
     assert "phantom.admin" in result.detail
+
+
+def test_r7_memory_injection() -> None:
+    from postmortem_verify.rules import rule_r7_memory_injection
+
+    ctx = VerifyContext.from_tool_payloads(malfind_data={"finding_count": 2, "findings": [{}, {}]})
+    result = rule_r7_memory_injection(ctx)
+    assert result.status == "contradiction"
+    assert "2" in result.detail
 
 
 def test_r4_contradiction_on_timestomp_fixture() -> None:

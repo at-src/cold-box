@@ -18,7 +18,10 @@ def load_cached_tool(cache_dir: Path, tool: str) -> dict[str, Any] | None:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(payload, dict) and isinstance(payload.get("data"), dict):
         inner = payload["data"]
-        if "processes" in inner or "connections" in inner or "rows" in inner:
+        if any(
+            k in inner
+            for k in ("processes", "connections", "rows", "findings", "cmdlines", "finding_count")
+        ):
             return inner
     if isinstance(payload, dict) and "processes" in payload:
         return payload

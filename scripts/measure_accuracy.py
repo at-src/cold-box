@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -186,9 +187,83 @@ def run_bypass_smoke() -> dict[str, Any]:
     return {"bypass_tests_pass": proc.returncode == 0, "output": proc.stdout.strip()}
 
 
+def measure_agent_ali_hadi(case_output: Path) -> dict[str, Any]:
+    artifact = Path(os.environ.get("CASE_OUTPUT", str(Path.home() / "cases"))) / "ali-hadi-1"
+    env = {
+        **dict(os.environ),
+        "CASE_OUTPUT": str(case_output),
+        "EVIDENCE_ROOT": os.environ.get("EVIDENCE_ROOT", "/evidence"),
+    }
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "postmortem_agent.cli",
+            "run",
+            "--case-id",
+            "accuracy-ali-hadi",
+            "--evidence-case",
+            "ali-hadi-1",
+            "--memory",
+            "ali-hadi-1/memdump/memdump.mem",
+            "--profile",
+            "ali-hadi",
+            "--from-cache",
+            str(artifact / "cache"),
+            "--artifact-root",
+            str(artifact),
+            "--max-iterations",
+            "20",
+        ],
+        capture_output=True,
+        text=True,
+        cwd=str(REPO),
+        env=env,
+        check=False,
+    )
+    findings_path = case_output / "accuracy-ali-hadi" / "findings.json"
+    progress_path = case_output / "accuracy-ali-hadi" / "progress.jsonl"
+    findings: list[dict[str, Any]] = []
+    hallucinations = 0
+    if findings_path.is_file():
+        payload = json.loads(findings_path.read_text(encoding="utf-8"))
+        findings = payload.get("findings", [])
+        for finding in findings:
+            if finding.get("status") == "confirmed" and not finding.get("audit_ids"):
+                hallucinations += 1
+
+    gt_path = GROUND_TRUTH / "ali-hadi-1.json"
+    expected_rows: list[dict[str, Any]] = []
+    if gt_path.is_file():
+        gt = json.loads(gt_path.read_text(encoding="utf-8"))
+        expected_rows = [r for r in gt.get("expected_findings", []) if r.get("required", True)]
+
+    matched, missed = [], []
+    for row in expected_rows:
+        if _claim_matches(findings, row.get("keywords", []), row.get("tags")):
+            matched.append(row["id"])
+        else:
+            missed.append(row["id"])
+
+    return {
+        "mode": "agent_ali_hadi",
+        "agent_exit_code": proc.returncode,
+        "findings_count": len(findings),
+        "matched_required": matched,
+        "missed_required": missed,
+        "recall": len(matched) / max(1, len(expected_rows)),
+        "hallucination_count": hallucinations,
+        "self_corrected": "self-correction" in progress_path.read_text(encoding="utf-8")
+        if progress_path.is_file()
+        else False,
+        "findings": findings,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--agent", action="store_true", help="Also score agent lab profile run")
+    parser.add_argument("--agent", action="store_true", help="Score agent lab profile run")
+    parser.add_argument("--ali-hadi", action="store_true", help="Score agent on real Ali Hadi cached case")
     parser.add_argument("--json-out", help="Write full report JSON to path")
     args = parser.parse_args()
 
@@ -200,7 +275,12 @@ def main() -> int:
         import tempfile
 
         with tempfile.TemporaryDirectory() as tmp:
-            report["agent"] = measure_agent_lab(Path(tmp))
+            report["agent_lab"] = measure_agent_lab(Path(tmp))
+    if args.ali_hadi:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            report["agent_ali_hadi"] = measure_agent_ali_hadi(Path(tmp))
 
     text = json.dumps(report, indent=2, sort_keys=True)
     print(text)
@@ -209,8 +289,13 @@ def main() -> int:
 
     ok = report["verifier"]["recall"] == 1.0 and report["verifier"]["evidence_integrity_ok"]
     ok = ok and report["bypass"]["bypass_tests_pass"]
-    if args.agent:
-        ok = ok and report["agent"]["recall"] >= 0.6 and report["agent"]["hallucination_count"] == 0
+    if args.agent and "agent_lab" in report:
+        ok = ok and report["agent_lab"]["recall"] >= 0.8
+        ok = ok and report["agent_lab"]["hallucination_count"] == 0
+    if args.ali_hadi and "agent_ali_hadi" in report:
+        ok = ok and report["agent_ali_hadi"]["recall"] >= 0.8
+        ok = ok and report["agent_ali_hadi"]["self_corrected"]
+        ok = ok and report["agent_ali_hadi"]["findings_count"] >= 5
     return 0 if ok else 2
 
 

@@ -10,6 +10,7 @@ from postmortem_verify.rules import (
     rule_r4_timestomp,
     rule_r5_ghost_binary,
     rule_r6_orphan_connection,
+    rule_r7_memory_injection,
 )
 
 ALL_RULES = [
@@ -19,6 +20,7 @@ ALL_RULES = [
     rule_r4_timestomp,
     rule_r5_ghost_binary,
     rule_r6_orphan_connection,
+    rule_r7_memory_injection,
 ]
 
 

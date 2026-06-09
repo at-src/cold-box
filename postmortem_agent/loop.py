@@ -52,6 +52,10 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
 
     if config.profile == "lab":
         return _run_lab_profile(state, config, out_dir, progress_path)
+    if config.profile == "ali-hadi":
+        from postmortem_agent.ali_hadi import run_ali_hadi_profile
+
+        return run_ali_hadi_profile(state, config, out_dir, progress_path)
     return _run_r1_profile(state, config, out_dir, progress_path)
 
 

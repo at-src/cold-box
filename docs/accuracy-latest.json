@@ -1,17 +1,17 @@
 {
-  "agent": {
+  "agent_lab": {
     "agent_exit_code": 0,
     "findings": [
       {
         "audit_ids": [
-          "d7913952",
-          "7f7db4dc",
-          "7188c291",
-          "453737e4",
-          "62a9d0e4",
-          "e3cfe2eb",
-          "34ee765f",
-          "88660f7d"
+          "0dee690f",
+          "048e0a8c",
+          "3d3396a9",
+          "5b84f085",
+          "0be19915",
+          "9adf6bae",
+          "6594ee87",
+          "cf203909"
         ],
         "claim": "Hidden/unlinked process in psscan absent from pslist; cmdline evidence collected",
         "confidence": 0.88,
@@ -20,14 +20,14 @@
       },
       {
         "audit_ids": [
-          "d7913952",
-          "7f7db4dc",
-          "7188c291",
-          "453737e4",
-          "62a9d0e4",
-          "e3cfe2eb",
-          "34ee765f",
-          "88660f7d"
+          "0dee690f",
+          "048e0a8c",
+          "3d3396a9",
+          "5b84f085",
+          "0be19915",
+          "9adf6bae",
+          "6594ee87",
+          "cf203909"
         ],
         "claim": "3 suspicious process(es): 3 absent from pslist, 0 name mismatch",
         "confidence": 0.85,
@@ -36,14 +36,14 @@
       },
       {
         "audit_ids": [
-          "d7913952",
-          "7f7db4dc",
-          "7188c291",
-          "453737e4",
-          "62a9d0e4",
-          "e3cfe2eb",
-          "34ee765f",
-          "88660f7d"
+          "0dee690f",
+          "048e0a8c",
+          "3d3396a9",
+          "5b84f085",
+          "0be19915",
+          "9adf6bae",
+          "6594ee87",
+          "cf203909"
         ],
         "claim": "Process in memory without disk execution trail",
         "confidence": 0.85,
@@ -52,14 +52,14 @@
       },
       {
         "audit_ids": [
-          "d7913952",
-          "7f7db4dc",
-          "7188c291",
-          "453737e4",
-          "62a9d0e4",
-          "e3cfe2eb",
-          "34ee765f",
-          "88660f7d"
+          "0dee690f",
+          "048e0a8c",
+          "3d3396a9",
+          "5b84f085",
+          "0be19915",
+          "9adf6bae",
+          "6594ee87",
+          "cf203909"
         ],
         "claim": "Successful logon events lack matching memory session (phantom logon)",
         "confidence": 0.85,
@@ -68,14 +68,14 @@
       },
       {
         "audit_ids": [
-          "d7913952",
-          "7f7db4dc",
-          "7188c291",
-          "453737e4",
-          "62a9d0e4",
-          "e3cfe2eb",
-          "34ee765f",
-          "88660f7d"
+          "0dee690f",
+          "048e0a8c",
+          "3d3396a9",
+          "5b84f085",
+          "0be19915",
+          "9adf6bae",
+          "6594ee87",
+          "cf203909"
         ],
         "claim": "MFT timestomp anomaly detected on disk",
         "confidence": 0.85,
@@ -84,14 +84,14 @@
       },
       {
         "audit_ids": [
-          "d7913952",
-          "7f7db4dc",
-          "7188c291",
-          "453737e4",
-          "62a9d0e4",
-          "e3cfe2eb",
-          "34ee765f",
-          "88660f7d"
+          "0dee690f",
+          "048e0a8c",
+          "3d3396a9",
+          "5b84f085",
+          "0be19915",
+          "9adf6bae",
+          "6594ee87",
+          "cf203909"
         ],
         "claim": "Prefetch references executable missing from evidence tree",
         "confidence": 0.85,
@@ -100,14 +100,14 @@
       },
       {
         "audit_ids": [
-          "d7913952",
-          "7f7db4dc",
-          "7188c291",
-          "453737e4",
-          "62a9d0e4",
-          "e3cfe2eb",
-          "34ee765f",
-          "88660f7d"
+          "0dee690f",
+          "048e0a8c",
+          "3d3396a9",
+          "5b84f085",
+          "0be19915",
+          "9adf6bae",
+          "6594ee87",
+          "cf203909"
         ],
         "claim": "Network connection owned by PID absent from pslist",
         "confidence": 0.85,
@@ -131,7 +131,7 @@
   },
   "bypass": {
     "bypass_tests_pass": true,
-    "output": ".....                                                                    [100%]\n5 passed in 1.06s"
+    "output": ".....                                                                    [100%]\n5 passed in 1.05s"
   },
   "verifier": {
     "contradictions_fired": [
@@ -262,6 +262,13 @@
           }
         ],
         "status": "contradiction"
+      },
+      "R7": {
+        "detail": "malfind output missing",
+        "rule_id": "R7",
+        "rule_name": "memory_injection",
+        "sources": [],
+        "status": "skipped"
       }
     },
     "evidence_integrity_ok": true,

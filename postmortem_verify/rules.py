@@ -200,6 +200,35 @@ def rule_r2_no_execution_trail(ctx: VerifyContext) -> RuleResult:
     )
 
 
+def rule_r7_memory_injection(ctx: VerifyContext) -> RuleResult:
+    """R7: malfind reports injected/RWX memory regions."""
+    count = ctx.malfind_finding_count
+    if ctx.malfind_findings and not count:
+        count = len(ctx.malfind_findings)
+    if not count:
+        return RuleResult(
+            "R7",
+            "memory_injection",
+            "skipped",
+            "malfind output missing",
+            [],
+        )
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.malfind_audit_id, "mem_malfind", None)
+    if audit:
+        sources.append(audit)
+    sources.append({"type": "malfind", "finding_count": count})
+
+    return RuleResult(
+        "R7",
+        "memory_injection",
+        "contradiction",
+        f"{count} injected/RWX memory region(s) detected by malfind",
+        sources,
+    )
+
+
 def rule_r3_phantom_logon(ctx: VerifyContext) -> RuleResult:
     """R3: successful logon in security events with no matching memory session."""
     if not ctx.security_events:

@@ -26,6 +26,8 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         timestomp_data=_data(state, "disk_detect_timestomp"),
         netscan_data=_data(state, "mem_netscan"),
         security_data=state.security_payload(),
+        malfind_data=_data(state, "mem_malfind"),
+        evtx_data=_data(state, "disk_parse_evtx"),
         evidence_root=evidence_root,
         pslist_audit_id=state.audit_id("mem_pslist"),
         psscan_audit_id=state.audit_id("mem_psscan"),
@@ -34,6 +36,8 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         mft_audit_id=state.audit_id("disk_parse_mft"),
         netscan_audit_id=state.audit_id("mem_netscan"),
         security_audit_id=state.audit_id("security_events"),
+        malfind_audit_id=state.audit_id("mem_malfind"),
+        evtx_audit_id=state.audit_id("disk_parse_evtx"),
     )
 
 
@@ -78,7 +82,7 @@ def run_lab_verifier(state: InvestigationState, config: AgentConfig) -> list[Rul
         "R6",
     )
 
-    return [by_id[f"R{i}"] for i in range(1, 7) if f"R{i}" in by_id]
+    return [by_id[f"R{i}"] for i in range(1, 8) if f"R{i}" in by_id]
 
 
 def _data(state: InvestigationState, tool: str) -> dict | None:
