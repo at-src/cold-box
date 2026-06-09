@@ -1,0 +1,8 @@
+{
+  "source": "synthetic",
+  "process_count": 2,
+  "processes": [
+    {"pid": 4, "name": "System", "ppid": 0},
+    {"pid": 620, "name": "lsass.exe", "ppid": 532}
+  ]
+}

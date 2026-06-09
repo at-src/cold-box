@@ -1,0 +1,5 @@
+Entry,ParentPath,FileName,Created0x10,Created0x30,LastModified0x10,LastAccess0x10
+10001,.\Windows\System32,cmd.exe,2026-04-01 09:00:00,2026-04-01 09:00:00,2026-04-01 09:00:00,2026-04-01 09:00:00
+20002,.\Users\operator\Downloads,coldloader.exe,2026-04-02 14:10:00,2026-04-02 14:10:00,2026-04-02 14:10:00,2026-04-02 14:12:00
+21003,.\Users\operator\Downloads,stage-dropper.exe,2026-04-01 08:00:00,2026-04-02 14:11:30,2026-04-01 08:00:00,2026-04-02 14:11:30
+22004,.\Windows\Prefetch,COLDLOADER.EXE-B1C2D3E4.pf,2026-04-02 14:10:05,2026-04-02 14:10:05,2026-04-02 14:10:05,2026-04-02 14:10:05

@@ -1,0 +1,10 @@
+{
+  "source": "cold-box-lab-01",
+  "prefetch": {
+    "executable": "STAGE-RUNNER.EXE",
+    "path_hash": "DEADBEEF",
+    "run_count": 1,
+    "last_run": "2026-04-02T14:11:00",
+    "source": "cold-box-lab-01"
+  }
+}

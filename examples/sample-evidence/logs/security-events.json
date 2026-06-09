@@ -1,0 +1,4 @@
+[
+  {"event_id": 4624, "time": "2026-04-02T14:09:00", "user": "operator", "logon_type": 2, "note": "stub for future R3 phantom_logon"},
+  {"event_id": 4688, "time": "2026-04-02T14:10:05", "process": "COLDLOADER.EXE", "note": "stub process creation"}
+]

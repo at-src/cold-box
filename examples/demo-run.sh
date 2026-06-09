@@ -20,3 +20,5 @@ echo "--- findings ---"
 cat "${CASE_OUTPUT}/${CASE_ID}/findings.json"
 echo "--- report (head) ---"
 head -n 30 "${CASE_OUTPUT}/${CASE_ID}/report.md"
+echo "--- bypass guardrails ---"
+python -m pytest tests/test_mcp_bypass.py -q

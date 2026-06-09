@@ -1,0 +1,8 @@
+{
+  "source": "synthetic",
+  "connection_count": 2,
+  "connections": [
+    {"PID": "620", "Local Address": "10.0.0.1:445", "Foreign Address": "10.0.0.2:50123", "State": "ESTABLISHED"},
+    {"PID": "31337", "Local Address": "10.0.0.1:8080", "Foreign Address": "198.51.100.77:443", "State": "ESTABLISHED"}
+  ]
+}

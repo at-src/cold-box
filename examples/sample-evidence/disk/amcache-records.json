@@ -1,0 +1,8 @@
+{
+  "source": "cold-box-lab-01",
+  "record_count": 2,
+  "records": [
+    {"FullPath": "C:\\Windows\\System32\\cmd.exe", "Name": "cmd.exe"},
+    {"FullPath": "C:\\Windows\\System32\\notepad.exe", "Name": "notepad.exe"}
+  ]
+}
