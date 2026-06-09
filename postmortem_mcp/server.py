@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from fastmcp import FastMCP
 
-from postmortem_mcp.tools.memory import mem_pslist as mem_pslist_impl
+from postmortem_mcp.tools import WAVE1_TOOLS
 
 INSTRUCTIONS = """
 cold-box MCP exposes deterministic DFIR tools for dead-host disk + memory analysis.
@@ -12,22 +14,28 @@ cold-box MCP exposes deterministic DFIR tools for dead-host disk + memory analys
 Rules:
 - Evidence under EVIDENCE_ROOT is read-only.
 - All tool output is structured JSON with an audit_id for traceability.
-- Writes go to CASE_OUTPUT/<case_id>/ only (audit.jsonl, reports, etc.).
+- Writes go to CASE_OUTPUT/<case_id>/ only (audit.jsonl, scratch, reports).
 
-Start a run by choosing a case_id, then call tools with paths relative to EVIDENCE_ROOT
-or absolute paths under the evidence root.
+Wave 1 tools:
+- mem_pslist, mem_psscan, mem_cmdline — memory image paths (.mem, .raw, .dmp, ...)
+- disk_parse_prefetch (.pf), disk_parse_amcache (.hve), disk_parse_evtx (.evtx), disk_parse_mft
+- evidence_manifest — SHA-256 manifest for a case directory under EVIDENCE_ROOT
+
+Configure backends via env: VOL3, PREFETCH_PARSER, EVTX_ECMD, AMCACHE_PARSER, MFTECMD.
 """.strip()
 
 
 def create_server() -> FastMCP:
     mcp = FastMCP(name="cold-box", instructions=INSTRUCTIONS)
 
-    @mcp.tool
-    def mem_pslist(case_id: str, memory_relpath: str, iteration: int = 0) -> dict:
-        """List Windows processes from a memory image using Volatility pslist."""
-        return mem_pslist_impl(case_id, memory_relpath, iteration=iteration)
+    for tool_fn in WAVE1_TOOLS:
+        _register_tool(mcp, tool_fn)
 
     return mcp
+
+
+def _register_tool(mcp: FastMCP, tool_fn: Callable) -> None:
+    mcp.tool(name=tool_fn.__name__, description=tool_fn.__doc__ or "")(tool_fn)
 
 
 def main() -> int:

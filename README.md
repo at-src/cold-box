@@ -66,6 +66,31 @@ cold-box-mcp
 # Example memory path: ali-hadi-1/memdump/memdump.mem
 ```
 
+## Step 4 — Wave 1 tool set (8 tools)
+
+All tools append to `CASE_OUTPUT/<case_id>/audit.jsonl` and return `audit_id`.
+
+| Tool | Input |
+|------|--------|
+| `mem_pslist` | Memory image under `EVIDENCE_ROOT` (`.mem`, `.raw`, `.dmp`, …) |
+| `mem_psscan` | Same |
+| `mem_cmdline` | Same |
+| `disk_parse_prefetch` | `.pf` file path |
+| `disk_parse_amcache` | `Amcache.hve` path |
+| `disk_parse_evtx` | `.evtx` file path |
+| `disk_parse_mft` | Extracted `$MFT` / `.mft` file |
+| `evidence_manifest` | Case directory under `EVIDENCE_ROOT` |
+
+Backend env vars (optional):
+
+```bash
+export VOL3=/opt/postmortem/bin/vol
+export PREFETCH_PARSER=/opt/postmortem/tools/parse_prefetch.py
+export EVTX_ECMD=EvtxECmd
+export AMCACHE_PARSER=AmcacheParser
+export MFTECMD=MFTECmd
+```
+
 ## License
 
 MIT (to be added before public release)

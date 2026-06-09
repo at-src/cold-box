@@ -2,10 +2,62 @@
 
 from __future__ import annotations
 
-from postmortem_evidence.guard import EvidencePathError, resolve_read_path
+from typing import Any
+
 from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.config import vol3_binary
-from postmortem_mcp.vol import run_pslist
+from postmortem_mcp.paths import resolve_memory_path
+from postmortem_mcp.vol import run_cmdline, run_pslist, run_psscan
+
+
+def _cap_rows(data: dict[str, Any], key: str, count_key: str, max_records: int) -> dict[str, Any]:
+    rows = data[key]
+    total = len(rows)
+    if total > max_records:
+        data["truncated"] = True
+        data["record_count"] = total
+        data["returned_count"] = max_records
+        data[key] = rows[:max_records]
+        data[count_key] = max_records
+    else:
+        data["truncated"] = False
+        data["record_count"] = total
+        data["returned_count"] = total
+    return data
+
+
+def _memory_tool(
+    *,
+    case_id: str,
+    memory_relpath: str,
+    tool: str,
+    iteration: int,
+    max_records: int,
+    runner,
+) -> dict:
+    args: dict[str, Any] = {
+        "case_id": case_id,
+        "memory_relpath": memory_relpath,
+        "max_records": max_records,
+    }
+
+    def execute() -> dict[str, Any]:
+        memory_path = resolve_memory_path(memory_relpath)
+        args["memory_path"] = str(memory_path)
+        data = runner(memory_path, vol_binary=vol3_binary())
+        if tool == "mem_pslist":
+            return _cap_rows(data, "processes", "process_count", max_records)
+        if tool == "mem_psscan":
+            return _cap_rows(data, "processes", "process_count", max_records)
+        return _cap_rows(data, "cmdlines", "cmdline_count", max_records)
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool=tool,
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
 
 
 def mem_pslist(
@@ -13,24 +65,50 @@ def mem_pslist(
     memory_relpath: str,
     *,
     iteration: int = 0,
+    max_records: int = 500,
 ) -> dict:
-    """List processes from a Windows memory image (Volatility pslist)."""
-    args = {
-        "case_id": case_id,
-        "memory_relpath": memory_relpath,
-    }
-
-    def execute() -> dict:
-        memory_path = resolve_read_path(memory_relpath)
-        if not memory_path.is_file():
-            raise EvidencePathError(f"Memory image must be a file: {memory_path}")
-        args["memory_path"] = str(memory_path)
-        return run_pslist(memory_path, vol_binary=vol3_binary())
-
-    return run_audited_tool(
+    """List Windows processes from a memory image (Volatility pslist)."""
+    return _memory_tool(
         case_id=case_id,
+        memory_relpath=memory_relpath,
         tool="mem_pslist",
-        args=args,
         iteration=iteration,
-        execute=execute,
+        max_records=max_records,
+        runner=run_pslist,
+    )
+
+
+def mem_psscan(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 500,
+) -> dict:
+    """Scan for hidden/unlinked processes in a memory image (Volatility psscan)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_psscan",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_psscan,
+    )
+
+
+def mem_cmdline(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 500,
+) -> dict:
+    """Extract process command lines from a memory image (Volatility cmdline)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_cmdline",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_cmdline,
     )
