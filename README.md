@@ -108,6 +108,33 @@ cold-box-verify run --pslist pslist.json --psscan psscan.json
 
 Bundled synthetic demo where R1 fires: `examples/sample-verifier/r1-*.json`.
 
+## Step 6 — agent loop (+ self-correction)
+
+Scripted phases: **triage → hypothesis → validate → self-correction → finalize**.  
+Writes `progress.jsonl` every iteration; calls verifier after psscan; on R1 contradiction runs `mem_cmdline` and logs **self-correction**.
+
+```bash
+# Fast demo (fixtures, ~1s) — R1 fires + self-corrects
+bash examples/demo-run.sh
+
+# Or explicitly:
+cold-box-agent run \
+  --case-id synthetic-demo \
+  --evidence-case synthetic-r1 \
+  --synthetic \
+  --fixture-dir examples/sample-verifier
+
+# Live memory case (slow — Vol3 on Ali Hadi)
+export EVIDENCE_ROOT=/evidence CASE_OUTPUT=/cases
+cold-box-agent run \
+  --case-id ali-run \
+  --evidence-case ali-hadi-1 \
+  --memory ali-hadi-1/memdump/memdump.mem \
+  --max-iterations 10
+```
+
+Outputs under `CASE_OUTPUT/<case-id>/`: `audit.jsonl`, `progress.jsonl`, `findings.json`.
+
 ## License
 
 MIT (to be added before public release)

@@ -19,10 +19,17 @@ cold-box-evidence = "postmortem_evidence.cli:main"
 cold-box-audit = "postmortem_audit.cli:main"
 cold-box-mcp = "postmortem_mcp.server:main"
 cold-box-verify = "postmortem_verify.cli:main"
+cold-box-agent = "postmortem_agent.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["postmortem_evidence*", "postmortem_audit*", "postmortem_mcp*", "postmortem_verify*"]
+include = [
+    "postmortem_evidence*",
+    "postmortem_audit*",
+    "postmortem_mcp*",
+    "postmortem_verify*",
+    "postmortem_agent*",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

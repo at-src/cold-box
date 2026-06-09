@@ -1,0 +1,12 @@
+{
+  "source": "/evidence/synthetic-r1/memdump.mem",
+  "plugin": "windows.cmdline",
+  "cmdline_count": 1,
+  "cmdlines": [
+    {
+      "pid": 31337,
+      "process": "evil.exe",
+      "args": "C:\\Windows\\Temp\\evil.exe -silent"
+    }
+  ]
+}
