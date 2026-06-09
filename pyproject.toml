@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "postmortem"
+version = "0.1.0"
+description = "Autonomous postmortem investigator for SIFT"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+postmortem-evidence = "postmortem_evidence.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["postmortem_evidence*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

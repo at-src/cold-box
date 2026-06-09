@@ -1,0 +1,3 @@
+Synthetic disk-side placeholder for Step 1 manifest tests.
+Case ID: SAMPLE-001
+Artifact: suspicious scheduled task reference (demo only)

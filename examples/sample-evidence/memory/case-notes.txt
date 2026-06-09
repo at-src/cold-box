@@ -1,0 +1,3 @@
+Synthetic memory-side placeholder for Step 1 manifest tests.
+Case ID: SAMPLE-001
+Process hint: svchost.exe pid 1234 (demo only)

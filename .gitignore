@@ -1,0 +1,32 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg-info/
+.pytest_cache/
+dist/
+build/
+
+# Planning (never push)
+dont-commit-main-plan/
+
+# Evidence & case output (never git)
+/evidence/
+/cases/
+
+# Secrets
+.env
+*.pem
+
+# Forensic images
+*.E01
+*.E02
+*.raw
+*.mem
+*.aff
+*.dd
+
+# IDE
+.idea/
+.vscode/
