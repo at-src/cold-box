@@ -18,3 +18,5 @@ echo "--- progress (grep self-correction) ---"
 rg self-correction "${CASE_OUTPUT}/${CASE_ID}/progress.jsonl" || true
 echo "--- findings ---"
 cat "${CASE_OUTPUT}/${CASE_ID}/findings.json"
+echo "--- report (head) ---"
+head -n 30 "${CASE_OUTPUT}/${CASE_ID}/report.md"

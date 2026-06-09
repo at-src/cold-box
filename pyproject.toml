@@ -20,6 +20,7 @@ cold-box-audit = "postmortem_audit.cli:main"
 cold-box-mcp = "postmortem_mcp.server:main"
 cold-box-verify = "postmortem_verify.cli:main"
 cold-box-agent = "postmortem_agent.cli:main"
+cold-box-report = "postmortem_report.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -29,6 +30,7 @@ include = [
     "postmortem_mcp*",
     "postmortem_verify*",
     "postmortem_agent*",
+    "postmortem_report*",
 ]
 
 [tool.pytest.ini_options]

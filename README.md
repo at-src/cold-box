@@ -133,7 +133,18 @@ cold-box-agent run \
   --max-iterations 10
 ```
 
-Outputs under `CASE_OUTPUT/<case-id>/`: `audit.jsonl`, `progress.jsonl`, `findings.json`.
+Outputs under `CASE_OUTPUT/<case-id>/`: `audit.jsonl`, `progress.jsonl`, `findings.json`, `report.md`, `report.json`.
+
+## Step 8 — report + finding gate
+
+Findings must include non-empty `audit_ids[]` or report generation fails.
+
+```bash
+cold-box-report validate /cases/demo/findings.json
+cold-box-report generate --case-id synthetic-demo
+```
+
+`report.md` includes executive summary, timeline (from progress.jsonl), confirmed / inference / unresolved sections, and audit chain status.
 
 ## License
 

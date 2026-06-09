@@ -11,6 +11,8 @@ from postmortem_agent.progress import append_progress, progress_log_path
 from postmortem_agent.state import AgentConfig, InvestigationState
 from postmortem_agent.tools import invoke_tool
 from postmortem_mcp.config import case_dir
+from postmortem_report.gate import validate_findings
+from postmortem_report.report import write_report
 from postmortem_verify import VerifyContext, run_verifier
 
 
@@ -41,11 +43,11 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
         if awaiting_self_correction:
             _run_self_correction(state, config, progress_path)
             awaiting_self_correction = False
-            _finalize(state, out_dir, progress_path, partial=False)
+            _finalize(state, out_dir, progress_path, case_id=config.case_id, partial=False)
             continue
 
         if plan_index >= len(DEFAULT_PLAN):
-            _finalize(state, out_dir, progress_path, partial=False)
+            _finalize(state, out_dir, progress_path, case_id=config.case_id, partial=False)
             break
 
         step = DEFAULT_PLAN[plan_index]
@@ -81,7 +83,7 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
 
     if not state.done:
         state.last_notes = "max-iterations reached; partial closeout"
-        _finalize(state, out_dir, progress_path, partial=True)
+        _finalize(state, out_dir, progress_path, case_id=config.case_id, partial=True)
 
     return state
 
@@ -141,16 +143,19 @@ def _finalize(
     out_dir: Path,
     progress_path: Path,
     *,
+    case_id: str,
     partial: bool,
 ) -> None:
     state.phase = "finalize"
     state.done = True
-    state.findings = _build_findings(state, partial=partial)
+    raw_findings = _build_findings(state, partial=partial)
+    state.findings = validate_findings(raw_findings)
     findings_path = out_dir / "findings.json"
     findings_path.write_text(
         json.dumps({"findings": state.findings}, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    write_report(out_dir, case_id=case_id)
     notes = "investigation finalized"
     if partial:
         notes = "partial closeout at max-iterations"

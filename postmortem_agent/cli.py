@@ -41,6 +41,8 @@ def cmd_run(args: argparse.Namespace) -> int:
         "audit_chain_ok": audit_ok,
         "audit_chain_message": audit_msg,
         "output_dir": str(out_dir),
+        "report_md": str(out_dir / "report.md"),
+        "report_json": str(out_dir / "report.json"),
     }
     print(json.dumps(summary, indent=2, sort_keys=True))
 
