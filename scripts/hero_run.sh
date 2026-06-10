@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
-# Hero runs: DART sample + Ali Hadi with LLM reasoner (requires ANTHROPIC_API_KEY).
+# Hero runs: DART sample + Ali Hadi with LLM reasoner (requires ANTHROPIC_API_KEY in .env).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-if [[ -z "${ANTHROPIC_API_KEY:-}" ]] || [[ "$ANTHROPIC_API_KEY" == *paste* ]]; then
-  echo "ANTHROPIC_API_KEY not set — skipping LLM hero runs." >&2
-  echo "Export a key and re-run: export ANTHROPIC_API_KEY=..." >&2
-  exit 0
-fi
+# shellcheck disable=SC1091
+source "$ROOT/bin/load-agent-env"
 
 echo "=== DART sample-evidence (LLM) ==="
 EVIDENCE_ROOT=/opt/ref/agentic-dart/examples/sample-evidence \
