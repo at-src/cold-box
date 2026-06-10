@@ -5,7 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from postmortem_evidence.guard import get_extracted_root, resolve_read_path
+from postmortem_evidence.guard import (
+    EvidencePathError,
+    get_evidence_root,
+    get_extracted_root,
+    resolve_read_path,
+)
 from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.catalog import tools_for_kind
 from postmortem_mcp.paths import resolve_case_directory
@@ -153,6 +158,17 @@ def build_survey_payload(case_root: Path, case_relpath: str) -> dict[str, Any]:
     truncated = False
     count = 0
 
+    # Survey paths are emitted relative to EVIDENCE_ROOT (not the case dir) so the
+    # values resolve directly via resolve_read_path regardless of whether the
+    # case is the root (".") or a sub-directory. Falls back to case-relative if
+    # the case somehow sits outside the evidence root.
+    case_resolved = case_root.resolve()
+    try:
+        base = get_evidence_root()
+        case_resolved.relative_to(base)
+    except (EvidencePathError, ValueError):
+        base = case_resolved
+
     for path in sorted(case_root.rglob("*")):
         if not path.is_file():
             continue
@@ -161,7 +177,7 @@ def build_survey_payload(case_root: Path, case_relpath: str) -> dict[str, Any]:
             truncated = True
             continue
         try:
-            relpath = path.relative_to(case_root.resolve()).as_posix()
+            relpath = path.relative_to(base).as_posix()
         except ValueError:
             relpath = path.name
         kind = classify_file(relpath, path)
