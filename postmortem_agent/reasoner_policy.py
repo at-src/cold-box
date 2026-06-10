@@ -359,6 +359,7 @@ class PolicyReasoner:
         hypothesis: str,
         lessons: list[str],
         pattern_hints: list[str],
+        **_ignored: Any,
     ) -> dict[str, Any]:
         del goal, skills, lessons, pattern_hints  # advisory only; policy uses evidence scores
 

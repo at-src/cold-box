@@ -69,7 +69,7 @@ def build_json_report(
     }
 
 
-def build_markdown_report(report: dict[str, Any]) -> str:
+def build_markdown_report(report: dict[str, Any], *, incident_markdown: str | None = None) -> str:
     lines = [
         "# cold-box Investigation Report",
         "",
@@ -80,9 +80,12 @@ def build_markdown_report(report: dict[str, Any]) -> str:
         "",
         report["executive_summary"],
         "",
-        "## Timeline",
-        "",
     ]
+
+    if incident_markdown and incident_markdown.strip():
+        lines.extend([incident_markdown.strip(), ""])
+
+    lines.extend(["## Investigation Timeline", ""])
 
     if not report["timeline"]:
         lines.append("_No progress entries._")
@@ -131,12 +134,17 @@ def write_report(case_output_dir: Path, *, case_id: str) -> dict[str, Any]:
         audit_path=audit_path,
     )
 
+    narrative_path = case_output_dir / "narrative.md"
+    incident_markdown = (
+        narrative_path.read_text(encoding="utf-8") if narrative_path.exists() else None
+    )
+
     (case_output_dir / "report.json").write_text(
         json.dumps(report, indent=2, sort_keys=True, default=str) + "\n",
         encoding="utf-8",
     )
     (case_output_dir / "report.md").write_text(
-        build_markdown_report(report) + "\n",
+        build_markdown_report(report, incident_markdown=incident_markdown) + "\n",
         encoding="utf-8",
     )
     return report
@@ -162,8 +170,17 @@ def _format_findings(findings: list[dict[str, Any]], *, empty: str) -> list[str]
     lines: list[str] = []
     for finding in findings:
         aids = ", ".join(f"`{aid}`" for aid in finding["audit_ids"])
+        title = finding.get("title")
+        header = f"{finding['id']} — {title}" if title else finding["id"]
+        meta = []
+        if finding.get("severity"):
+            meta.append(f"severity: {finding['severity']}")
+        if finding.get("mitre"):
+            meta.append("MITRE: " + ", ".join(finding["mitre"]))
+        meta.append(f"confidence {finding['confidence']:.2f}")
         lines.append(
-            f"- **{finding['id']}** ({finding['status']}, confidence {finding['confidence']:.2f}): "
-            f"{finding['claim']} — audit_ids: {aids}"
+            f"- **{header}** ({finding['status']}; {'; '.join(meta)})  \n"
+            f"  {finding['claim']}  \n"
+            f"  _audit_ids:_ {aids}"
         )
     return lines

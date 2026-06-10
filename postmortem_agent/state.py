@@ -52,6 +52,7 @@ class InvestigationState:
     iteration: int = 0
     done: bool = False
     self_corrected: bool = False
+    hypothesis_authored: bool = False
     survey: dict[str, Any] = field(default_factory=dict)
     lessons: list[str] = field(default_factory=list)
     tool_results: dict[str, list[dict[str, Any]]] = field(default_factory=dict)

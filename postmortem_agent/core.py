@@ -13,6 +13,7 @@ from postmortem_agent.diagnostic_memory import (
 )
 from postmortem_agent.findings import build_findings
 from postmortem_agent.narrative import append_narrative_finding
+from postmortem_agent.synthesis import _is_placeholder, confirmed_signals, synthesize_hypothesis
 from postmortem_agent.invoke import call_agent_tool
 from postmortem_agent.progress import append_progress, progress_log_path
 from postmortem_agent.reasoner import load_skill_index, make_reasoner
@@ -32,6 +33,20 @@ from postmortem_verify.models import RuleResult
 
 GOAL = "Find evidence of compromise on this dead host and explain it."
 
+# Number of consecutive non-productive iterations (no new verifier signal and no new
+# successful tool data) after which the agent concludes instead of spinning. This is
+# what keeps a confirmed-evidence case from running to the iteration cap "revising".
+STALL_LIMIT = 3
+# Substrings that mean an evidence source is simply not present / reachable. Retrying
+# the same tool against it wastes iterations, so we record a gap and steer away.
+_MISSING_EVIDENCE_MARKERS = (
+    "does not exist",
+    "pathtraversal",
+    "no such file",
+    "not found",
+    "outside",
+)
+
 
 def run_investigation(config: AgentConfig) -> InvestigationState:
     import os
@@ -50,6 +65,12 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
     pattern_hints = hints_from_patterns(load_similar_patterns(survey.get("kinds_present") or []))
     catalog_payload = catalog_as_dict()
 
+    fired_rules: set[str] = set()
+    success_tools: set[str] = set()
+    failed_keys: dict[str, str] = {}
+    dead_evidence: set[str] = set()
+    stall = 0
+
     _write_progress(state, progress_path, "investigation started — evidence survey complete")
 
     while not state.done and state.iteration < config.max_iterations:
@@ -67,14 +88,21 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
                 hypothesis=state.hypothesis,
                 lessons=state.lessons,
                 pattern_hints=pattern_hints,
+                budget={"iteration": state.iteration, "max": config.max_iterations},
+                failed_calls=sorted(failed_keys),
             )
         except Exception as exc:
+            lesson = f"reasoner error: {exc}"
+            state.lessons.append(lesson)
             state.unresolved.append(str(exc))
-            _write_progress(state, progress_path, f"reasoner error: {exc}")
-            break
+            _write_progress(state, progress_path, lesson)
+            continue
 
         if action.get("action") == "done":
-            state.hypothesis = str(action.get("hypothesis", state.hypothesis))
+            candidate = str(action.get("hypothesis", state.hypothesis)).strip()
+            if candidate and not _is_placeholder(candidate):
+                state.hypothesis = candidate
+                state.hypothesis_authored = True
             state.confidence = float(action.get("confidence", state.confidence))
             state.phase = "finalize"
             _write_progress(state, progress_path, "investigation complete — agent declared done")
@@ -82,41 +110,75 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
 
         tool = str(action.get("tool", "")).strip()
         arguments = action.get("arguments") or {}
+        call_key = _call_key(tool, arguments)
+
+        # Failed-call guard: don't burn iterations re-running a call we know fails.
+        if call_key in failed_keys:
+            stall += 1
+            lesson = (
+                f"already tried {tool} with these arguments and it failed ({failed_keys[call_key]}); "
+                f"do not repeat — choose a different tool or evidence source"
+            )
+            if lesson not in state.lessons:
+                state.lessons.append(lesson)
+            _write_progress(state, progress_path, f"skipped repeat of failed call: {tool}",
+                            extra={"tool": tool, "reason": action.get("reason")})
+            if _should_stop(stall, fired_rules):
+                break
+            continue
+
         state.phase = "execute"
         result = call_agent_tool(tool, arguments, config=config, iteration=state.iteration)
         result["args"] = arguments
         state.tool_results.setdefault(tool, []).append(result)
 
         if not result.get("ok"):
-            lesson = f"tool {tool} failed: {result.get('error')}; try different tool or arguments"
-            state.lessons.append(lesson)
-            _write_progress(
-                state,
-                progress_path,
-                lesson,
-                extra={"tool": tool, "action": action},
-            )
+            error = str(result.get("error") or "")
+            failed_keys[call_key] = error[:120]
+            stall += 1
+            lesson = f"tool {tool} failed: {error}; try different tool or arguments"
+            gap_note = _maybe_record_gap(state, tool, error, dead_evidence)
+            if gap_note:
+                lesson = gap_note
+            if lesson not in state.lessons:
+                state.lessons.append(lesson)
+            _write_progress(state, progress_path, lesson, extra={"tool": tool, "action": action})
+            if _should_stop(stall, fired_rules):
+                break
             continue
 
         state.verifier_results = run_verifier(build_verify_context(state, config))
-        contradictions = [r for r in state.verifier_results if r.status == "contradiction"]
+        current_rules = {r.rule_id for r in state.verifier_results if r.status == "contradiction"}
+        new_rules = current_rules - fired_rules
+        fired_rules |= current_rules
 
-        if contradictions:
-            lesson = _lesson_from(contradictions, action)
+        new_tool_data = tool not in success_tools
+        success_tools.add(tool)
+        productive = bool(new_rules) or new_tool_data
+        stall = 0 if productive else stall + 1
+
+        if new_rules:
+            # A new confirmed signal is positive evidence to incorporate — NOT a reason
+            # to keep "revising" forever. Record it as a self-correction beat once.
+            new_results = [r for r in state.verifier_results if r.rule_id in new_rules]
+            lesson = _signal_lesson(new_results)
             if lesson not in state.lessons:
                 state.lessons.append(lesson)
             if not state.self_corrected:
                 state.self_corrected = True
-                state.confidence = max(0.3, state.confidence - 0.15)
-            rules = ", ".join(r.rule_id for r in contradictions)
-            state.hypothesis = f"Contradiction {rules} — revising understanding before concluding"
-            note = f"self-correction: {lesson}"
+            state.confidence = min(0.9, max(state.confidence, 0.55) + 0.05 * len(new_rules))
+            note = f"self-correction: incorporated new signal(s) {', '.join(sorted(new_rules))}"
+        elif current_rules:
+            note = f"executed {tool}: corroborates {len(current_rules)} confirmed signal(s)"
         else:
-            note = f"executed {tool}: ok={result.get('ok')}"
+            note = f"executed {tool}: ok (no new signal)"
 
-        if result.get("ok") and state.hypothesis == "Investigation not started":
-            state.hypothesis = f"Analyzing {survey.get('kinds_present', [])} — no contradictions yet"
-            state.confidence = 0.45
+        if _is_placeholder(state.hypothesis) and current_rules:
+            state.hypothesis = _interim_hypothesis(state)
+            state.confidence = max(state.confidence, 0.55)
+        elif _is_placeholder(state.hypothesis) and result.get("ok"):
+            state.hypothesis = f"Triaging {survey.get('kinds_present', [])}; no confirmed signal yet"
+            state.confidence = max(state.confidence, 0.45)
 
         _write_progress(
             state,
@@ -126,13 +188,61 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
                 "tool": tool,
                 "audit_id": result.get("audit_id"),
                 "reason": action.get("reason"),
-                "lessons": list(state.lessons),
+                "new_signals": sorted(new_rules),
+                "confirmed_signals": sorted(fired_rules),
             },
         )
+
+        if _should_stop(stall, fired_rules):
+            _write_progress(
+                state,
+                progress_path,
+                f"evidence saturated ({len(fired_rules)} confirmed signal(s), no new signal in "
+                f"{STALL_LIMIT} iteration(s)) — concluding",
+            )
+            break
 
     partial = not state.done or state.iteration >= config.max_iterations
     _finalize(state, out_dir, progress_path, config=config, partial=partial)
     return state
+
+
+def _should_stop(stall: int, fired_rules: set[str]) -> bool:
+    """Conclude once evidence is saturated: signals exist and nothing new is surfacing."""
+    return stall >= STALL_LIMIT and bool(fired_rules)
+
+
+def _call_key(tool: str, arguments: dict[str, Any]) -> str:
+    try:
+        return tool + "|" + json.dumps(arguments, sort_keys=True, default=str)
+    except TypeError:
+        return tool + "|" + str(arguments)
+
+
+def _maybe_record_gap(
+    state: InvestigationState,
+    tool: str,
+    error: str,
+    dead_evidence: set[str],
+) -> str | None:
+    """Surface an unreachable evidence source as a documented gap (once)."""
+    lowered = error.lower()
+    if not any(marker in lowered for marker in _MISSING_EVIDENCE_MARKERS):
+        return None
+    family = tool.split("_", 1)[0]  # mem / disk / web / ...
+    if family in dead_evidence:
+        return (
+            f"{tool} failed again because its evidence source is unavailable; stop probing "
+            f"'{family}' artifacts and conclude from what is reachable"
+        )
+    dead_evidence.add(family)
+    gap = f"{family} evidence source unavailable ({error[:80]}) — could not corroborate via {tool}"
+    if gap not in state.gaps:
+        state.gaps.append(gap)
+    return (
+        f"{tool} failed: evidence source unavailable. Recorded as an investigation gap; "
+        f"do not retry '{family}' tools — corroborate using other evidence"
+    )
 
 
 def _initial_survey(config: AgentConfig) -> dict[str, Any]:
@@ -174,13 +284,15 @@ def _initial_survey(config: AgentConfig) -> dict[str, Any]:
         return synthetic_survey(config.evidence_case, {})
 
 
-def _lesson_from(contradictions: list[RuleResult], action: dict[str, Any]) -> str:
-    rules = ", ".join(r.rule_id for r in contradictions)
-    tool = action.get("tool", "?")
-    return (
-        f"verifier {rules} contradicts current understanding after {tool}; "
-        f"revise hypothesis and run follow-up tools before concluding"
-    )
+def _signal_lesson(new_results: list[RuleResult]) -> str:
+    """Concise, specific note about newly confirmed evidence to fold into the hypothesis."""
+    parts = [f"{r.rule_id} ({r.rule_name}): {r.detail}" for r in new_results[:3]]
+    return "confirmed signal(s) to incorporate — " + " | ".join(parts)
+
+
+def _interim_hypothesis(state: InvestigationState) -> str:
+    signals = confirmed_signals(state)
+    return synthesize_hypothesis(signals, audit_count=len(state.all_audit_ids()))
 
 
 def _write_progress(
@@ -214,6 +326,16 @@ def _finalize(
     state.phase = "finalize"
     state.done = True
     state.verifier_results = run_verifier(build_verify_context(state, config))
+
+    # Never let a placeholder ("Contradiction ... revising") or a partial interim hypothesis
+    # survive into the report. Unless the LLM explicitly authored a final conclusion via "done",
+    # synthesize one from the COMPLETE set of confirmed signals so the executive summary matches
+    # the full narrative.
+    if not state.hypothesis_authored or _is_placeholder(state.hypothesis):
+        signals = confirmed_signals(state)
+        state.hypothesis = synthesize_hypothesis(signals, audit_count=len(state.all_audit_ids()))
+        if signals:
+            state.confidence = max(state.confidence, 0.6)
 
     try:
         state.findings = build_findings(state, partial=partial)

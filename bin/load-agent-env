@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Load cold-box agent env (Anthropic key, model, cache flags) from repo .env.
+# Usage: source bin/load-agent-env
+set -euo pipefail
+
+_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+_ENV_FILE="$_ROOT/.env"
+
+if [[ ! -f "$_ENV_FILE" ]]; then
+  echo "Missing $_ENV_FILE — copy .env.example to .env and add your Anthropic API key." >&2
+  return 1 2>/dev/null || exit 1
+fi
+
+# shellcheck disable=SC1090
+set -a
+source "$_ENV_FILE"
+set +a
+
+if [[ -z "${ANTHROPIC_API_KEY:-}" || "${ANTHROPIC_API_KEY}" == *paste* ]]; then
+  echo "Set ANTHROPIC_API_KEY in $_ENV_FILE (from console.anthropic.com → API Keys)." >&2
+  return 1 2>/dev/null || exit 1
+fi
+
+export ANTHROPIC_API_KEY
+export ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-4-20250514}"
+export ANTHROPIC_PROMPT_CACHE="${ANTHROPIC_PROMPT_CACHE:-1}"

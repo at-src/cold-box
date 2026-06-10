@@ -27,6 +27,11 @@ dont-commit-main-plan/
 *.aff
 *.dd
 
+# Extraction scratch + case output (contain evidence-derived artifacts — never commit)
+.ingest-proof/
+cases/
+/cases/
+
 # IDE
 .idea/
 .vscode/

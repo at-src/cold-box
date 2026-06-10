@@ -53,6 +53,15 @@ def validate_finding(finding: dict[str, Any], *, index: int | None = None) -> di
     }
     if "tags" in finding and isinstance(finding["tags"], list):
         normalized["tags"] = finding["tags"]
+    # Optional analyst-facing descriptors are preserved when present and well-formed.
+    if isinstance(finding.get("title"), str) and finding["title"].strip():
+        normalized["title"] = finding["title"].strip()
+    if isinstance(finding.get("severity"), str) and finding["severity"].strip():
+        normalized["severity"] = finding["severity"].strip()
+    if isinstance(finding.get("mitre"), list):
+        normalized["mitre"] = [str(m) for m in finding["mitre"]]
+    if isinstance(finding.get("tactic"), str) and finding["tactic"].strip():
+        normalized["tactic"] = finding["tactic"].strip()
     return normalized
 
 
