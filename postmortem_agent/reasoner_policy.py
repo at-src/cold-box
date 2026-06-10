@@ -231,6 +231,8 @@ def _build_candidates(
                 continue
             if tool_name == "disk_correlate_timeline" or tool_name == "timeline_super":
                 arguments = _correlate_args(config, survey)
+            elif tool_name == "reg_system_profile":
+                arguments = _system_profile_args(survey)
             else:
                 arguments = _arguments_for(spec, entry, config)
             if arguments is None:
@@ -259,6 +261,20 @@ def _build_candidates(
         key = _action_key(tool_name, arguments)
         if key not in executed and key not in failed:
             candidates.append((5, tool_name, arguments, f"baseline {tool_name}"))
+
+    if config.extracted_root and config.extracted_root.is_dir():
+        profile_args = _system_profile_args(survey)
+        if profile_args:
+            key = _action_key("reg_system_profile", profile_args)
+            if key not in executed and key not in failed:
+                candidates.append(
+                    (
+                        14,
+                        "reg_system_profile",
+                        profile_args,
+                        "host attribution / system profile (registered owner, NICs, accounts)",
+                    )
+                )
 
     if config.extracted_root and config.extracted_root.is_dir():
         key = _action_key(
@@ -307,6 +323,31 @@ def _system_hive_relpath(survey: dict[str, Any]) -> str | None:
         if rel.rsplit("/", 1)[-1].lower() == "system":
             return rel
     return None
+
+
+def _hive_relpath(survey: dict[str, Any], basename: str) -> str | None:
+    for entry in survey.get("files") or []:
+        if entry.get("kind") != "registry_hive":
+            continue
+        rel = entry.get("relpath") or ""
+        if rel.rsplit("/", 1)[-1].lower() == basename:
+            return rel
+    return None
+
+
+def _system_profile_args(survey: dict[str, Any]) -> dict[str, Any] | None:
+    """reg_system_profile is keyed on the SOFTWARE hive, enriched with SYSTEM + SAM."""
+    software = _hive_relpath(survey, "software")
+    if not software:
+        return None
+    args: dict[str, Any] = {"artifact_relpath": software}
+    system = _hive_relpath(survey, "system")
+    if system:
+        args["system_relpath"] = system
+    sam = _hive_relpath(survey, "sam")
+    if sam:
+        args["sam_relpath"] = sam
+    return args
 
 
 def _score_candidate(
@@ -364,6 +405,27 @@ def _score_candidate(
     ):
         score += 135
     if "amcache" in survey_kinds and tool in {"reg_amcache", "disk_parse_amcache"}:
+        if not _tool_succeeded(results, tool):
+            score += 130
+
+    # Host attribution / system profile: a sensible early step on any disk case
+    # with hives, but below the high-value contradiction follow-ups so it never
+    # crowds out compromise analysis.
+    if tool == "reg_system_profile" and "registry_hive" in survey_kinds:
+        if not _tool_succeeded(results, tool):
+            score += 170
+
+    if tool == "disk_recycle_bin" and "recycle_bin" in survey_kinds:
+        if not _tool_succeeded(results, tool):
+            score += 145
+
+    if tool in {"disk_parse_ie_index_dat", "disk_parse_ie_cache"} and (
+        "ie_index_dat" in survey_kinds or "ie_cache" in survey_kinds
+    ):
+        if not _tool_succeeded(results, tool):
+            score += 140
+
+    if tool == "disk_inspect_capture" and "capture_file" in survey_kinds:
         if not _tool_succeeded(results, tool):
             score += 130
 

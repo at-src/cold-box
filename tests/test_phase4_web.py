@@ -21,7 +21,7 @@ CASE_WEB = REPO / "examples" / "case-web"
 
 
 def test_catalog_drift_phase4() -> None:
-    assert len(TOOL_REGISTRY) == len(CATALOG) == 56
+    assert len(TOOL_REGISTRY) == len(CATALOG) == 59
 
 
 def test_survey_web_kinds() -> None:

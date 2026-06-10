@@ -132,6 +132,41 @@ WINDOWS_TARGETS: tuple[ArtifactTarget, ...] = (
         "registry_hive",
         cap=50,
     ),
+    # XP RECYCLER + Vista $Recycle.Bin metadata (F-CFR-008)
+    ArtifactTarget(_ci(r"^recycler/[^/]+/info2$"), "recycle_bin", cap=10),
+    ArtifactTarget(_ci(r"^recycler/[^/]+/dc[0-9]+$"), "recycle_bin", cap=30),
+    ArtifactTarget(_ci(r"^recycler/[^/]+/de[0-9]+$"), "recycle_bin", cap=30),
+    ArtifactTarget(_ci(r"^\$recycle\.bin/[^/]+/\$i[0-9a-f]+$"), "recycle_bin", cap=50),
+    # IE / Outlook Express (F-CFR-006)
+    ArtifactTarget(
+        _ci(
+            r"^documents and settings/[^/]+/local settings/temporary internet files/"
+            r"content\.ie5(/[^/]+)?/index\.dat$"
+        ),
+        "ie_index_dat",
+        cap=30,
+    ),
+    ArtifactTarget(
+        _ci(r"^documents and settings/[^/]+/local settings/temporary internet files/.+@yahoo.+\.txt$"),
+        "ie_cache",
+        cap=30,
+    ),
+    ArtifactTarget(
+        _ci(r"^documents and settings/[^/]+/cookies/.*\.txt$"),
+        "ie_cache",
+        cap=30,
+    ),
+    # Ethereal capture (F-CFR-005) — on this image it lives directly under the user profile
+    ArtifactTarget(
+        _ci(r"^documents and settings/[^/]+/my documents/interception$"),
+        "capture_file",
+        cap=5,
+    ),
+    ArtifactTarget(
+        _ci(r"^documents and settings/[^/]+/interception$"),
+        "capture_file",
+        cap=5,
+    ),
 )
 
 LINUX_TARGETS: tuple[ArtifactTarget, ...] = (

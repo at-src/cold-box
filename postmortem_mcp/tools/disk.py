@@ -18,6 +18,11 @@ from postmortem_mcp.artifact_parse import (
     parse_scheduled_task_file,
     parse_setupapi_dev_log,
 )
+from postmortem_mcp.legacy_parse import (
+    parse_capture_file,
+    parse_index_dat,
+    summarize_recycle_bin,
+)
 from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.config import (
     amcache_parser_binary,
@@ -524,12 +529,93 @@ def disk_recycle_bin(
     def execute() -> dict[str, Any]:
         path = resolve_text_or_dir_path(artifact_relpath)
         args["artifact_path"] = str(path)
-        payload = parse_recycle_bin(path, max_records=max_records)
+        payload = summarize_recycle_bin(path, max_records=max_records)
         return payload
 
     return run_audited_tool(
         case_id=case_id,
         tool="disk_recycle_bin",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def disk_parse_ie_index_dat(
+    case_id: str,
+    artifact_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 200,
+) -> dict:
+    """Extract emails/URLs from IE or Outlook Express index.dat (legacy XP artifacts)."""
+    args = {
+        "case_id": case_id,
+        "artifact_relpath": artifact_relpath,
+        "max_records": max_records,
+    }
+
+    def execute() -> dict[str, Any]:
+        path = resolve_text_or_dir_path(artifact_relpath)
+        args["artifact_path"] = str(path)
+        return parse_index_dat(path, max_records=max_records)
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="disk_parse_ie_index_dat",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def disk_parse_ie_cache(
+    case_id: str,
+    artifact_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 50,
+) -> dict:
+    """Extract identity strings from legacy IE cache/cookie text files."""
+    from postmortem_mcp.legacy_parse import parse_ie_cache_text
+
+    args = {
+        "case_id": case_id,
+        "artifact_relpath": artifact_relpath,
+        "max_records": max_records,
+    }
+
+    def execute() -> dict[str, Any]:
+        path = resolve_text_or_dir_path(artifact_relpath)
+        args["artifact_path"] = str(path)
+        return parse_ie_cache_text(path, max_records=max_records)
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="disk_parse_ie_cache",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def disk_inspect_capture(
+    case_id: str,
+    artifact_relpath: str,
+    *,
+    iteration: int = 0,
+) -> dict:
+    """Identify a packet-capture or Ethereal export (e.g. 'Interception' in My Documents)."""
+    args = {"case_id": case_id, "artifact_relpath": artifact_relpath}
+
+    def execute() -> dict[str, Any]:
+        path = resolve_text_or_dir_path(artifact_relpath)
+        args["artifact_path"] = str(path)
+        return parse_capture_file(path)
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="disk_inspect_capture",
         args=args,
         iteration=iteration,
         execute=execute,

@@ -28,6 +28,13 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
+from postmortem_mcp.legacy_parse import (  # noqa: E402
+    parse_capture_file,
+    parse_ie_cache_text,
+    parse_index_dat,
+    parse_recycle_metadata_file,
+    summarize_recycle_bin,
+)
 from postmortem_mcp.registry_query import sam_accounts, system_profile  # noqa: E402
 
 HACKING_TOOL_RE = ("cain", "ethereal", "wireshark", "stumbler", "wasp", "anonymizer", "cuteftp", "look")
@@ -60,6 +67,61 @@ def measure(case_dir: Path) -> list[dict]:
     account_names = [a.lower() for a in (accts.get("account_names") or [])]
     tool_hits = sorted({p for p in prefetch if any(t in p.lower() for t in HACKING_TOOL_RE)})
 
+    # --- Legacy content artifacts (F-CFR-005/006/008) -----------------------------
+    emails_found: list[str] = []
+    identity_hints: list[str] = []
+    capture_hit = False
+    recycle_exe_count = 0
+
+    def _artifact_paths(kind: str) -> list[Path]:
+        return [extracted / a["relpath"] for a in artifacts if a.get("kind") == kind]
+
+    for path in _artifact_paths("capture_file"):
+        if path.is_file() and parse_capture_file(path).get("is_capture_artifact"):
+            capture_hit = True
+    if not capture_hit:
+        for path in extracted.rglob("*"):
+            if path.is_file() and path.name.lower() == "interception":
+                if parse_capture_file(path).get("is_capture_artifact"):
+                    capture_hit = True
+                    break
+
+    for path in _artifact_paths("ie_index_dat"):
+        if path.is_file():
+            parsed = parse_index_dat(path)
+            emails_found.extend(parsed.get("emails") or [])
+            identity_hints.extend(parsed.get("hints") or [])
+    for path in _artifact_paths("ie_cache"):
+        if path.is_file():
+            emails_found.extend(parse_ie_cache_text(path).get("emails") or [])
+    if not emails_found and not identity_hints:
+        for path in extracted.rglob("index.dat"):
+            lower = str(path).lower()
+            if "outlook express" in lower or "content.ie5" in lower or "mr. evil" in lower:
+                parsed = parse_index_dat(path)
+                emails_found.extend(parsed.get("emails") or [])
+                identity_hints.extend(parsed.get("hints") or [])
+        for path in extracted.rglob("*"):
+            if path.is_file() and "@" in path.name.lower() and path.suffix.lower() == ".txt":
+                emails_found.extend(parse_ie_cache_text(path).get("emails") or [])
+
+    email_hit = any("mrevil" in e.lower() and "yahoo" in e.lower() for e in emails_found) or any(
+        "mrevil" in h.lower() and "yahoo" in h.lower() for h in identity_hints
+    )
+
+    for path in _artifact_paths("recycle_bin"):
+        if path.is_file() and (path.name.lower() == "info2" or path.name.lower().startswith("$i")):
+            meta = parse_recycle_metadata_file(path)
+            recycle_exe_count = max(recycle_exe_count, int(meta.get("executable_count") or 0))
+    for path in extracted.rglob("info2"):
+        if path.is_file():
+            meta = parse_recycle_metadata_file(path)
+            recycle_exe_count = max(recycle_exe_count, int(meta.get("executable_count") or 0))
+    for path in extracted.rglob("recycler"):
+        if path.is_dir():
+            summary = summarize_recycle_bin(path)
+            recycle_exe_count = max(recycle_exe_count, int(summary.get("executable_count") or 0))
+
     # status: "strict" = directly detected, "partial" = lenient-only, "gap" = not supported
     findings = [
         {
@@ -84,13 +146,16 @@ def measure(case_dir: Path) -> list[dict]:
         },
         {
             "id": "F-CFR-005", "claim": "Ethereal capture 'Interception' in My Documents",
-            "status": "partial" if any("intercept" in r for r in relpaths) else "gap",
-            "detail": "MFT/file enumeration (capture-file content not extracted)",
+            "status": "strict" if capture_hit else ("partial" if any("intercept" in r for r in relpaths) else "gap"),
+            "detail": "capture file identified" if capture_hit else "not extracted / not identified",
         },
         {
             "id": "F-CFR-006", "claim": "Web email mrevilrulez@yahoo.com",
-            "status": "gap",
-            "detail": "IE6/Outlook Express index.dat parser not implemented (same gap as DART)",
+            "status": "strict" if email_hit else ("partial" if emails_found else "gap"),
+            "detail": (
+                ", ".join(dict.fromkeys(emails_found + identity_hints))[:160]
+                or "no IE index.dat/cache identity"
+            ),
         },
         {
             "id": "F-CFR-007", "claim": "Last logon user 'Mr. Evil' (15 logons)",
@@ -99,8 +164,8 @@ def measure(case_dir: Path) -> list[dict]:
         },
         {
             "id": "F-CFR-008", "claim": "4 executables in recycle bin",
-            "status": "partial" if any("recycl" in r for r in relpaths) else "gap",
-            "detail": "disk_recycle_bin tool exists; RECYCLER not in extraction set",
+            "status": "strict" if recycle_exe_count >= 4 else ("partial" if recycle_exe_count else "gap"),
+            "detail": f"{recycle_exe_count} executable(s) in recycle metadata",
         },
         {
             "id": "F-CFR-009", "claim": "Viruses present (AV positive)",

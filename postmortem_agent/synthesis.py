@@ -70,6 +70,10 @@ RULE_PROFILE: dict[str, RuleProfile] = {
     "R20": RuleProfile("Structured-log security alert", "medium", "Initial Access", ("T1078",)),
     "R21": RuleProfile("Removable USB mass-storage attribution", "medium", "Exfiltration", ("T1052.001", "T1200")),
     "R22": RuleProfile("Cleartext identity / sender attribution", "medium", "Collection", ("T1040", "T1071.001")),
+    "R23": RuleProfile("Host attribution / system profile", "info", "Discovery", ("T1082",)),
+    "R24": RuleProfile("Recycle Bin deleted executables", "medium", "Defense Evasion", ("T1070.004",)),
+    "R25": RuleProfile("Legacy IE / webmail identity", "medium", "Collection", ("T1071.001",)),
+    "R26": RuleProfile("Traffic capture artifact on disk", "medium", "Collection", ("T1040",)),
 }
 
 # Remediation advice keyed by ATT&CK tactic present in the case.

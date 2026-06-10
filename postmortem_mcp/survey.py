@@ -87,8 +87,20 @@ def classify_file(relpath: str, path: Path) -> str:
         return "usnjrnl"
     if name == "srudb.dat":
         return "srum"
-    if "recycle" in name or "$recycle.bin" in parts_lower:
+    if "recycle" in name or "$recycle.bin" in parts_lower or name in {"info2"} or name.startswith("dc") or name.startswith("de") or name.startswith("$i"):
         return "recycle_bin"
+    if name == "index.dat" and (
+        "outlook express" in parts_lower
+        or "content.ie5" in parts_lower
+        or "temporary internet files" in parts_lower
+    ):
+        return "ie_index_dat"
+    if name == "interception" or (name.endswith(".cap") and "documents" in parts_lower):
+        return "capture_file"
+    if "temporary internet files" in parts_lower and suffix == ".txt":
+        return "ie_cache"
+    if "cookies" in parts_lower and suffix == ".txt":
+        return "ie_cache"
     if suffix in {".pcap", ".pcapng"}:
         return "pcap"
     if name in {"$mft", "mft"} or suffix in {".mft"}:

@@ -21,6 +21,76 @@ def audit_ids_from_sources(sources: list[dict[str, Any]]) -> list[str]:
     return ids
 
 
+def _host_profile_finding(state: InvestigationState, idx: int) -> dict[str, Any] | None:
+    """Build a context finding from the most recent successful reg_system_profile run."""
+    runs = state.tool_results.get("reg_system_profile") or []
+    for run in reversed(runs):
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        facts = data.get("facts") or []
+        if not facts:
+            continue
+        claim = "Host profile — " + "; ".join(f"{f['label']}: {f['value']}" for f in facts)
+        audit_id = run.get("audit_id")
+        return {
+            "id": f"f-{idx}",
+            "claim": claim,
+            "audit_ids": [audit_id] if audit_id else state.all_audit_ids()[:1],
+            "confidence": 0.9,
+            "status": "context",
+            "tags": ["host_profile", "R23"],
+            "title": "Host attribution / system profile",
+            "severity": "info",
+        }
+    return None
+
+
+def _content_context_findings(state: InvestigationState, idx: int) -> tuple[list[dict[str, Any]], int]:
+    """Surface non-compromise context from legacy content parsers (recycle, IE, capture)."""
+    extra: list[dict[str, Any]] = []
+    tool_specs = (
+        ("disk_recycle_bin", "Recycle Bin deleted executables", "R24", lambda d: (
+            f"{d.get('executable_count', 0)} executable(s) in recycle metadata"
+            + (f" ({', '.join((d.get('executables') or [])[:3])})" if d.get("executables") else "")
+        )),
+        ("disk_parse_ie_index_dat", "Legacy IE / webmail identity", "R25", lambda d: (
+            "Emails: " + ", ".join((d.get("emails") or [])[:5]) if d.get("emails") else "index.dat parsed"
+        )),
+        ("disk_parse_ie_cache", "Legacy IE cache identity", "R25", lambda d: (
+            "Emails: " + ", ".join((d.get("emails") or [])[:5]) if d.get("emails") else "cache parsed"
+        )),
+        ("disk_inspect_capture", "Traffic capture artifact on disk", "R26", lambda d: (
+            f"Capture artifact: {d.get('filename', '?')} ({d.get('size_bytes', '?')} bytes)"
+        )),
+    )
+    for tool, title, tag, claim_fn in tool_specs:
+        runs = state.tool_results.get(tool) or []
+        for run in reversed(runs):
+            if not run.get("ok"):
+                continue
+            data = run.get("data") or {}
+            claim = claim_fn(data)
+            if not claim or claim.endswith("0 executable(s)"):
+                continue
+            audit_id = run.get("audit_id")
+            extra.append(
+                {
+                    "id": f"f-{idx}",
+                    "claim": claim,
+                    "audit_ids": [audit_id] if audit_id else state.all_audit_ids()[:1],
+                    "confidence": 0.85,
+                    "status": "context",
+                    "tags": [tag],
+                    "title": title,
+                    "severity": "info",
+                }
+            )
+            idx += 1
+            break
+    return extra, idx
+
+
 def build_findings(state: InvestigationState, *, partial: bool) -> list[dict[str, Any]]:
     audit_ids = state.all_audit_ids()
     findings: list[dict[str, Any]] = []
@@ -47,6 +117,17 @@ def build_findings(state: InvestigationState, *, partial: bool) -> list[dict[str
             finding["tactic"] = profile.tactic
         findings.append(finding)
         idx += 1
+
+    # Host attribution / system profile — surfaced as context (not a compromise
+    # signal, so it never inflates the verdict or precision pool). Traces to the
+    # reg_system_profile audit_id.
+    profile_finding = _host_profile_finding(state, idx)
+    if profile_finding is not None:
+        findings.append(profile_finding)
+        idx += 1
+
+    content_findings, idx = _content_context_findings(state, idx)
+    findings.extend(content_findings)
 
     # The grounded conclusion is carried by the narrative finding (appended later). Only emit a
     # standalone hypothesis finding when no rule-backed confirmed finding exists, so the report

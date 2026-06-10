@@ -11,7 +11,7 @@ sampled NIST ground-truth findings. This is the apples-to-apples anchor.
 | | Strict recall | Lenient recall | Evidence consumed |
 |---|:---:|:---:|---|
 | **Agentic-DART v0.5.4** | 0.50 (5/10) | **0.80 (8/10)** | curated / synthetic (CSV+JSON sidecars, hive snippets) |
-| **cold-box** | **0.60 (6/10)** | 0.60 (6/10) | **raw split disk image** (`SCHARDT.001-008`), self-ingested |
+| **cold-box** | **0.90 (9/10)** | **0.90 (9/10)** | **raw split disk image** (`SCHARDT.001-008`), self-ingested |
 
 Reproduce:
 - DART: `cd /opt/ref/agentic-dart && python3 scripts/measure_cfreds.py`
@@ -25,25 +25,19 @@ Reproduce:
 | F-CFR-002 Primary account 'Mr. Evil' | ✓ strict (SAM Names) | roadmap |
 | F-CFR-003 6+ hacking tools | ✓ strict (9 via prefetch) | ✓ |
 | F-CFR-004 Two network cards | ✓ strict (SOFTWARE NetworkCards) | ✓ (v0.5.4) |
-| F-CFR-005 'Interception' capture file | ✗ gap | ~ partial |
-| F-CFR-006 Yahoo webmail | ✗ gap (no IE index.dat) | ✗ gap |
+| F-CFR-005 'Interception' capture file | ✓ strict (pcap magic) | ~ partial |
+| F-CFR-006 Yahoo webmail | ✓ strict (IE index.dat yahoo id) | ✗ gap |
 | F-CFR-007 Last logon 'Mr. Evil', 15× | ✓ strict (SAM F-record decode) | ~ partial |
-| F-CFR-008 4 exes in recycle bin | ✗ gap | ✗ gap |
+| F-CFR-008 4 exes in recycle bin | ✓ strict (INFO2: 4 exes) | ✗ gap |
 | F-CFR-009 Viruses present (YARA) | ✗ gap (no YARA rules) | ✗ gap |
 | F-CFR-010 Last shutdown 2004-08-27 | ✓ strict (SYSTEM ShutdownTime → `15:46:33Z` = 10:46:33 CDT) | ✓ (v0.5.4) |
 
 ## Honest reading
 
-- **cold-box edges DART on strict recall (0.60 vs 0.50)** and does so from the
-  **raw image** — a capability DART does not have (DART's own docs disclose it
-  consumes curated evidence and cannot ingest raw E01/dd). Two of cold-box's
-  strict hits (F-CFR-002 SAM account, F-CFR-007 exact 15-logon count) are
-  *partial* in DART.
-- **DART leads on lenient recall (0.80 vs 0.60)** because it credits 3 findings
-  as partial that cold-box currently can't parse: IE6/Outlook Express
-  `index.dat` (F-CFR-006 — gap for *both*), recycle-bin extraction (F-CFR-008),
-  and capture-file content (F-CFR-005). These are the same content-parser gap
-  class DART tracks as Phase-2 roadmap.
+- **cold-box now leads on both strict and lenient recall (0.90 vs 0.50 / 0.80)** and does so from the
+  **raw image** — a capability DART does not have.
+- **Only shared gap:** F-CFR-009 (YARA / AV-positive) — neither project ships bundled YARA rules yet.
+- DART's lenient advantage on legacy content parsers is **closed** for recycle bin, IE index.dat, and capture files.
 
 ## Where each wins beyond this case
 
