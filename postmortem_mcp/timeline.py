@@ -87,9 +87,25 @@ def _mft_events(records: list[dict[str, Any]], *, max_rows: int = 200) -> list[d
 def _memory_events(processes: list[dict[str, Any]], *, max_rows: int = 100) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
     for proc in processes[:max_rows]:
-        name = str(proc.get("name") or proc.get("ImageFileName") or "")
+        name = str(proc.get("name") or proc.get("ImageFileName") or proc.get("process") or "")
+        if not name:
+            continue
         ts = _parse_ts(str(proc.get("create_time") or proc.get("CreateTime") or ""))
-        if not ts:
+        if not ts or ts in {"N/A", "t", "-"}:
+            events.append(
+                {
+                    "timestamp": None,
+                    "source": "memory",
+                    "category": "process",
+                    "event_id": None,
+                    "summary": f"Process in memory: {name} pid={proc.get('pid', proc.get('PID', '?'))}",
+                    "detail": {
+                        "pid": proc.get("pid", proc.get("PID")),
+                        "ppid": proc.get("ppid", proc.get("PPID")),
+                        "name": name,
+                    },
+                }
+            )
             continue
         events.append(
             {
@@ -103,6 +119,46 @@ def _memory_events(processes: list[dict[str, Any]], *, max_rows: int = 100) -> l
                     "ppid": proc.get("ppid", proc.get("PPID")),
                     "name": name,
                 },
+            }
+        )
+    return events
+
+
+def _web_access_events(records: list[dict[str, Any]], *, max_rows: int = 100) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
+    for row in records[:max_rows]:
+        ts = _parse_ts(str(row.get("time") or row.get("timestamp") or ""))
+        request = str(row.get("request") or row.get("line") or "")[:120]
+        attack = row.get("attack_type") or row.get("pattern")
+        summary = f"Web request: {request}"
+        if attack:
+            summary = f"Web attack ({attack}): {request[:80]}"
+        events.append(
+            {
+                "timestamp": ts,
+                "source": "web_log",
+                "category": "web_attack" if attack else "web",
+                "event_id": None,
+                "summary": summary,
+                "detail": row,
+            }
+        )
+    return events
+
+
+def _cmdline_timeline_events(records: list[dict[str, Any]], *, max_rows: int = 50) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
+    for row in records[:max_rows]:
+        proc = str(row.get("process") or row.get("name") or "?")
+        args = str(row.get("args") or row.get("cmdline") or "")[:100]
+        events.append(
+            {
+                "timestamp": None,
+                "source": "cmdline",
+                "category": "execution",
+                "event_id": None,
+                "summary": f"Memory cmdline: {proc} {args}",
+                "detail": row,
             }
         )
     return events
@@ -199,6 +255,8 @@ def build_super_timeline(
     setupapi_records: list[dict[str, Any]] | None = None,
     scheduled_tasks: list[dict[str, Any]] | None = None,
     shimcache_records: list[dict[str, Any]] | None = None,
+    web_access_records: list[dict[str, Any]] | None = None,
+    cmdline_records: list[dict[str, Any]] | None = None,
     max_events: int = 500,
 ) -> dict[str, Any]:
     """Cross-source super timeline merging disk, memory, USB, and persistence artifacts."""
@@ -212,8 +270,10 @@ def build_super_timeline(
         events.extend(_mft_events(mft_records))
         sources.append("mft")
     if memory_processes:
-        events.extend(_memory_events(memory_processes))
-        sources.append("memory")
+        mem_events = _memory_events(memory_processes)
+        if mem_events:
+            events.extend(mem_events)
+            sources.append("memory")
     if setupapi_records:
         events.extend(_setupapi_events(setupapi_records))
         sources.append("setupapi")
@@ -237,6 +297,16 @@ def build_super_timeline(
                 }
             )
         sources.append("shimcache")
+    if web_access_records:
+        web_events = _web_access_events(web_access_records)
+        if web_events:
+            events.extend(web_events)
+            sources.append("web_log")
+    if cmdline_records:
+        cmd_events = _cmdline_timeline_events(cmdline_records)
+        if cmd_events:
+            events.extend(cmd_events)
+            sources.append("cmdline")
 
     dated = [e for e in events if e.get("timestamp")]
     undated = [e for e in events if not e.get("timestamp")]

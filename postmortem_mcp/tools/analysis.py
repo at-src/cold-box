@@ -39,6 +39,64 @@ from postmortem_mcp.timeline import build_correlated_timeline, build_super_timel
 from postmortem_mcp.vol import run_pslist
 
 
+def _load_evtx_records(
+    evtx_path,
+    case_id: str,
+    *,
+    max_records: int,
+    event_ids: list[int] | None = None,
+) -> list[dict[str, Any]]:
+    """Parse EVTX with sidecar/filter fallbacks so timeline tools survive parser failures."""
+    ids = event_ids or [4624, 4625, 4648, 4672]
+    if is_placeholder_file(evtx_path):
+        sidecar = parse_evtx_csv_sidecar(evtx_path, event_ids=ids, max_records=max_records)
+        if sidecar:
+            return sidecar.get("records") or []
+    try:
+        return parse_evtx_filtered(
+            evtx_path,
+            binary=evtx_ecmd_binary(),
+            scratch_dir=scratch_dir(case_id),
+            event_ids=ids,
+            max_records=max_records,
+        ).get("records") or []
+    except Exception:
+        sidecar = parse_evtx_csv_sidecar(evtx_path, event_ids=ids, max_records=max_records)
+        if sidecar:
+            return sidecar.get("records") or []
+    try:
+        return parse_evtx(
+            evtx_path,
+            binary=evtx_ecmd_binary(),
+            scratch_dir=scratch_dir(case_id),
+            max_records=max_records,
+        ).get("records") or []
+    except Exception:
+        return []
+
+
+def _load_mft_records(mft_path, case_id: str, *, max_records: int) -> list[dict[str, Any]]:
+    try:
+        if mft_path.suffix.lower() == ".csv":
+            return parse_mft_csv(mft_path, max_records=max_records).get("records") or []
+        return parse_mft(
+            mft_path,
+            binary=mftecmd_binary(),
+            scratch_dir=scratch_dir(case_id),
+            max_records=max_records,
+        ).get("records") or []
+    except Exception:
+        return []
+
+
+def _load_memory_processes(memory_relpath: str) -> list[dict[str, Any]]:
+    try:
+        mem_path = resolve_memory_path(memory_relpath)
+        return run_pslist(mem_path, vol_binary=vol3_binary()).get("processes") or []
+    except Exception:
+        return []
+
+
 def disk_evtx_filter(
     case_id: str,
     artifact_relpath: str,
@@ -152,31 +210,16 @@ def disk_correlate_timeline(
         if evtx_relpath:
             evtx_path = resolve_evtx_path(evtx_relpath)
             args["evtx_path"] = str(evtx_path)
-            evtx_records = parse_evtx(
-                evtx_path,
-                binary=evtx_ecmd_binary(),
-                scratch_dir=scratch_dir(case_id),
-                max_records=max_records,
-            ).get("records") or []
+            evtx_records = _load_evtx_records(evtx_path, case_id, max_records=max_records)
 
         if mft_relpath:
             mft_path = resolve_mft_path(mft_relpath)
             args["mft_path"] = str(mft_path)
-            if mft_path.suffix.lower() == ".csv":
-                mft_records = parse_mft_csv(mft_path, max_records=max_records).get("records") or []
-            else:
-                mft_records = parse_mft(
-                    mft_path,
-                    binary=mftecmd_binary(),
-                    scratch_dir=scratch_dir(case_id),
-                    max_records=max_records,
-                ).get("records") or []
+            mft_records = _load_mft_records(mft_path, case_id, max_records=max_records)
 
         if memory_relpath:
-            mem_path = resolve_memory_path(memory_relpath)
-            args["memory_path"] = str(mem_path)
-            pslist = run_pslist(mem_path, vol_binary=vol3_binary())
-            memory_processes = pslist.get("processes") or []
+            args["memory_path"] = str(resolve_memory_path(memory_relpath))
+            memory_processes = _load_memory_processes(memory_relpath)
 
         timeline = build_correlated_timeline(
             evtx_records=evtx_records,
@@ -232,47 +275,42 @@ def timeline_super(
         if evtx_relpath:
             evtx_path = resolve_evtx_path(evtx_relpath)
             args["evtx_path"] = str(evtx_path)
-            evtx_records = parse_evtx(
-                evtx_path,
-                binary=evtx_ecmd_binary(),
-                scratch_dir=scratch_dir(case_id),
-                max_records=max_records,
-            ).get("records") or []
+            evtx_records = _load_evtx_records(evtx_path, case_id, max_records=max_records)
 
         if mft_relpath:
             mft_path = resolve_mft_path(mft_relpath)
             args["mft_path"] = str(mft_path)
-            if mft_path.suffix.lower() == ".csv":
-                mft_records = parse_mft_csv(mft_path, max_records=max_records).get("records") or []
-            else:
-                mft_records = parse_mft(
-                    mft_path,
-                    binary=mftecmd_binary(),
-                    scratch_dir=scratch_dir(case_id),
-                    max_records=max_records,
-                ).get("records") or []
+            mft_records = _load_mft_records(mft_path, case_id, max_records=max_records)
 
         if memory_relpath:
-            mem_path = resolve_memory_path(memory_relpath)
-            args["memory_path"] = str(mem_path)
-            memory_processes = run_pslist(mem_path, vol_binary=vol3_binary()).get("processes") or []
+            args["memory_path"] = str(resolve_memory_path(memory_relpath))
+            memory_processes = _load_memory_processes(memory_relpath)
 
         if setupapi_relpath:
             setup_path = resolve_setupapi_path(setupapi_relpath)
             args["setupapi_path"] = str(setup_path)
-            setupapi_records = parse_setupapi_dev_log(setup_path).get("records") or []
+            try:
+                setupapi_records = parse_setupapi_dev_log(setup_path).get("records") or []
+            except Exception:
+                setupapi_records = []
 
         if scheduled_task_relpath:
             task_path = resolve_scheduled_task_path(scheduled_task_relpath)
             args["scheduled_task_path"] = str(task_path)
-            scheduled_tasks = parse_scheduled_task_file(task_path).get("records") or []
+            try:
+                scheduled_tasks = parse_scheduled_task_file(task_path).get("records") or []
+            except Exception:
+                scheduled_tasks = []
 
         if shimcache_relpath:
             shim_path = resolve_csv_artifact_path(shimcache_relpath)
             args["shimcache_path"] = str(shim_path)
-            from postmortem_mcp.artifact_parse import load_csv_records
+            try:
+                from postmortem_mcp.artifact_parse import load_csv_records
 
-            shimcache_records = load_csv_records(shim_path, max_records=max_records).get("records") or []
+                shimcache_records = load_csv_records(shim_path, max_records=max_records).get("records") or []
+            except Exception:
+                shimcache_records = []
 
         timeline = build_super_timeline(
             evtx_records=evtx_records,

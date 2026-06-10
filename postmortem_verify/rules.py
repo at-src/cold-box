@@ -921,10 +921,13 @@ def rule_r15_timeline_correlation(ctx: VerifyContext) -> RuleResult:
             sources.append({"type": "timeline_event", **event})
 
     if len(by_source) >= 2 or len(events) >= 5:
+        auth_count = sum(1 for event in events if event.get("category") == "authentication")
         detail = (
             f"Cross-source timeline: {len(events)} event(s) from "
             + ", ".join(f"{k}={v}" for k, v in sorted(by_source.items()))
         )
+        if auth_count:
+            detail += f"; {auth_count} security logon event(s)"
         return RuleResult("R15", "timeline_correlation", "contradiction", detail, sources)
 
     return RuleResult(
