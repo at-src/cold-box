@@ -86,10 +86,11 @@ def test_run_verifier_returns_all_rules() -> None:
     processes = [_process(4, "System", "0x1")]
     ctx = VerifyContext(pslist_processes=processes, psscan_processes=processes)
     results = run_verifier(ctx)
-    assert len(results) == 20
+    assert len(results) == 21
     assert [result.rule_id for result in results] == [
         "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10",
         "R11", "R12", "R13", "R14", "R15", "R16", "R18", "R19", "R20", "R21",
+        "R22",
     ]
 
 
@@ -113,6 +114,36 @@ def test_r21_removable_storage_attribution() -> None:
     assert "SanDisk" in result.detail
     assert any(s.get("type") == "audit" and s.get("audit_id") == "aud-usb-1" for s in result.sources)
     assert any(s.get("serial") == "4C530001120606116561" for s in result.sources)
+
+
+def test_r22_cleartext_identity_attribution() -> None:
+    http = {
+        "source": "nitroba.pcap",
+        "identities": [
+            {
+                "src_ip": "192.168.15.4",
+                "emails": ["jcoachj@gmail.com", "lilytuckrige@yahoo.com"],
+                "webmail_hosts": ["mail.google.com"],
+                "anon_mailer_hosts": ["www.willselfdestruct.com"],
+                "auth_cookie": True,
+            },
+            {
+                "src_ip": "8.8.8.8",
+                "emails": ["noreply@google.com"],
+                "webmail_hosts": [],
+                "anon_mailer_hosts": [],
+                "auth_cookie": False,
+            },
+        ],
+    }
+    ctx = VerifyContext.from_tool_payloads(http_data=http, http_audit_id="aud-http-1")
+    result = next(r for r in run_verifier(ctx) if r.rule_id == "R22")
+    assert result.status == "contradiction"
+    assert "192.168.15.4" in result.detail
+    assert any(s.get("type") == "audit" and s.get("audit_id") == "aud-http-1" for s in result.sources)
+    assert any(s.get("src_ip") == "192.168.15.4" for s in result.sources)
+    # Benign external server noise must not be attributed.
+    assert all(s.get("src_ip") != "8.8.8.8" for s in result.sources if s.get("type") == "network_identity")
 
 
 def test_r2_contradiction_without_execution_trail() -> None:

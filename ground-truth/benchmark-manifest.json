@@ -18,6 +18,15 @@
     "tier": "validation (Tier 2)"
   },
   {
+    "case_id": "nitroba",
+    "evidence_root": "/evidence",
+    "evidence_case": "nitroba",
+    "ground_truth": "ground-truth/nitroba.json",
+    "llm": false,
+    "max_iterations": 14,
+    "tier": "validation (Tier 1)"
+  },
+  {
     "case_id": "dart-sample-evidence",
     "evidence_root": "/opt/ref/agentic-dart/examples/sample-evidence",
     "evidence_case": ".",

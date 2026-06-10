@@ -41,6 +41,7 @@ class VerifyContext:
     dns_queries: list[dict[str, Any]] | None = None
     http_requests: list[dict[str, Any]] | None = None
     http_periodic: list[dict[str, Any]] | None = None
+    web_identities: list[dict[str, Any]] | None = None
     linux_persistence_findings: list[dict[str, Any]] | None = None
     setupapi_devices: list[dict[str, Any]] | None = None
     scheduled_tasks: list[dict[str, Any]] | None = None
@@ -168,6 +169,7 @@ class VerifyContext:
             dns_queries=_extract_dns_queries(dns_data),
             http_requests=_extract_http_requests(http_data),
             http_periodic=_extract_http_periodic(http_data),
+            web_identities=_extract_web_identities(http_data),
             linux_persistence_findings=_extract_linux_findings(
                 linux_persistence_data, linux_history_data
             ),
@@ -341,6 +343,15 @@ def _extract_http_periodic(payload: dict[str, Any] | None) -> list[dict[str, Any
     periodic = payload.get("periodic_same_size")
     if isinstance(periodic, list):
         return list(periodic)
+    return None
+
+
+def _extract_web_identities(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    identities = payload.get("identities")
+    if isinstance(identities, list):
+        return list(identities)
     return None
 
 

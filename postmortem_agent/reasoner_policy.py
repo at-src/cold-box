@@ -45,6 +45,7 @@ COVERAGE_RULES: dict[str, tuple[str, ...]] = {
     "R19": ("web_parse_access_log", "web_inspect_artifact"),
     "R20": ("logs_parse_structured",),
     "R21": ("disk_parse_usb",),
+    "R22": ("net_http_extract",),
 }
 
 PRIORITY_TOOLS = ("evidence_manifest", "mem_pslist", "mem_psscan", "disk_search_artifacts")
@@ -325,7 +326,7 @@ def _score_candidate(
         if rule_id in skipped:
             if rule_id == "R10" and "linux_log" not in survey_kinds:
                 continue
-            if rule_id in {"R8", "R9"} and "pcap" not in survey_kinds:
+            if rule_id in {"R8", "R9", "R22"} and "pcap" not in survey_kinds:
                 continue
             if rule_id in {"R11", "R12", "R13", "R16"} and not set(spec.consumes) & survey_kinds:
                 continue
@@ -351,6 +352,8 @@ def _score_candidate(
     if "R20" in skipped and tool == "logs_parse_structured":
         score += 90
     if "R21" in skipped and tool == "disk_parse_usb" and "registry_hive" in survey_kinds:
+        score += 135
+    if "R22" in skipped and tool == "net_http_extract" and "pcap" in survey_kinds:
         score += 135
     if "amcache" in survey_kinds and tool in {"reg_amcache", "disk_parse_amcache"}:
         if not _tool_succeeded(results, tool):

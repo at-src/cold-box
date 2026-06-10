@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import struct
 from pathlib import Path
 from typing import Any
@@ -10,8 +11,33 @@ PCAP_MAGIC_LE = 0xA1B2C3D4
 PCAP_MAGIC_BE = 0xD4C3B2A1
 PCAPNG_MAGIC = 0x0A0D0D0A
 
+# Default cap is high enough to read whole community capture files end-to-end;
+# callers that only need a quick triage can pass a smaller max_packets.
+DEFAULT_MAX_PACKETS = 500_000
 
-def _read_pcap_packets(path: Path, max_packets: int = 5000) -> list[bytes]:
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+# Hosts whose cleartext sessions expose a real-world identity (sender attribution).
+WEBMAIL_HOST_HINTS = (
+    "mail.google.com",
+    "mail.yahoo.com",
+    "mail.live.com",
+    "outlook.",
+    "webmail",
+    "horde",
+    "squirrelmail",
+)
+# Anonymous / throwaway email relays often used to mask a sender.
+ANON_MAILER_HINTS = (
+    "willselfdestruct",
+    "sendanonymousemail",
+    "anonymouse",
+    "guerrillamail",
+    "mailinator",
+    "10minutemail",
+)
+
+
+def _read_pcap_packets(path: Path, max_packets: int = DEFAULT_MAX_PACKETS) -> list[bytes]:
     raw = path.read_bytes()
     if len(raw) < 24:
         return []
@@ -122,9 +148,20 @@ def _parse_dns_qname(payload: bytes, offset: int) -> str:
     return ".".join(labels)
 
 
+def _frame_ips(frame: bytes) -> tuple[str, str]:
+    """Return (src_ip, dst_ip) from an Ethernet+IPv4 frame, best effort."""
+    if len(frame) < 34:
+        return "?", "?"
+    src = ".".join(str(b) for b in frame[26:30])
+    dst = ".".join(str(b) for b in frame[30:34])
+    return src, dst
+
+
 def extract_http_hosts(path: Path, *, max_records: int = 500) -> dict[str, Any]:
     hosts: list[dict[str, Any]] = []
     host_sizes: dict[str, list[int]] = {}
+    # src_ip -> attribution evidence (emails seen, webmail hosts, auth cookies)
+    ident: dict[str, dict[str, Any]] = {}
     for frame in _read_pcap_packets(path):
         parsed = _ipv4_payload(frame)
         if not parsed:
@@ -141,31 +178,76 @@ def extract_http_hosts(path: Path, *, max_records: int = 500) -> dict[str, Any]:
         if not body:
             continue
         text = body.decode("latin-1", errors="ignore")
+        src_ip, _dst_ip = _frame_ips(frame)
         host = None
         size = len(body)
-        for line in text.split("\r\n")[:20]:
-            if line.lower().startswith("host:"):
+        has_cookie = False
+        for line in text.split("\r\n")[:40]:
+            low = line.lower()
+            if low.startswith("host:"):
                 host = line.split(":", 1)[1].strip().lower()
-                break
-            if line.upper().startswith("POST ") or line.upper().startswith("GET "):
+            elif low.startswith("cookie:"):
+                has_cookie = True
+            elif line.upper().startswith(("POST ", "GET ")):
                 parts = line.split()
-                if len(parts) >= 2:
+                if len(parts) >= 2 and host is None:
                     host = parts[1].split("/")[2] if "://" in parts[1] else parts[1]
         if host:
             hosts.append({"host": host, "size": size, "dst_port": dst_port})
             host_sizes.setdefault(host, []).append(size)
-            if len(hosts) >= max_records:
-                break
+        # Attribution: cleartext emails + authenticated webmail sessions per host IP.
+        emails = {m.group(0).lower() for m in EMAIL_RE.finditer(text)}
+        host_l = (host or "").lower()
+        is_webmail = any(h in host_l for h in WEBMAIL_HOST_HINTS)
+        is_anon_mailer = any(h in host_l for h in ANON_MAILER_HINTS)
+        if emails or (host and (is_webmail or is_anon_mailer) and has_cookie):
+            rec = ident.setdefault(
+                src_ip,
+                {"src_ip": src_ip, "emails": set(), "webmail_hosts": set(),
+                 "anon_mailer_hosts": set(), "auth_cookie": False},
+            )
+            rec["emails"].update(e for e in emails if "@" in e)
+            if is_webmail and host:
+                rec["webmail_hosts"].add(host_l)
+            if is_anon_mailer and host:
+                rec["anon_mailer_hosts"].add(host_l)
+            if has_cookie and (is_webmail or is_anon_mailer):
+                rec["auth_cookie"] = True
+        if len(hosts) >= max_records and len(ident) >= max_records:
+            break
     periodic: list[dict[str, Any]] = []
     for host, sizes in host_sizes.items():
         if len(sizes) >= 3 and len(set(sizes)) == 1:
             periodic.append({"host": host, "size": sizes[0], "count": len(sizes)})
+    identities = [
+        {
+            "src_ip": rec["src_ip"],
+            "emails": sorted(rec["emails"])[:20],
+            "webmail_hosts": sorted(rec["webmail_hosts"]),
+            "anon_mailer_hosts": sorted(rec["anon_mailer_hosts"]),
+            "auth_cookie": rec["auth_cookie"],
+        }
+        for rec in ident.values()
+        if rec["emails"] or rec["auth_cookie"] or rec["anon_mailer_hosts"]
+    ]
+    # Most attributable first: anonymous-relay users, then authenticated identities.
+    identities.sort(
+        key=lambda r: (
+            -len(r["anon_mailer_hosts"]),
+            -int(r["auth_cookie"]),
+            -len(r["emails"]),
+            r["src_ip"],
+        )
+    )
+    identities = identities[:25]
     return {
         "source": str(path),
         "parser": "pcap-http-minimal",
         "requests": hosts,
         "request_count": len(hosts),
         "periodic_same_size": periodic,
+        "identities": identities,
+        "identity_count": len(identities),
     }
 
 

@@ -975,3 +975,55 @@ def rule_r21_removable_storage(ctx: VerifyContext) -> RuleResult:
         f"{len(devices)} removable USB mass-storage device(s) attributed to host ({names})",
         sources,
     )
+
+
+def rule_r22_cleartext_identity(ctx: VerifyContext) -> RuleResult:
+    """R22: cleartext webmail identity / anonymous-relay use enabling sender attribution.
+
+    Network captures often expose a sender's real identity in cleartext: an
+    authenticated webmail session, a plaintext e-mail address, or use of an
+    anonymous remailer from an internal host. Correlating those to a source IP
+    attributes anonymous activity to a real account. This is a *fact* about what
+    the capture reveals, not an accusation — intent is decided downstream.
+    """
+    identities = ctx.web_identities or []
+    if not identities:
+        return RuleResult("R22", "cleartext_identity", "skipped", "HTTP identity input missing", [])
+
+    # Attributable = used an anonymous relay, OR authenticated webmail + a real address.
+    attributable = [
+        ident
+        for ident in identities
+        if ident.get("anon_mailer_hosts")
+        or (ident.get("auth_cookie") and ident.get("emails"))
+    ]
+    if not attributable:
+        return RuleResult(
+            "R22", "cleartext_identity", "pass", "No attributable cleartext identity exposed", []
+        )
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.http_audit_id, "net_http_extract", ctx.http_source)
+    if audit:
+        sources.append(audit)
+    for ident in attributable[:5]:
+        sources.append(
+            {
+                "type": "network_identity",
+                "src_ip": ident.get("src_ip"),
+                "emails": (ident.get("emails") or [])[:6],
+                "webmail_hosts": ident.get("webmail_hosts") or [],
+                "anon_mailer_hosts": ident.get("anon_mailer_hosts") or [],
+                "auth_cookie": bool(ident.get("auth_cookie")),
+            }
+        )
+
+    top = attributable[0]
+    ip = top.get("src_ip", "?")
+    relays = ", ".join(top.get("anon_mailer_hosts") or []) or "—"
+    email = next(iter(top.get("emails") or []), "?")
+    detail = (
+        f"{len(attributable)} host(s) with attributable cleartext identity; "
+        f"strongest: {ip} (relay(s): {relays}; identity: {email})"
+    )
+    return RuleResult("R22", "cleartext_identity", "contradiction", detail, sources)

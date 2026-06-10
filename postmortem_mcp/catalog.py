@@ -317,13 +317,13 @@ CATALOG: dict[str, ToolSpec] = {
     ),
     "net_http_extract": ToolSpec(
         name="net_http_extract",
-        summary="Extract HTTP hosts and periodic same-size POST patterns",
+        summary="Extract HTTP hosts, beacon patterns, and cleartext identities/cookies",
         consumes=("pcap",),
-        produces=("http_requests",),
-        when_to_use="Suspected C2 beaconing over HTTP (R9)",
+        produces=("http_requests", "web_identities"),
+        when_to_use="Suspected C2 beaconing over HTTP (R9) or sender attribution via cleartext webmail identity / anonymous-relay use (R22)",
         params=_artifact_params("PCAP file relative to EVIDENCE_ROOT"),
-        mitre=("T1071.001",),
-        feeds_rules=("R9",),
+        mitre=("T1071.001", "T1040"),
+        feeds_rules=("R9", "R22"),
     ),
     "net_conversations": ToolSpec(
         name="net_conversations",
