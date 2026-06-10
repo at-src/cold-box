@@ -464,6 +464,8 @@ def _extract_services(
     services_data: dict[str, Any] | None,
     svcscan_data: dict[str, Any] | None,
 ) -> list[dict[str, Any]] | None:
+    from postmortem_mcp.artifact_parse import normalize_service_binary
+
     rows: list[dict[str, Any]] = []
     if services_data:
         records = services_data.get("records")
