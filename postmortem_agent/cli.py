@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from postmortem_agent.core import run_investigation
+from postmortem_agent.scoring import score_from_output_dir
 from postmortem_agent.state import AgentConfig
 from postmortem_audit import verify_chain
 from postmortem_mcp.config import audit_log_path, case_dir
@@ -74,6 +75,18 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_score(args: argparse.Namespace) -> int:
+    report = score_from_output_dir(
+        args.output_dir,
+        args.ground_truth,
+        self_corrected=args.self_corrected,
+    )
+    print(json.dumps(report.to_dict(), indent=2, sort_keys=True))
+    if report.required_recall < args.min_recall:
+        return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="cold-box autonomous investigation agent")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -114,6 +127,26 @@ def main(argv: list[str] | None = None) -> int:
     p_run.add_argument("--llm-model", help="Anthropic model id for --llm")
     p_run.add_argument("--max-iterations", type=int, default=25)
     p_run.set_defaults(func=cmd_run)
+
+    p_score = sub.add_parser("score", help="Score findings.json against ground truth")
+    p_score.add_argument("--output-dir", required=True, help="Case output dir with findings.json")
+    p_score.add_argument(
+        "--ground-truth",
+        required=True,
+        help="Path to ground-truth JSON (expected_findings)",
+    )
+    p_score.add_argument(
+        "--min-recall",
+        type=float,
+        default=0.0,
+        help="Exit 1 if required_recall is below this threshold",
+    )
+    p_score.add_argument(
+        "--self-corrected",
+        action="store_true",
+        help="Treat investigation as self-corrected for ground-truth matching",
+    )
+    p_score.set_defaults(func=cmd_score)
 
     args = parser.parse_args(argv)
     return args.func(args)

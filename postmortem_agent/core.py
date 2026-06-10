@@ -12,6 +12,7 @@ from postmortem_agent.diagnostic_memory import (
     record_case_pattern,
 )
 from postmortem_agent.findings import build_findings
+from postmortem_agent.narrative import append_narrative_finding
 from postmortem_agent.invoke import call_agent_tool
 from postmortem_agent.progress import append_progress, progress_log_path
 from postmortem_agent.reasoner import load_skill_index, make_reasoner
@@ -219,12 +220,24 @@ def _finalize(
     except ValueError:
         state.findings = []
 
+    narrative_payload = None
+    if state.findings:
+        try:
+            narrative_payload = append_narrative_finding(state, config)
+        except Exception:
+            narrative_payload = None
+
     if state.findings:
         findings_path = out_dir / "findings.json"
         findings_path.write_text(
             json.dumps({"findings": state.findings}, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+        if narrative_payload:
+            (out_dir / "narrative.md").write_text(
+                narrative_payload.get("text", "") + "\n",
+                encoding="utf-8",
+            )
         write_report(out_dir, case_id=config.case_id)
 
     record_case_pattern(

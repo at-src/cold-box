@@ -44,13 +44,16 @@ def validate_finding(finding: dict[str, Any], *, index: int | None = None) -> di
     if not isinstance(finding_id, str) or not finding_id.strip():
         raise FindingGateError(f"{prefix}: id must be a non-empty string")
 
-    return {
+    normalized = {
         "id": finding_id,
         "claim": claim.strip(),
         "audit_ids": [aid.strip() for aid in audit_ids],
         "confidence": float(confidence),
         "status": status,
     }
+    if "tags" in finding and isinstance(finding["tags"], list):
+        normalized["tags"] = finding["tags"]
+    return normalized
 
 
 def validate_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
