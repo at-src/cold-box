@@ -62,6 +62,9 @@ def test_list_partitions_bare_image(monkeypatch):
     assert len(parts) == 1
     assert parts[0].slot == "bare"
     assert parts[0].start == 0
+    # A bare single-volume image (no partition table, length 0) must still be
+    # treated as a filesystem, else extraction silently skips the whole image.
+    assert parts[0].is_filesystem is True
 
 
 @pytest.mark.parametrize(

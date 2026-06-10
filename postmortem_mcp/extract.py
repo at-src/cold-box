@@ -52,6 +52,10 @@ class Partition:
         desc = self.description.lower()
         if "unallocated" in desc or "primary table" in desc or "extended" in desc:
             return False
+        # A bare image (single volume, no partition table) is the whole filesystem
+        # at offset 0; it legitimately has length 0 in our synthetic partition.
+        if self.slot == "bare":
+            return True
         return self.length > 0
 
 
@@ -218,15 +222,29 @@ def _sha256_file(path: Path) -> str:
 
 
 def _icat(image: Path, offset: int, inode: str, dest: Path) -> bool:
-    dest.parent.mkdir(parents=True, exist_ok=True)
+    # Defensive against NTFS path collisions (a name that exists as both a
+    # deleted file and an allocated directory): never let one bad path abort
+    # the whole image extraction.
+    try:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+    except (NotADirectoryError, FileExistsError, OSError):
+        return False
+    if dest.exists() and dest.is_dir():
+        return False
     cmd = ["icat"]
     if offset:
         cmd += ["-o", str(offset)]
     cmd += [str(image), inode]
-    proc = subprocess.run(cmd, capture_output=True, check=False, timeout=TSK_TIMEOUT_SEC)
+    try:
+        proc = subprocess.run(cmd, capture_output=True, check=False, timeout=TSK_TIMEOUT_SEC)
+    except subprocess.TimeoutExpired:
+        return False
     if proc.returncode != 0 or not proc.stdout:
         return False
-    dest.write_bytes(proc.stdout)
+    try:
+        dest.write_bytes(proc.stdout)
+    except (IsADirectoryError, NotADirectoryError, OSError):
+        return False
     return True
 
 

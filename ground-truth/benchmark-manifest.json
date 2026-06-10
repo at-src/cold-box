@@ -36,6 +36,33 @@
     "tier": "validation (Tier 2) — Linux disk+mem+net"
   },
   {
+    "case_id": "ali-hadi-7",
+    "evidence_root": "/evidence",
+    "evidence_case": "ali-hadi-7",
+    "ground_truth": "ground-truth/ali-hadi-7.json",
+    "llm": false,
+    "max_iterations": 16,
+    "tier": "validation (Tier 2) — Windows malware/persistence"
+  },
+  {
+    "case_id": "ali-hadi-9",
+    "evidence_root": "/evidence",
+    "evidence_case": "ali-hadi-9",
+    "ground_truth": "ground-truth/ali-hadi-9.json",
+    "llm": false,
+    "max_iterations": 16,
+    "tier": "validation (Tier 2) — false-positive / restraint test"
+  },
+  {
+    "case_id": "nist-hacking",
+    "evidence_root": "/evidence",
+    "evidence_case": "nist-hacking",
+    "ground_truth": "ground-truth/nist-hacking.json",
+    "llm": false,
+    "max_iterations": 16,
+    "tier": "validation (Tier 1) — Windows XP split-raw"
+  },
+  {
     "case_id": "dart-sample-evidence",
     "evidence_root": "/opt/ref/agentic-dart/examples/sample-evidence",
     "evidence_case": ".",
