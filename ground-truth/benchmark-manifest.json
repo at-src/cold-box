@@ -1,0 +1,29 @@
+[
+  {
+    "case_id": "nist-ndlc",
+    "evidence_root": "/evidence",
+    "evidence_case": "nist-pc-only",
+    "ground_truth": "ground-truth/nist-ndlc.json",
+    "llm": false,
+    "max_iterations": 20,
+    "tier": "validation (Tier 1)"
+  },
+  {
+    "case_id": "ali-hadi-1",
+    "evidence_root": "/evidence",
+    "evidence_case": "ali-hadi-1",
+    "ground_truth": "ground-truth/ali-hadi-1.json",
+    "llm": false,
+    "max_iterations": 22,
+    "tier": "validation (Tier 2)"
+  },
+  {
+    "case_id": "dart-sample-evidence",
+    "evidence_root": "/opt/ref/agentic-dart/examples/sample-evidence",
+    "evidence_case": ".",
+    "ground_truth": "ground-truth/dart-sample-evidence.json",
+    "llm": false,
+    "max_iterations": 16,
+    "tier": "functional"
+  }
+]

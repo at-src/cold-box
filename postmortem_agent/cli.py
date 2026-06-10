@@ -76,10 +76,14 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def cmd_score(args: argparse.Namespace) -> int:
+    # When --self-corrected is omitted, fall back to auto-detection from
+    # progress.jsonl rather than forcing False (which would mask a run that
+    # genuinely self-corrected).
+    self_corrected = True if args.self_corrected else None
     report = score_from_output_dir(
         args.output_dir,
         args.ground_truth,
-        self_corrected=args.self_corrected,
+        self_corrected=self_corrected,
     )
     print(json.dumps(report.to_dict(), indent=2, sort_keys=True))
     if report.required_recall < args.min_recall:
