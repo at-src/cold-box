@@ -6,6 +6,12 @@ import os
 from typing import Any
 
 from postmortem_mcp.timestomp import detect_timestomp_rows
+from postmortem_verify.known_good import (
+    is_known_good_binary,
+    is_known_good_path,
+    is_suspicious_location,
+    is_user_writable_path,
+)
 from postmortem_verify.models import VerifyContext, _connection_pid
 from postmortem_verify.models import RuleResult
 
@@ -339,8 +345,15 @@ def rule_r5_ghost_binary(ctx: VerifyContext) -> RuleResult:
         if not exe:
             continue
         normalized = _normalize_exe(str(exe))
-        if normalized not in ctx.evidence_basenames:
-            ghosts.append({"executable": exe, "normalized": normalized, "prefetch": entry})
+        if normalized in ctx.evidence_basenames:
+            continue
+        # The verifier's on-disk index is only the extracted forensic artifacts,
+        # not the full filesystem, so "absent" is a weak signal. Suppress
+        # standard OS / first-party Microsoft binaries to avoid declaring
+        # benign hosts compromised; surface only genuinely non-standard ones.
+        if is_known_good_binary(normalized):
+            continue
+        ghosts.append({"executable": exe, "normalized": normalized, "prefetch": entry})
 
     sources: list[dict[str, Any]] = []
     audit = _audit_ref(ctx.prefetch_audit_id, "disk_parse_prefetch", ctx.prefetch_source)
@@ -699,24 +712,11 @@ def rule_r16_unusual_execution(ctx: VerifyContext) -> RuleResult:
             [],
         )
 
-    allowlist = {
-        "system",
-        "smss.exe",
-        "csrss.exe",
-        "wininit.exe",
-        "services.exe",
-        "lsass.exe",
-        "svchost.exe",
-        "explorer.exe",
-        "winlogon.exe",
-        "rundll32.exe",
-        "net.exe",
-        "winword.exe",
-    }
     suspicious_hints = ("remote", "admin", "stage", "loader", "cold", "backdoor", "helper")
 
     unusual: list[dict[str, Any]] = []
     for row in records:
+        raw_path = str(row.get("FullPath") or row.get("Path") or "")
         exe = _normalize_exe(
             str(
                 row.get("FullPath")
@@ -729,15 +729,19 @@ def rule_r16_unusual_execution(ctx: VerifyContext) -> RuleResult:
         )
         if not exe or not exe.endswith(".exe"):
             continue
-        if exe in allowlist:
+        # Suppress standard OS / first-party Microsoft binaries and binaries
+        # running from trusted install locations (system32, Program Files,
+        # OneDrive/Edge/Teams app dirs) — these are the dominant false positives.
+        if is_known_good_binary(exe) or is_known_good_path(raw_path):
             continue
         lower = exe.lower()
         if any(hint in lower for hint in suspicious_hints):
             unusual.append({**row, "executable": exe})
             continue
-        if "windows/system32" not in str(row.get("FullPath") or row.get("Path") or "").lower():
-            if "users" in str(row.get("FullPath") or row.get("Path") or "").lower():
-                unusual.append({**row, "executable": exe})
+        # Otherwise only surface unknown binaries executing from user-writable /
+        # staging locations (not the broad "anything under users\\" heuristic).
+        if is_user_writable_path(raw_path) or is_suspicious_location(raw_path):
+            unusual.append({**row, "executable": exe})
 
     sources: list[dict[str, Any]] = []
     for tool, audit_id, source in (

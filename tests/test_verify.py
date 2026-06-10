@@ -207,6 +207,61 @@ def test_r5_contradiction_on_missing_binary() -> None:
     assert "STAGE-RUNNER.EXE" in result.detail
 
 
+def test_r5_suppresses_known_good_binary() -> None:
+    """A standard Windows binary absent from the (partial) extracted index must
+    not be reported as a ghost binary."""
+    from postmortem_verify.rules import rule_r5_ghost_binary
+
+    ctx = VerifyContext.from_tool_payloads(
+        prefetch_data={
+            "executables": [
+                {"executable": "BACKGROUNDTASKHOST.EXE", "last_run": "2026-01-01T00:00:00Z"},
+                {"executable": "ONEDRIVE.EXE", "last_run": "2026-01-01T00:00:00Z"},
+            ]
+        },
+        evidence_root=REPO_ROOT / "examples" / "sample-evidence",
+    )
+    result = rule_r5_ghost_binary(ctx)
+    assert result.status == "pass"
+
+
+def test_r16_suppresses_microsoft_app_path() -> None:
+    """OneDrive running from its standard AppData path is not unusual execution."""
+    from postmortem_verify.rules import rule_r16_unusual_execution
+
+    ctx = VerifyContext.from_tool_payloads(
+        amcache_data={
+            "records": [
+                {
+                    "FullPath": r"c:\users\ieuser\appdata\local\microsoft\onedrive\onedrive.exe",
+                    "LastRun": "2026-01-01T00:00:00Z",
+                }
+            ]
+        },
+    )
+    result = rule_r16_unusual_execution(ctx)
+    assert result.status == "pass"
+
+
+def test_r16_flags_unknown_binary_in_temp() -> None:
+    """An unknown executable staged in a temp/download path is still surfaced."""
+    from postmortem_verify.rules import rule_r16_unusual_execution
+
+    ctx = VerifyContext.from_tool_payloads(
+        amcache_data={
+            "records": [
+                {
+                    "FullPath": r"c:\users\victim\appdata\local\temp\svch0st.exe",
+                    "LastRun": "2026-01-01T00:00:00Z",
+                }
+            ]
+        },
+    )
+    result = rule_r16_unusual_execution(ctx)
+    assert result.status == "contradiction"
+    assert "svch0st.exe" in result.detail
+
+
 def test_r6_contradiction_on_orphan_connection() -> None:
     pslist = json.loads((REPO_ROOT / "examples/sample-verifier/r6-pslist.json").read_text())
     netscan = json.loads((REPO_ROOT / "examples/sample-verifier/r6-netscan.json").read_text())
