@@ -6,6 +6,15 @@ from postmortem_verify.models import RuleResult, VerifyContext
 from postmortem_verify.rules import (
     rule_r1_hidden_process,
     rule_r10_linux_persistence,
+    rule_r11_ghost_service,
+    rule_r12_usb_initial_access,
+    rule_r13_scheduled_task,
+    rule_r14_suspicious_ioc,
+    rule_r15_timeline_correlation,
+    rule_r16_unusual_execution,
+    rule_r18_cmd_leftover,
+    rule_r19_web_attack,
+    rule_r20_structured_log_alert,
     rule_r2_no_execution_trail,
     rule_r3_phantom_logon,
     rule_r4_timestomp,
@@ -27,6 +36,15 @@ ALL_RULES = [
     rule_r8_dns_exfil,
     rule_r9_http_beacon,
     rule_r10_linux_persistence,
+    rule_r11_ghost_service,
+    rule_r12_usb_initial_access,
+    rule_r13_scheduled_task,
+    rule_r14_suspicious_ioc,
+    rule_r15_timeline_correlation,
+    rule_r16_unusual_execution,
+    rule_r18_cmd_leftover,
+    rule_r19_web_attack,
+    rule_r20_structured_log_alert,
 ]
 
 

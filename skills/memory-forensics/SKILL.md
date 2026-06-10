@@ -1,6 +1,9 @@
-# Memory analysis
+---
+name: Memory forensics
+when_to_use: Case includes a Windows RAM capture and you need process, network, or injection evidence
+---
 
-Run this when the case includes a Windows RAM capture and you need process, network, or injection evidence from volatile state.
+# Memory analysis
 
 ## Setup
 

@@ -9,8 +9,13 @@ from postmortem_mcp.config import vol3_binary
 from postmortem_mcp.paths import resolve_memory_path
 from postmortem_mcp.vol import (
     run_cmdline,
+    run_cmdscan,
     run_dlllist,
+    run_filescan,
+    run_handles,
+    run_hivelist,
     run_malfind,
+    run_modules,
     run_netscan,
     run_pslist,
     run_psscan,
@@ -68,6 +73,16 @@ def _memory_tool(
             return _cap_rows(data, "dlls", "dll_count", max_records)
         if tool == "mem_svcscan":
             return _cap_rows(data, "services", "service_count", max_records)
+        if tool == "mem_hivelist":
+            return _cap_rows(data, "hives", "hive_count", max_records)
+        if tool == "mem_filescan":
+            return _cap_rows(data, "files", "file_count", max_records)
+        if tool == "mem_cmdscan":
+            return _cap_rows(data, "commands", "command_count", max_records)
+        if tool == "mem_handles":
+            return _cap_rows(data, "handles", "handle_count", max_records)
+        if tool == "mem_modules":
+            return _cap_rows(data, "modules", "module_count", max_records)
         return _cap_rows(data, "cmdlines", "cmdline_count", max_records)
 
     return run_audited_tool(
@@ -220,4 +235,94 @@ def mem_svcscan(
         iteration=iteration,
         max_records=max_records,
         runner=run_svcscan,
+    )
+
+
+def mem_hivelist(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 200,
+) -> dict:
+    """List registry hives loaded in memory (Volatility hivelist)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_hivelist",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_hivelist,
+    )
+
+
+def mem_filescan(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 500,
+) -> dict:
+    """Scan memory for file object artifacts (Volatility filescan)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_filescan",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_filescan,
+    )
+
+
+def mem_cmdscan(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 300,
+) -> dict:
+    """Recover command history buffers from memory (Volatility cmdscan)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_cmdscan",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_cmdscan,
+    )
+
+
+def mem_handles(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 500,
+) -> dict:
+    """List open handles per process from memory (Volatility handles)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_handles",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_handles,
+    )
+
+
+def mem_modules(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 500,
+) -> dict:
+    """List kernel modules loaded in memory (Volatility modules)."""
+    return _memory_tool(
+        case_id=case_id,
+        memory_relpath=memory_relpath,
+        tool="mem_modules",
+        iteration=iteration,
+        max_records=max_records,
+        runner=run_modules,
     )

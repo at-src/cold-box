@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Literal
@@ -41,6 +42,15 @@ class VerifyContext:
     http_requests: list[dict[str, Any]] | None = None
     http_periodic: list[dict[str, Any]] | None = None
     linux_persistence_findings: list[dict[str, Any]] | None = None
+    setupapi_devices: list[dict[str, Any]] | None = None
+    scheduled_tasks: list[dict[str, Any]] | None = None
+    service_entries: list[dict[str, Any]] | None = None
+    search_hits: list[dict[str, Any]] | None = None
+    timeline_events: list[dict[str, Any]] | None = None
+    cmdline_entries: list[dict[str, Any]] | None = None
+    web_suspicious_requests: list[dict[str, Any]] | None = None
+    web_artifact_indicators: list[dict[str, Any]] | None = None
+    structured_log_events: list[dict[str, Any]] | None = None
 
     pslist_audit_id: str | None = None
     psscan_audit_id: str | None = None
@@ -54,6 +64,15 @@ class VerifyContext:
     dns_audit_id: str | None = None
     http_audit_id: str | None = None
     linux_audit_id: str | None = None
+    setupapi_audit_id: str | None = None
+    scheduled_task_audit_id: str | None = None
+    services_audit_id: str | None = None
+    timeline_audit_id: str | None = None
+    search_audit_id: str | None = None
+    cmdline_audit_id: str | None = None
+    web_access_audit_id: str | None = None
+    web_inspect_audit_id: str | None = None
+    structured_log_audit_id: str | None = None
 
     pslist_source: str | None = None
     psscan_source: str | None = None
@@ -86,6 +105,17 @@ class VerifyContext:
         http_data: dict[str, Any] | None = None,
         linux_persistence_data: dict[str, Any] | None = None,
         linux_history_data: dict[str, Any] | None = None,
+        setupapi_data: dict[str, Any] | None = None,
+        scheduled_task_data: dict[str, Any] | None = None,
+        services_data: dict[str, Any] | None = None,
+        svcscan_data: dict[str, Any] | None = None,
+        search_data: dict[str, Any] | None = None,
+        timeline_data: dict[str, Any] | None = None,
+        cmdline_data: dict[str, Any] | None = None,
+        cmdscan_data: dict[str, Any] | None = None,
+        web_access_data: dict[str, Any] | None = None,
+        web_inspect_data: dict[str, Any] | None = None,
+        structured_log_data: dict[str, Any] | None = None,
         evidence_root: str | Path | None = None,
         pslist_audit_id: str | None = None,
         psscan_audit_id: str | None = None,
@@ -99,6 +129,15 @@ class VerifyContext:
         dns_audit_id: str | None = None,
         http_audit_id: str | None = None,
         linux_audit_id: str | None = None,
+        setupapi_audit_id: str | None = None,
+        scheduled_task_audit_id: str | None = None,
+        services_audit_id: str | None = None,
+        timeline_audit_id: str | None = None,
+        search_audit_id: str | None = None,
+        cmdline_audit_id: str | None = None,
+        web_access_audit_id: str | None = None,
+        web_inspect_audit_id: str | None = None,
+        structured_log_audit_id: str | None = None,
         timestomp_tolerance_seconds: int = 1,
     ) -> VerifyContext:
         mft_records = _extract_mft_records(mft_data)
@@ -127,6 +166,15 @@ class VerifyContext:
             linux_persistence_findings=_extract_linux_findings(
                 linux_persistence_data, linux_history_data
             ),
+            setupapi_devices=_extract_setupapi(setupapi_data),
+            scheduled_tasks=_extract_scheduled_tasks(scheduled_task_data),
+            service_entries=_extract_services(services_data, svcscan_data),
+            search_hits=_extract_search_hits(search_data),
+            timeline_events=_extract_timeline_events(timeline_data),
+            cmdline_entries=_extract_cmdlines(cmdline_data, cmdscan_data),
+            web_suspicious_requests=_extract_web_suspicious(web_access_data),
+            web_artifact_indicators=_extract_web_indicators(web_inspect_data),
+            structured_log_events=_extract_structured_flagged(structured_log_data),
             pslist_audit_id=pslist_audit_id,
             psscan_audit_id=psscan_audit_id,
             amcache_audit_id=amcache_audit_id,
@@ -139,6 +187,19 @@ class VerifyContext:
             dns_audit_id=dns_audit_id,
             http_audit_id=http_audit_id,
             linux_audit_id=linux_audit_id or (linux_persistence_data or {}).get("audit_id"),
+            setupapi_audit_id=setupapi_audit_id or (setupapi_data or {}).get("audit_id"),
+            scheduled_task_audit_id=scheduled_task_audit_id
+            or (scheduled_task_data or {}).get("audit_id"),
+            services_audit_id=services_audit_id
+            or (services_data or svcscan_data or {}).get("audit_id"),
+            timeline_audit_id=timeline_audit_id or (timeline_data or {}).get("audit_id"),
+            search_audit_id=search_audit_id or (search_data or {}).get("audit_id"),
+            cmdline_audit_id=cmdline_audit_id
+            or (cmdline_data or cmdscan_data or {}).get("audit_id"),
+            web_access_audit_id=web_access_audit_id or (web_access_data or {}).get("audit_id"),
+            web_inspect_audit_id=web_inspect_audit_id or (web_inspect_data or {}).get("audit_id"),
+            structured_log_audit_id=structured_log_audit_id
+            or (structured_log_data or {}).get("audit_id"),
             pslist_source=(pslist_data or {}).get("source"),
             psscan_source=(psscan_data or {}).get("source"),
             amcache_source=(amcache_data or {}).get("source"),
@@ -294,6 +355,119 @@ def _extract_linux_findings(
     return rows or None
 
 
+def _extract_search_hits(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    hits = payload.get("hits")
+    if isinstance(hits, list):
+        return list(hits)
+    return None
+
+
+def _extract_timeline_events(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    events = payload.get("events")
+    if isinstance(events, list):
+        return list(events)
+    return None
+
+
+def _extract_cmdlines(
+    cmdline_data: dict[str, Any] | None,
+    cmdscan_data: dict[str, Any] | None,
+) -> list[dict[str, Any]] | None:
+    rows: list[dict[str, Any]] = []
+    for payload in (cmdline_data, cmdscan_data):
+        if not payload:
+            continue
+        for key in ("cmdlines", "records", "processes", "rows"):
+            items = payload.get(key)
+            if isinstance(items, list):
+                rows.extend(item for item in items if isinstance(item, dict))
+    return rows or None
+
+
+def _extract_web_suspicious(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    hits = payload.get("suspicious_requests")
+    if isinstance(hits, list):
+        return list(hits)
+    return None
+
+
+def _extract_web_indicators(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    indicators = payload.get("indicators")
+    if isinstance(indicators, list) and indicators:
+        return list(indicators)
+    if payload.get("suspicious"):
+        return [{"path": payload.get("path"), "snippet": "webshell indicators present"}]
+    return None
+
+
+def _extract_structured_flagged(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    flagged = payload.get("flagged_events")
+    if isinstance(flagged, list) and flagged:
+        return list(flagged)
+    return None
+
+
+def _extract_setupapi(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    suspicious = payload.get("suspicious_devices")
+    if isinstance(suspicious, list) and suspicious:
+        return list(suspicious)
+    records = payload.get("records")
+    if isinstance(records, list):
+        flagged = [row for row in records if isinstance(row, dict) and row.get("suspicious_kvm")]
+        return flagged or list(records)
+    return None
+
+
+def _extract_scheduled_tasks(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    records = payload.get("records")
+    if isinstance(records, list):
+        return list(records)
+    if payload.get("task_name"):
+        return [payload]
+    return None
+
+
+def _extract_services(
+    services_data: dict[str, Any] | None,
+    svcscan_data: dict[str, Any] | None,
+) -> list[dict[str, Any]] | None:
+    rows: list[dict[str, Any]] = []
+    if services_data:
+        records = services_data.get("records")
+        if isinstance(records, list):
+            rows.extend(records)
+    if svcscan_data:
+        services = svcscan_data.get("services")
+        if isinstance(services, list):
+            for svc in services:
+                if not isinstance(svc, dict):
+                    continue
+                binary = svc.get("Binary") or svc.get("ImagePath") or svc.get("Path") or ""
+                rows.append(
+                    {
+                        "name": svc.get("Name") or svc.get("Service") or "?",
+                        "binary": binary,
+                        "binary_basename": normalize_service_binary(str(binary)),
+                        "source": "mem_svcscan",
+                    }
+                )
+    return rows or None
+
+
 def _extract_security_events(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
     if payload is None:
         return None
@@ -304,7 +478,48 @@ def _extract_security_events(payload: dict[str, Any] | None) -> list[dict[str, A
             events = records
     if events is None:
         return None
-    return list(events)
+    normalized: list[dict[str, Any]] = []
+    for row in events:
+        if not isinstance(row, dict):
+            continue
+        if "event_id" in row:
+            normalized.append(row)
+            continue
+        eid_raw = row.get("EventId") or row.get("Event ID") or row.get("Id") or 0
+        try:
+            event_id = int(eid_raw)
+        except (TypeError, ValueError):
+            event_id = 0
+        payload_text = " ".join(
+            str(row.get(key, ""))
+            for key in ("PayloadData1", "PayloadData2", "PayloadData3", "Payload")
+        )
+        logon_type = row.get("LogonType")
+        if logon_type is None and "LogonType" in payload_text:
+            for token in payload_text.replace(",", " ").split():
+                if token.startswith("LogonType"):
+                    try:
+                        logon_type = int(token.split("LogonType", 1)[1].strip())
+                    except ValueError:
+                        pass
+                    break
+        session_id = row.get("SessionId") or row.get("TargetLogonId")
+        if session_id is None and "LogonId:" in payload_text:
+            for part in payload_text.split(","):
+                if "LogonId:" in part:
+                    session_id = part.split("LogonId:", 1)[1].strip()
+                    break
+        normalized.append(
+            {
+                "event_id": event_id,
+                "time_created": row.get("TimeCreated") or row.get("Timestamp"),
+                "user": row.get("UserName") or row.get("TargetUserName"),
+                "logon_type": logon_type,
+                "session_id": session_id,
+                "raw": row,
+            }
+        )
+    return normalized
 
 
 def _extract_connections(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:

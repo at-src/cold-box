@@ -13,6 +13,8 @@ EVTX_SUFFIXES = {".evtx"}
 MFT_NAMES = {"$mft", "mft"}
 REGISTRY_SUFFIXES = {".dat", ".hve", ".log", ".reg"}
 REGISTRY_BASENAMES = {"software", "system", "sam", "security", "ntuser.dat"}
+SETUPAPI_NAMES = {"setupapi.dev.log", "setupapi.log"}
+SCHEDULED_TASK_DIR = "tasks"
 
 
 def resolve_memory_path(relpath: str) -> Path:
@@ -92,6 +94,45 @@ def resolve_pcap_path(relpath: str) -> Path:
     return path
 
 
+def resolve_setupapi_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"SetupAPI log must be a file: {path}")
+    name = path.name.lower()
+    if name not in SETUPAPI_NAMES and "setupapi" not in name:
+        raise EvidencePathError(f"Expected setupapi log; got {path.name!r}")
+    return path
+
+
+def resolve_scheduled_task_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"Scheduled task must be a file: {path}")
+    if "tasks" not in path.as_posix().lower() and path.suffix.lower() not in {".xml", ""}:
+        raise EvidencePathError(f"Expected scheduled task file; got {path.name!r}")
+    return path
+
+
+def resolve_csv_artifact_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"CSV artifact must be a file: {path}")
+    if path.suffix.lower() != ".csv":
+        raise EvidencePathError(f"Expected .csv artifact; got {path.name!r}")
+    return path
+
+
+def resolve_lnk_path(relpath: str) -> Path:
+    return resolve_artifact_path(relpath, allowed_suffixes={".lnk"})
+
+
+def resolve_text_or_dir_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file() and not path.is_dir():
+        raise EvidencePathError(f"Path must be a file or directory: {path}")
+    return path
+
+
 def resolve_linux_log_path(relpath: str) -> Path:
     path = resolve_read_path(relpath)
     if not path.is_file():
@@ -100,4 +141,35 @@ def resolve_linux_log_path(relpath: str) -> Path:
     allowed = {"auth.log", "secure", "syslog", "messages", "kern.log", "auditd_sample.txt"}
     if name not in allowed and "log" not in name:
         raise EvidencePathError(f"Expected Linux log file; got {path.name!r}")
+    return path
+
+
+def resolve_web_log_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"Web log must be a file: {path}")
+    name = path.name.lower()
+    parts = [p.lower() for p in path.parts]
+    if name not in {"access.log", "error.log"} and not (name.endswith(".log") and "web" in parts):
+        raise EvidencePathError(f"Expected web access/error log; got {path.name!r}")
+    return path
+
+
+def resolve_web_artifact_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"Web artifact must be a file: {path}")
+    if path.suffix.lower() not in {".php", ".html", ".htm", ".asp", ".aspx", ".jsp"}:
+        raise EvidencePathError(f"Expected web artifact suffix; got {path.name!r}")
+    return path
+
+
+def resolve_structured_log_path(relpath: str) -> Path:
+    path = resolve_read_path(relpath)
+    if not path.is_file():
+        raise EvidencePathError(f"Structured log must be a file: {path}")
+    suffix = path.suffix.lower()
+    name = path.name.lower()
+    if suffix not in {".jsonl", ".ndjson", ".json"} and "journal" not in name:
+        raise EvidencePathError(f"Expected JSONL/NDJSON log; got {path.name!r}")
     return path

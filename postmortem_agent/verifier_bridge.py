@@ -13,10 +13,10 @@ from postmortem_verify.models import RuleResult
 def build_verify_context(state: InvestigationState, config: AgentConfig) -> VerifyContext:
     evidence_root = _evidence_root(config)
 
-    return VerifyContext.from_tool_payloads(
+    ctx = VerifyContext.from_tool_payloads(
         pslist_data=state.pslist_payload(),
         psscan_data=state.psscan_payload(),
-        amcache_data=_data(state, "disk_parse_amcache"),
+        amcache_data=_data(state, "disk_parse_amcache") or _data(state, "reg_amcache"),
         prefetch_data=_prefetch_data(state),
         mft_data=_data(state, "disk_parse_mft"),
         timestomp_data=_data(state, "disk_detect_timestomp"),
@@ -28,10 +28,21 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         http_data=_data(state, "net_http_extract"),
         linux_persistence_data=_data(state, "linux_persistence") or _data(state, "linux_cron"),
         linux_history_data=_data(state, "linux_bash_history"),
+        setupapi_data=_data(state, "disk_parse_setupapi"),
+        scheduled_task_data=_data(state, "disk_parse_scheduled_tasks"),
+        services_data=_data(state, "reg_services"),
+        svcscan_data=_data(state, "mem_svcscan"),
+        search_data=_data(state, "disk_search_artifacts"),
+        timeline_data=_data(state, "timeline_super") or _data(state, "disk_correlate_timeline"),
+        cmdline_data=_data(state, "mem_cmdline"),
+        cmdscan_data=_data(state, "mem_cmdscan"),
+        web_access_data=_data(state, "web_parse_access_log"),
+        web_inspect_data=_data(state, "web_inspect_artifact"),
+        structured_log_data=_data(state, "logs_parse_structured"),
         evidence_root=evidence_root,
         pslist_audit_id=state.audit_id("mem_pslist"),
         psscan_audit_id=state.audit_id("mem_psscan"),
-        amcache_audit_id=state.audit_id("disk_parse_amcache"),
+        amcache_audit_id=state.audit_id("disk_parse_amcache") or state.audit_id("reg_amcache"),
         prefetch_audit_id=state.audit_id("disk_parse_prefetch"),
         mft_audit_id=state.audit_id("disk_parse_mft"),
         netscan_audit_id=state.audit_id("mem_netscan"),
@@ -43,7 +54,25 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         linux_audit_id=state.audit_id("linux_persistence")
         or state.audit_id("linux_bash_history")
         or state.audit_id("linux_cron"),
+        setupapi_audit_id=state.audit_id("disk_parse_setupapi"),
+        scheduled_task_audit_id=state.audit_id("disk_parse_scheduled_tasks"),
+        services_audit_id=state.audit_id("reg_services") or state.audit_id("mem_svcscan"),
+        search_audit_id=state.audit_id("disk_search_artifacts"),
+        timeline_audit_id=state.audit_id("timeline_super") or state.audit_id("disk_correlate_timeline"),
+        cmdline_audit_id=state.audit_id("mem_cmdline") or state.audit_id("mem_cmdscan"),
+        web_access_audit_id=state.audit_id("web_parse_access_log"),
+        web_inspect_audit_id=state.audit_id("web_inspect_artifact"),
+        structured_log_audit_id=state.audit_id("logs_parse_structured"),
     )
+    if config.extracted_root and config.extracted_root.is_dir():
+        from postmortem_verify.models import evidence_basenames
+
+        extra = evidence_basenames(config.extracted_root)
+        if ctx.evidence_basenames:
+            ctx.evidence_basenames = ctx.evidence_basenames | extra
+        else:
+            ctx.evidence_basenames = extra
+    return ctx
 
 
 def _evidence_root(config: AgentConfig) -> Path | None:

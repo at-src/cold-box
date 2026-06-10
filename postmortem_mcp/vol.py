@@ -370,5 +370,107 @@ def run_svcscan(
     return data
 
 
+def parse_hivelist_table(output: str) -> list[dict[str, Any]]:
+    return parse_vol_tab_table(output, required_columns={"Offset", "Hive", "Name"})
+
+
+def parse_filescan_table(output: str) -> list[dict[str, Any]]:
+    return parse_vol_tab_table(output, required_columns={"Offset", "Name"})
+
+
+def parse_handles_table(output: str) -> list[dict[str, Any]]:
+    return parse_vol_tab_table(output, required_columns={"Offset", "PID", "Handle", "Type"})
+
+
+def parse_modules_table(output: str) -> list[dict[str, Any]]:
+    return parse_vol_tab_table(output, required_columns={"Offset", "Name", "Base"})
+
+
+def _rows_payload(data: dict[str, Any], key: str, count_key: str) -> dict[str, Any]:
+    data[count_key] = data["row_count"]
+    data[key] = data.pop("rows")
+    return data
+
+
+def run_hivelist(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.hivelist",
+        vol_binary=vol_binary,
+        parser=parse_hivelist_table,
+        timeout_sec=timeout_sec,
+    )
+    return _rows_payload(data, "hives", "hive_count")
+
+
+def run_filescan(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.filescan",
+        vol_binary=vol_binary,
+        parser=parse_filescan_table,
+        timeout_sec=timeout_sec,
+    )
+    return _rows_payload(data, "files", "file_count")
+
+
+def run_cmdscan(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.cmdscan",
+        vol_binary=vol_binary,
+        parser=parse_cmdline_table,
+        timeout_sec=timeout_sec,
+    )
+    return _rows_payload(data, "commands", "command_count")
+
+
+def run_handles(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.handles",
+        vol_binary=vol_binary,
+        parser=parse_handles_table,
+        timeout_sec=timeout_sec,
+    )
+    return _rows_payload(data, "handles", "handle_count")
+
+
+def run_modules(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 300,
+) -> dict[str, Any]:
+    data = run_vol_plugin(
+        memory_path,
+        "windows.modules",
+        vol_binary=vol_binary,
+        parser=parse_modules_table,
+        timeout_sec=timeout_sec,
+    )
+    return _rows_payload(data, "modules", "module_count")
+
+
 # Backward-compatible alias used in tests
 parse_pslist_table = parse_vol_process_table

@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 
 EVIDENCE_ROOT_ENV = "EVIDENCE_ROOT"
+EXTRACTED_ROOT_ENV = "EXTRACTED_ROOT"
+EXTRACTED_PREFIX = "extracted/"
 
 
 class EvidencePathError(ValueError):
@@ -22,8 +24,36 @@ def get_evidence_root() -> Path:
     return root
 
 
+def get_extracted_root() -> Path | None:
+    raw = os.environ.get(EXTRACTED_ROOT_ENV, "").strip()
+    if not raw:
+        return None
+    root = Path(raw).expanduser().resolve()
+    if not root.is_dir():
+        raise EvidencePathError(f"Extracted root does not exist: {root}")
+    return root
+
+
 def resolve_read_path(path: str | Path, *, evidence_root: Path | None = None) -> Path:
     """Resolve path and ensure it stays under the evidence root (read-only zone)."""
+    path_str = str(path).replace("\\", "/")
+    if path_str.startswith(EXTRACTED_PREFIX):
+        ext_root = get_extracted_root()
+        if ext_root is None:
+            raise EvidencePathError(
+                f"Path {path!r} requires {EXTRACTED_ROOT_ENV} to be set"
+            )
+        rel = path_str[len(EXTRACTED_PREFIX) :].lstrip("/")
+        candidate = (ext_root / rel).resolve() if rel else ext_root.resolve()
+        if not candidate.exists():
+            raise EvidencePathError(f"Path does not exist: {candidate}")
+        return candidate
+    if path_str.rstrip("/") == "extracted":
+        ext_root = get_extracted_root()
+        if ext_root is None:
+            raise EvidencePathError(f"Path 'extracted' requires {EXTRACTED_ROOT_ENV}")
+        return ext_root.resolve()
+
     root = evidence_root or get_evidence_root()
     candidate = Path(path).expanduser()
     if not candidate.is_absolute():

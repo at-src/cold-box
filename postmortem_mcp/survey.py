@@ -44,6 +44,24 @@ def classify_file(relpath: str, path: Path) -> str:
         return "prefetch"
     if suffix == ".lnk":
         return "lnk"
+    if name in {"setupapi.dev.log", "setupapi.log"} or "setupapi" in name:
+        return "setupapi_log"
+    if "tasks" in parts_lower and suffix in {"", ".xml"} and path.is_file():
+        return "scheduled_task"
+    if "shimcache" in name and suffix == ".csv":
+        return "shimcache"
+    if "runkeys" in name and suffix == ".csv":
+        return "registry_export"
+    if "shellbags" in name and suffix == ".csv":
+        return "shellbags"
+    if "services" in name and suffix == ".csv":
+        return "services_csv"
+    if "usnjrnl" in name or name.startswith("$j"):
+        return "usnjrnl"
+    if name == "srudb.dat":
+        return "srum"
+    if "recycle" in name or "$recycle.bin" in parts_lower:
+        return "recycle_bin"
     if suffix in {".pcap", ".pcapng"}:
         return "pcap"
     if name in {"$mft", "mft"} or suffix in {".mft"}:
@@ -53,8 +71,6 @@ def classify_file(relpath: str, path: Path) -> str:
     if name in REGISTRY_BASENAMES or suffix in {".dat", ".hve", ".log"}:
         if name in REGISTRY_BASENAMES or "registry" in parts_lower or "config" in parts_lower:
             return "registry_hive"
-    if name == "srudb.dat":
-        return "srum"
     if name in LINUX_LOG_NAMES or "bash_history" in name or name.endswith(".cron"):
         return "linux_log"
     if "var/log" in "/".join(parts_lower):
@@ -74,7 +90,59 @@ def classify_file(relpath: str, path: Path) -> str:
 
     if suffix in {".json", ".txt", ".md", ".csv"}:
         return "text"
+    if suffix in {".jsonl", ".ndjson"} or name.endswith(".ndjson"):
+        return "structured_log"
+    if suffix == ".php" or (suffix in {".html", ".htm"} and "web" in parts_lower):
+        return "web_artifact"
+    if name in {"access.log", "error.log"} or (name.endswith(".log") and "web" in parts_lower):
+        return "web_log"
     return "unknown"
+
+
+def merge_extracted_survey(
+    payload: dict[str, Any],
+    extracted_root: Path,
+    *,
+    prefix: str = "extracted",
+) -> dict[str, Any]:
+    """Append classified files from an extracted disk tree into an existing survey."""
+    if not extracted_root.is_dir():
+        return payload
+
+    files = list(payload.get("files") or [])
+    kinds_present = set(payload.get("kinds_present") or [])
+    seen = {entry.get("relpath") for entry in files}
+    added = 0
+
+    for path in sorted(extracted_root.rglob("*")):
+        if not path.is_file():
+            continue
+        try:
+            inner = path.relative_to(extracted_root.resolve()).as_posix()
+        except ValueError:
+            inner = path.name
+        relpath = f"{prefix}/{inner}"
+        if relpath in seen:
+            continue
+        kind = classify_file(relpath, path)
+        kinds_present.add(kind)
+        files.append(
+            {
+                "relpath": relpath,
+                "kind": kind,
+                "size": path.stat().st_size,
+                "applicable_tools": tools_for_kind(kind),
+                "extracted": True,
+            }
+        )
+        seen.add(relpath)
+        added += 1
+
+    payload["files"] = files
+    payload["kinds_present"] = sorted(kinds_present)
+    payload["extracted_file_count"] = added
+    payload["extracted_root"] = str(extracted_root)
+    return payload
 
 
 def build_survey_payload(case_root: Path, case_relpath: str) -> dict[str, Any]:

@@ -17,16 +17,32 @@ def make_reasoner(config: AgentConfig):
 
 
 def load_skill_index(skills_root: Path | None = None) -> list[dict[str, str]]:
-    root = skills_root or Path("skills")
+    root = skills_root or Path(__file__).resolve().parents[1] / "skills"
     if not root.is_dir():
         return []
     skills: list[dict[str, str]] = []
     for path in sorted(root.glob("*/SKILL.md")):
         text = path.read_text(encoding="utf-8")
-        name = path.parent.name.replace("-", " ")
-        when = _extract_when_to_use(text)
+        meta = _parse_frontmatter(text)
+        name = meta.get("name") or path.parent.name.replace("-", " ")
+        when = meta.get("when_to_use") or _extract_when_to_use(text)
         skills.append({"name": name, "when_to_use": when, "path": str(path)})
     return skills
+
+
+def _parse_frontmatter(text: str) -> dict[str, str]:
+    if not text.startswith("---"):
+        return {}
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return {}
+    meta: dict[str, str] = {}
+    for line in parts[1].splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        meta[key.strip()] = value.strip().strip('"').strip("'")
+    return meta
 
 
 def _extract_when_to_use(text: str) -> str:

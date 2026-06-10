@@ -1,0 +1,3 @@
+Name,Binary,State,StartType
+RemoteHandsSvc,C:\Users\analyst\Downloads\ghost-service.exe,Running,Auto
+WinDefend,C:\Program Files\Windows Defender\MsMpEng.exe,Running,Auto

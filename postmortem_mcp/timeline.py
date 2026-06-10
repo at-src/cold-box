@@ -108,6 +108,41 @@ def _memory_events(processes: list[dict[str, Any]], *, max_rows: int = 100) -> l
     return events
 
 
+def _setupapi_events(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
+    for row in records:
+        if not row.get("timestamp"):
+            continue
+        label = row.get("device_id") or f"VID_{row.get('vid')}&PID_{row.get('pid')}"
+        events.append(
+            {
+                "timestamp": row.get("timestamp"),
+                "source": "setupapi",
+                "category": "usb",
+                "event_id": None,
+                "summary": f"USB device inserted: {label}",
+                "detail": row,
+            }
+        )
+    return events
+
+
+def _task_events(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
+    for row in records:
+        events.append(
+            {
+                "timestamp": row.get("registered"),
+                "source": "scheduled_task",
+                "category": "persistence",
+                "event_id": None,
+                "summary": f"Scheduled task {row.get('task_name')}: {str(row.get('command', ''))[:80]}",
+                "detail": row,
+            }
+        )
+    return events
+
+
 def build_correlated_timeline(
     *,
     evtx_records: list[dict[str, Any]] | None = None,
@@ -151,6 +186,78 @@ def build_correlated_timeline(
         "events": merged,
         "cross_source_summary": (
             f"Correlated {len(sources)} source(s): "
+            + ", ".join(f"{k}={v}" for k, v in by_source.items())
+        ),
+    }
+
+
+def build_super_timeline(
+    *,
+    evtx_records: list[dict[str, Any]] | None = None,
+    mft_records: list[dict[str, Any]] | None = None,
+    memory_processes: list[dict[str, Any]] | None = None,
+    setupapi_records: list[dict[str, Any]] | None = None,
+    scheduled_tasks: list[dict[str, Any]] | None = None,
+    shimcache_records: list[dict[str, Any]] | None = None,
+    max_events: int = 500,
+) -> dict[str, Any]:
+    """Cross-source super timeline merging disk, memory, USB, and persistence artifacts."""
+    events: list[dict[str, Any]] = []
+    sources: list[str] = []
+
+    if evtx_records:
+        events.extend(_evtx_events(evtx_records))
+        sources.append("evtx")
+    if mft_records:
+        events.extend(_mft_events(mft_records))
+        sources.append("mft")
+    if memory_processes:
+        events.extend(_memory_events(memory_processes))
+        sources.append("memory")
+    if setupapi_records:
+        events.extend(_setupapi_events(setupapi_records))
+        sources.append("setupapi")
+    if scheduled_tasks:
+        events.extend(_task_events(scheduled_tasks))
+        sources.append("scheduled_task")
+    if shimcache_records:
+        for row in shimcache_records[:100]:
+            ts = _parse_ts(str(row.get("LastModifiedTimeUTC") or row.get("Timestamp") or ""))
+            path = str(row.get("Path") or row.get("path") or "")
+            if not path:
+                continue
+            events.append(
+                {
+                    "timestamp": ts,
+                    "source": "shimcache",
+                    "category": "execution",
+                    "event_id": None,
+                    "summary": f"ShimCache execution: {path[:100]}",
+                    "detail": {"path": path, "executed": row.get("Executed")},
+                }
+            )
+        sources.append("shimcache")
+
+    dated = [e for e in events if e.get("timestamp")]
+    undated = [e for e in events if not e.get("timestamp")]
+    dated.sort(key=lambda e: e["timestamp"])
+    merged = dated + undated
+    truncated = len(merged) > max_events
+    if truncated:
+        merged = merged[:max_events]
+
+    by_source = {src: sum(1 for e in merged if e["source"] == src) for src in sources}
+    return {
+        "sources": sources,
+        "event_count": len(merged),
+        "returned_count": len(merged),
+        "truncated": truncated,
+        "by_source": by_source,
+        "authentication_events": sum(1 for e in merged if e.get("category") == "authentication"),
+        "persistence_events": sum(1 for e in merged if e.get("category") == "persistence"),
+        "events": merged,
+        "cross_source_summary": (
+            f"Super-timeline from {len(sources)} source(s): "
             + ", ".join(f"{k}={v}" for k, v in by_source.items())
         ),
     }

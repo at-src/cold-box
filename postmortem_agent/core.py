@@ -19,7 +19,12 @@ from postmortem_agent.state import AgentConfig, InvestigationState
 from postmortem_agent.verifier_bridge import build_verify_context
 from postmortem_mcp.catalog import catalog_as_dict
 from postmortem_mcp.config import case_dir
-from postmortem_mcp.survey import build_survey_payload, evidence_survey, synthetic_survey
+from postmortem_mcp.survey import (
+    build_survey_payload,
+    evidence_survey,
+    merge_extracted_survey,
+    synthetic_survey,
+)
 from postmortem_report.report import write_report
 from postmortem_verify import run_verifier
 from postmortem_verify.models import RuleResult
@@ -28,11 +33,16 @@ GOAL = "Find evidence of compromise on this dead host and explain it."
 
 
 def run_investigation(config: AgentConfig) -> InvestigationState:
+    import os
+
     state = InvestigationState()
     out_dir = case_dir(config.case_id)
     progress_path = progress_log_path(out_dir)
     reasoner = make_reasoner(config)
     skills = load_skill_index()
+
+    if config.extracted_root:
+        os.environ["EXTRACTED_ROOT"] = str(config.extracted_root.expanduser().resolve())
 
     survey = _initial_survey(config)
     state.survey = survey
@@ -142,7 +152,12 @@ def _initial_survey(config: AgentConfig) -> dict[str, Any]:
     try:
         result = evidence_survey(config.case_id, config.evidence_case, iteration=0)
         if result.get("ok"):
-            return result["data"]
+            payload = result["data"]
+            if config.extracted_root and config.extracted_root.is_dir():
+                payload = merge_extracted_survey(
+                    payload, config.extracted_root.expanduser().resolve()
+                )
+            return payload
     except Exception:
         pass
 
@@ -150,7 +165,10 @@ def _initial_survey(config: AgentConfig) -> dict[str, Any]:
         from postmortem_mcp.paths import resolve_case_directory
 
         case_root = resolve_case_directory(config.evidence_case)
-        return build_survey_payload(case_root, config.evidence_case)
+        payload = build_survey_payload(case_root, config.evidence_case)
+        if config.extracted_root and config.extracted_root.is_dir():
+            payload = merge_extracted_survey(payload, config.extracted_root.expanduser().resolve())
+        return payload
     except Exception:
         return synthetic_survey(config.evidence_case, {})
 

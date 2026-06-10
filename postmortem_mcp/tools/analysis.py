@@ -4,6 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from postmortem_mcp.artifact_parse import (
+    is_placeholder_file,
+    parse_evtx_csv_sidecar,
+    parse_setupapi_dev_log,
+    parse_scheduled_task_file,
+)
 from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.config import (
     evtx_ecmd_binary,
@@ -21,12 +27,15 @@ from postmortem_mcp.ez_tools import (
 )
 from postmortem_mcp.paths import (
     resolve_case_directory,
+    resolve_csv_artifact_path,
     resolve_evtx_path,
     resolve_mft_path,
     resolve_memory_path,
     resolve_registry_path,
+    resolve_setupapi_path,
+    resolve_scheduled_task_path,
 )
-from postmortem_mcp.timeline import build_correlated_timeline, search_evidence_tree
+from postmortem_mcp.timeline import build_correlated_timeline, build_super_timeline, search_evidence_tree
 from postmortem_mcp.vol import run_pslist
 
 
@@ -50,13 +59,23 @@ def disk_evtx_filter(
     def execute() -> dict[str, Any]:
         path = resolve_evtx_path(artifact_relpath)
         args["artifact_path"] = str(path)
-        return parse_evtx_filtered(
-            path,
-            binary=evtx_ecmd_binary(),
-            scratch_dir=scratch_dir(case_id),
-            event_ids=ids,
-            max_records=max_records,
-        )
+        if is_placeholder_file(path):
+            sidecar = parse_evtx_csv_sidecar(path, event_ids=ids, max_records=max_records)
+            if sidecar:
+                return sidecar
+        try:
+            return parse_evtx_filtered(
+                path,
+                binary=evtx_ecmd_binary(),
+                scratch_dir=scratch_dir(case_id),
+                event_ids=ids,
+                max_records=max_records,
+            )
+        except Exception:
+            sidecar = parse_evtx_csv_sidecar(path, event_ids=ids, max_records=max_records)
+            if sidecar:
+                return sidecar
+            raise
 
     return run_audited_tool(
         case_id=case_id,
@@ -171,6 +190,105 @@ def disk_correlate_timeline(
     return run_audited_tool(
         case_id=case_id,
         tool="disk_correlate_timeline",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def timeline_super(
+    case_id: str,
+    evtx_relpath: str | None = None,
+    mft_relpath: str | None = None,
+    memory_relpath: str | None = None,
+    setupapi_relpath: str | None = None,
+    scheduled_task_relpath: str | None = None,
+    shimcache_relpath: str | None = None,
+    *,
+    iteration: int = 0,
+    max_events: int = 500,
+    max_records: int = 500,
+) -> dict:
+    """Super timeline: merge EVTX, MFT, memory, USB setupapi, scheduled tasks, and shimcache."""
+    args: dict[str, Any] = {
+        "case_id": case_id,
+        "evtx_relpath": evtx_relpath,
+        "mft_relpath": mft_relpath,
+        "memory_relpath": memory_relpath,
+        "setupapi_relpath": setupapi_relpath,
+        "scheduled_task_relpath": scheduled_task_relpath,
+        "shimcache_relpath": shimcache_relpath,
+        "max_events": max_events,
+    }
+
+    def execute() -> dict[str, Any]:
+        evtx_records: list[dict[str, Any]] | None = None
+        mft_records: list[dict[str, Any]] | None = None
+        memory_processes: list[dict[str, Any]] | None = None
+        setupapi_records: list[dict[str, Any]] | None = None
+        scheduled_tasks: list[dict[str, Any]] | None = None
+        shimcache_records: list[dict[str, Any]] | None = None
+
+        if evtx_relpath:
+            evtx_path = resolve_evtx_path(evtx_relpath)
+            args["evtx_path"] = str(evtx_path)
+            evtx_records = parse_evtx(
+                evtx_path,
+                binary=evtx_ecmd_binary(),
+                scratch_dir=scratch_dir(case_id),
+                max_records=max_records,
+            ).get("records") or []
+
+        if mft_relpath:
+            mft_path = resolve_mft_path(mft_relpath)
+            args["mft_path"] = str(mft_path)
+            if mft_path.suffix.lower() == ".csv":
+                mft_records = parse_mft_csv(mft_path, max_records=max_records).get("records") or []
+            else:
+                mft_records = parse_mft(
+                    mft_path,
+                    binary=mftecmd_binary(),
+                    scratch_dir=scratch_dir(case_id),
+                    max_records=max_records,
+                ).get("records") or []
+
+        if memory_relpath:
+            mem_path = resolve_memory_path(memory_relpath)
+            args["memory_path"] = str(mem_path)
+            memory_processes = run_pslist(mem_path, vol_binary=vol3_binary()).get("processes") or []
+
+        if setupapi_relpath:
+            setup_path = resolve_setupapi_path(setupapi_relpath)
+            args["setupapi_path"] = str(setup_path)
+            setupapi_records = parse_setupapi_dev_log(setup_path).get("records") or []
+
+        if scheduled_task_relpath:
+            task_path = resolve_scheduled_task_path(scheduled_task_relpath)
+            args["scheduled_task_path"] = str(task_path)
+            scheduled_tasks = parse_scheduled_task_file(task_path).get("records") or []
+
+        if shimcache_relpath:
+            shim_path = resolve_csv_artifact_path(shimcache_relpath)
+            args["shimcache_path"] = str(shim_path)
+            from postmortem_mcp.artifact_parse import load_csv_records
+
+            shimcache_records = load_csv_records(shim_path, max_records=max_records).get("records") or []
+
+        timeline = build_super_timeline(
+            evtx_records=evtx_records,
+            mft_records=mft_records,
+            memory_processes=memory_processes,
+            setupapi_records=setupapi_records,
+            scheduled_tasks=scheduled_tasks,
+            shimcache_records=shimcache_records,
+            max_events=max_events,
+        )
+        timeline["parser"] = "timeline-super"
+        return timeline
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="timeline_super",
         args=args,
         iteration=iteration,
         execute=execute,

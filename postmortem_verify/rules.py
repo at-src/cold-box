@@ -246,7 +246,11 @@ def rule_r3_phantom_logon(ctx: VerifyContext) -> RuleResult:
     for event in ctx.security_events:
         if int(event.get("event_id", 0)) != 4624:
             continue
-        logon_type = int(event.get("logon_type", 0))
+        logon_type_raw = event.get("logon_type", 0)
+        try:
+            logon_type = int(logon_type_raw or 0)
+        except (TypeError, ValueError):
+            logon_type = 0
         if logon_type not in {2, 3, 10}:
             continue
         session_id = event.get("session_id")
@@ -502,3 +506,431 @@ def rule_r10_linux_persistence(ctx: VerifyContext) -> RuleResult:
         )
 
     return RuleResult("R10", "linux_persistence", "pass", "No Linux persistence indicators", sources)
+
+
+def rule_r11_ghost_service(ctx: VerifyContext) -> RuleResult:
+    """R11: service ImagePath references a binary absent from the evidence tree."""
+    services = ctx.service_entries or []
+    if not services:
+        return RuleResult("R11", "ghost_service", "skipped", "service list input missing", [])
+    if not ctx.evidence_basenames:
+        return RuleResult("R11", "ghost_service", "skipped", "evidence file index missing", [])
+
+    ghosts: list[dict[str, Any]] = []
+    for svc in services:
+        basename = svc.get("binary_basename") or ""
+        if not basename or not basename.endswith(".exe"):
+            continue
+        if basename in ctx.evidence_basenames:
+            continue
+        if basename in {"svchost.exe", "services.exe", "lsass.exe", "csrss.exe"}:
+            continue
+        ghosts.append(svc)
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.services_audit_id, "reg_services", None) or _audit_ref(
+        ctx.services_audit_id, "mem_svcscan", None
+    )
+    if audit:
+        sources.append(audit)
+    for ghost in ghosts[:10]:
+        sources.append({"type": "ghost_service", **ghost})
+
+    if ghosts:
+        names = ", ".join(str(g.get("name", "?")) for g in ghosts[:5])
+        return RuleResult(
+            "R11",
+            "ghost_service",
+            "contradiction",
+            f"{len(ghosts)} service(s) reference missing binary on disk ({names})",
+            sources,
+        )
+
+    return RuleResult(
+        "R11",
+        "ghost_service",
+        "pass",
+        f"All {len(services)} checked service(s) reconcile with evidence",
+        sources,
+    )
+
+
+def rule_r12_usb_initial_access(ctx: VerifyContext) -> RuleResult:
+    """R12: diagnostic USB / IP-KVM device inserted (setupapi.dev.log)."""
+    devices = ctx.setupapi_devices or []
+    if not devices:
+        return RuleResult("R12", "usb_initial_access", "skipped", "setupapi USB input missing", [])
+
+    suspicious = [d for d in devices if d.get("suspicious_kvm")]
+    if not suspicious:
+        suspicious = devices
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.setupapi_audit_id, "disk_parse_setupapi", None)
+    if audit:
+        sources.append(audit)
+    for device in suspicious[:10]:
+        sources.append({"type": "usb_device", **device})
+
+    kvm = [d for d in suspicious if d.get("suspicious_kvm")]
+    if kvm:
+        sample = kvm[0]
+        detail = (
+            f"IP-KVM/diagnostic USB inserted ({sample.get('device_id')}) "
+            f"at {sample.get('timestamp', '?')}"
+        )
+        return RuleResult("R12", "usb_initial_access", "contradiction", detail, sources)
+
+    return RuleResult(
+        "R12",
+        "usb_initial_access",
+        "pass",
+        f"No suspicious KVM USB pattern in {len(devices)} device(s)",
+        sources,
+    )
+
+
+def rule_r13_scheduled_task(ctx: VerifyContext) -> RuleResult:
+    """R13: suspicious Windows scheduled task persistence."""
+    tasks = ctx.scheduled_tasks or []
+    if not tasks:
+        return RuleResult("R13", "scheduled_task", "skipped", "scheduled task input missing", [])
+
+    suspicious = [t for t in tasks if t.get("suspicious")]
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.scheduled_task_audit_id, "disk_parse_scheduled_tasks", None)
+    if audit:
+        sources.append(audit)
+    for task in suspicious[:10]:
+        sources.append({"type": "scheduled_task", **task})
+
+    if suspicious:
+        sample = suspicious[0]
+        detail = (
+            f"{len(suspicious)} suspicious scheduled task(s) "
+            f"({sample.get('task_name')}: {str(sample.get('command', ''))[:60]})"
+        )
+        return RuleResult("R13", "scheduled_task", "contradiction", detail, sources)
+
+    return RuleResult(
+        "R13",
+        "scheduled_task",
+        "pass",
+        f"No suspicious scheduled tasks in {len(tasks)} task(s)",
+        sources,
+    )
+
+
+def rule_r14_suspicious_ioc(ctx: VerifyContext) -> RuleResult:
+    """R14: IOC string search hits suspicious web/shell/cmd patterns on disk."""
+    hits = ctx.search_hits or []
+    if not hits:
+        return RuleResult("R14", "suspicious_ioc", "skipped", "artifact search input missing", [])
+
+    suspicious: list[dict[str, Any]] = []
+    for hit in hits:
+        blob = f"{hit.get('pattern', '')} {hit.get('snippet', '')} {hit.get('path', '')}".lower()
+        if any(
+            token in blob
+            for token in (
+                "cmd.exe",
+                "powershell",
+                "php",
+                "shell",
+                "xampp",
+                "apache",
+                "eval(",
+                "webshell",
+                ".php",
+            )
+        ):
+            suspicious.append(hit)
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.search_audit_id, "disk_search_artifacts", None)
+    if audit:
+        sources.append(audit)
+    for hit in suspicious[:10]:
+        sources.append({"type": "search_hit", **hit})
+
+    if suspicious:
+        sample = suspicious[0]
+        return RuleResult(
+            "R14",
+            "suspicious_ioc",
+            "contradiction",
+            f"{len(suspicious)} suspicious IOC hit(s) in evidence ({sample.get('pattern', '?')})",
+            sources,
+        )
+
+    return RuleResult(
+        "R14",
+        "suspicious_ioc",
+        "pass",
+        f"No suspicious IOC patterns in {len(hits)} search hit(s)",
+        sources,
+    )
+
+
+def rule_r16_unusual_execution(ctx: VerifyContext) -> RuleResult:
+    """R16: non-standard binary execution from amcache, prefetch, or EVTX synthesis."""
+    records: list[dict[str, Any]] = []
+    if ctx.amcache_records:
+        records.extend(ctx.amcache_records)
+    if ctx.prefetch_entries:
+        for entry in ctx.prefetch_entries:
+            exe = entry.get("executable") or entry.get("Executable")
+            if not exe:
+                continue
+            records.append(
+                {
+                    "FullPath": exe,
+                    "LastRun": entry.get("last_run") or entry.get("LastRun"),
+                    "source": "prefetch",
+                }
+            )
+
+    if not records:
+        return RuleResult(
+            "R16",
+            "unusual_execution",
+            "skipped",
+            "execution history inputs missing",
+            [],
+        )
+
+    allowlist = {
+        "system",
+        "smss.exe",
+        "csrss.exe",
+        "wininit.exe",
+        "services.exe",
+        "lsass.exe",
+        "svchost.exe",
+        "explorer.exe",
+        "winlogon.exe",
+        "rundll32.exe",
+        "net.exe",
+        "winword.exe",
+    }
+    suspicious_hints = ("remote", "admin", "stage", "loader", "cold", "backdoor", "helper")
+
+    unusual: list[dict[str, Any]] = []
+    for row in records:
+        exe = _normalize_exe(
+            str(
+                row.get("FullPath")
+                or row.get("Path")
+                or row.get("FileName")
+                or row.get("executable")
+                or row.get("name")
+                or ""
+            )
+        )
+        if not exe or not exe.endswith(".exe"):
+            continue
+        if exe in allowlist:
+            continue
+        lower = exe.lower()
+        if any(hint in lower for hint in suspicious_hints):
+            unusual.append({**row, "executable": exe})
+            continue
+        if "windows/system32" not in str(row.get("FullPath") or row.get("Path") or "").lower():
+            if "users" in str(row.get("FullPath") or row.get("Path") or "").lower():
+                unusual.append({**row, "executable": exe})
+
+    sources: list[dict[str, Any]] = []
+    for tool, audit_id, source in (
+        ("disk_parse_amcache", ctx.amcache_audit_id, ctx.amcache_source),
+        ("reg_amcache", ctx.amcache_audit_id, ctx.amcache_source),
+        ("disk_parse_prefetch", ctx.prefetch_audit_id, ctx.prefetch_source),
+    ):
+        ref = _audit_ref(audit_id, tool, source)
+        if ref:
+            sources.append(ref)
+            break
+    for item in unusual[:10]:
+        sources.append({"type": "execution_record", **item})
+
+    if unusual:
+        sample = unusual[0].get("executable", "?")
+        when = unusual[0].get("LastRun") or unusual[0].get("time_created") or "?"
+        return RuleResult(
+            "R16",
+            "unusual_execution",
+            "contradiction",
+            f"Unusual binary execution: {sample} (last seen {when})",
+            sources,
+        )
+
+    return RuleResult(
+        "R16",
+        "unusual_execution",
+        "pass",
+        f"No unusual execution in {len(records)} record(s)",
+        sources,
+    )
+
+
+def rule_r20_structured_log_alert(ctx: VerifyContext) -> RuleResult:
+    """R20: security-relevant events in JSONL/NDJSON application logs."""
+    events = ctx.structured_log_events or []
+    if not events:
+        return RuleResult(
+            "R20",
+            "structured_log_alert",
+            "skipped",
+            "structured log input missing",
+            [],
+        )
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.structured_log_audit_id, "logs_parse_structured", None)
+    if audit:
+        sources.append(audit)
+    for event in events[:10]:
+        sources.append({"type": "structured_event", **event})
+
+    sample = events[0]
+    detail_key = str(sample.get("message") or sample.get("event") or sample.get("raw_line") or "?")[:80]
+    return RuleResult(
+        "R20",
+        "structured_log_alert",
+        "contradiction",
+        f"{len(events)} security-relevant structured log event(s) ({detail_key})",
+        sources,
+    )
+
+
+def rule_r19_web_attack(ctx: VerifyContext) -> RuleResult:
+    """R19: web access-log attacks and/or webshell upload artifacts."""
+    access_hits = ctx.web_suspicious_requests or []
+    artifact_hits = ctx.web_artifact_indicators or []
+
+    if not access_hits and not artifact_hits:
+        return RuleResult(
+            "R19",
+            "web_attack",
+            "skipped",
+            "web log/artifact input missing",
+            [],
+        )
+
+    sources: list[dict[str, Any]] = []
+    for tool, audit_id in (
+        ("web_parse_access_log", ctx.web_access_audit_id),
+        ("web_inspect_artifact", ctx.web_inspect_audit_id),
+    ):
+        ref = _audit_ref(audit_id, tool, None)
+        if ref:
+            sources.append(ref)
+
+    combined = access_hits + artifact_hits
+    for item in combined[:10]:
+        sources.append({"type": "web_attack", **item})
+
+    if access_hits:
+        sample = access_hits[0]
+        attack = sample.get("attack_type") or sample.get("pattern") or "attack"
+        req = str(sample.get("request") or sample.get("line") or "")[:70]
+        detail = f"{len(access_hits)} web attack request(s) ({attack}: {req})"
+    else:
+        sample = artifact_hits[0]
+        detail = f"{len(artifact_hits)} webshell indicator(s) in {sample.get('path', 'upload')}"
+
+    if access_hits and artifact_hits:
+        detail = (
+            f"Web compromise: {len(access_hits)} attack request(s) and "
+            f"{len(artifact_hits)} webshell indicator(s)"
+        )
+
+    return RuleResult("R19", "web_attack", "contradiction", detail, sources)
+
+
+def rule_r18_cmd_leftover(ctx: VerifyContext) -> RuleResult:
+    """R18: suspicious cmd.exe / web-stack command lines in memory."""
+    entries = ctx.cmdline_entries or []
+    if not entries:
+        return RuleResult("R18", "cmd_leftover", "skipped", "memory cmdline input missing", [])
+
+    cmd_hits: list[dict[str, Any]] = []
+    stack_hits: list[dict[str, Any]] = []
+    for row in entries:
+        proc = str(row.get("process") or row.get("name") or row.get("Image") or "").lower()
+        args = str(row.get("args") or row.get("cmdline") or row.get("CommandLine") or "")
+        lower_args = args.lower()
+        if proc in {"cmd.exe", "cmd"}:
+            cmd_hits.append(row)
+        if any(token in lower_args for token in ("xampp", "apache", "httpd.exe", "php", "mysql")):
+            stack_hits.append(row)
+
+    suspicious = cmd_hits if len(cmd_hits) >= 2 else []
+    if not suspicious and cmd_hits and stack_hits:
+        suspicious = cmd_hits + stack_hits
+    if not suspicious and stack_hits:
+        suspicious = stack_hits
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.cmdline_audit_id, "mem_cmdline", None) or _audit_ref(
+        ctx.cmdline_audit_id, "mem_cmdscan", None
+    )
+    if audit:
+        sources.append(audit)
+    for item in suspicious[:10]:
+        sources.append({"type": "cmdline", **item})
+
+    if suspicious:
+        sample = suspicious[0]
+        proc = sample.get("process") or sample.get("name") or "cmd.exe"
+        args = str(sample.get("args") or sample.get("cmdline") or "")[:80]
+        return RuleResult(
+            "R18",
+            "cmd_leftover",
+            "contradiction",
+            f"{len(suspicious)} suspicious command-line artifact(s) ({proc}: {args})",
+            sources,
+        )
+
+    return RuleResult(
+        "R18",
+        "cmd_leftover",
+        "pass",
+        f"No suspicious cmdline artifacts in {len(entries)} entry(ies)",
+        sources,
+    )
+
+
+def rule_r15_timeline_correlation(ctx: VerifyContext) -> RuleResult:
+    """R15: cross-source timeline merged multiple forensic sources."""
+    events = ctx.timeline_events or []
+    if not events:
+        return RuleResult("R15", "timeline_correlation", "skipped", "timeline input missing", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.timeline_audit_id, "timeline_super", None) or _audit_ref(
+        ctx.timeline_audit_id, "disk_correlate_timeline", None
+    )
+    if audit:
+        sources.append(audit)
+
+    by_source: dict[str, int] = {}
+    for event in events:
+        src = str(event.get("source") or "unknown")
+        by_source[src] = by_source.get(src, 0) + 1
+        if len(sources) < 12:
+            sources.append({"type": "timeline_event", **event})
+
+    if len(by_source) >= 2 or len(events) >= 5:
+        detail = (
+            f"Cross-source timeline: {len(events)} event(s) from "
+            + ", ".join(f"{k}={v}" for k, v in sorted(by_source.items()))
+        )
+        return RuleResult("R15", "timeline_correlation", "contradiction", detail, sources)
+
+    return RuleResult(
+        "R15",
+        "timeline_correlation",
+        "pass",
+        f"Timeline has {len(events)} event(s) from {len(by_source)} source(s)",
+        sources,
+    )

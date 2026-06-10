@@ -5,6 +5,13 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from postmortem_agent.coverage import (
+    action_key as _action_key,
+    build_frontier,
+    coverage_report,
+    next_frontier_action,
+    should_block_done,
+)
 from postmortem_agent.state import AgentConfig, InvestigationState
 from postmortem_mcp.catalog import CATALOG, ToolSpec
 
@@ -15,22 +22,55 @@ FOLLOWUP: dict[str, tuple[str, ...]] = {
     "R6": ("mem_netscan", "mem_pslist"),
     "R4": ("disk_detect_timestomp", "disk_parse_mft"),
     "R5": ("disk_search_artifacts", "disk_parse_prefetch"),
-    "R2": ("disk_parse_amcache", "disk_parse_prefetch"),
+    "R2": ("reg_amcache", "disk_parse_amcache", "disk_parse_prefetch"),
     "R8": ("net_dns_extract", "net_conversations"),
     "R9": ("net_http_extract", "net_conversations"),
     "R10": ("linux_persistence", "linux_bash_history", "linux_cron"),
+    "R11": ("reg_services", "mem_svcscan", "disk_search_artifacts"),
+    "R12": ("disk_parse_setupapi", "timeline_super"),
+    "R13": ("disk_parse_scheduled_tasks", "reg_run_keys", "timeline_super"),
+    "R14": ("disk_search_artifacts",),
+    "R15": ("timeline_super", "disk_correlate_timeline"),
+    "R16": ("reg_amcache", "disk_parse_amcache", "disk_parse_prefetch", "disk_parse_shimcache"),
+    "R18": ("mem_cmdline", "mem_cmdscan"),
+    "R19": ("web_parse_access_log", "web_inspect_artifact"),
+    "R20": ("logs_parse_structured",),
 }
 
-PRIORITY_TOOLS = ("evidence_manifest", "mem_pslist", "mem_psscan")
+COVERAGE_RULES: dict[str, tuple[str, ...]] = {
+    "R2": ("reg_amcache", "disk_parse_amcache"),
+    "R6": ("mem_netscan",),
+    "R14": ("disk_search_artifacts",),
+    "R16": ("reg_amcache", "disk_parse_amcache", "disk_parse_prefetch"),
+    "R19": ("web_parse_access_log", "web_inspect_artifact"),
+    "R20": ("logs_parse_structured",),
+}
+
+PRIORITY_TOOLS = ("evidence_manifest", "mem_pslist", "mem_psscan", "disk_search_artifacts")
 
 
-def _action_key(tool: str, arguments: dict[str, Any]) -> str:
-    return f"{tool}:{json.dumps(arguments, sort_keys=True)}"
+def _linux_path_ok(relpath: str) -> bool:
+    lower = relpath.lower().replace("\\", "/")
+    name = lower.rsplit("/", 1)[-1]
+    if "bash_history" in name or name == ".bash_history":
+        return True
+    if "cron" in name or "/cron" in lower:
+        return True
+    if "/var/log/" in lower or lower.startswith("var/log/"):
+        return True
+    if lower.startswith("linux/") or "/linux/" in lower:
+        return True
+    return name in {"auth.log", "syslog", "messages", "secure", "journal.ndjson"}
 
 
 def _arguments_for(spec: ToolSpec, file_entry: dict[str, Any], config: AgentConfig) -> dict[str, Any] | None:
     kind = file_entry.get("kind")
     relpath = file_entry.get("relpath", "")
+
+    if spec.name in {"linux_bash_history", "linux_cron"} and kind == "text":
+        if not _linux_path_ok(relpath):
+            return None
+
     args: dict[str, Any] = {}
 
     for param in spec.params:
@@ -59,7 +99,7 @@ def _arguments_for(spec: ToolSpec, file_entry: dict[str, Any], config: AgentConf
 
     required = {p.name for p in spec.params if p.required}
     if not required.issubset(args.keys()):
-        if spec.name in {"disk_correlate_timeline"}:
+        if spec.name in {"disk_correlate_timeline", "timeline_super"}:
             return _correlate_args(config, file_entry)
         return None
     return args
@@ -67,6 +107,9 @@ def _arguments_for(spec: ToolSpec, file_entry: dict[str, Any], config: AgentConf
 
 def _correlate_args(config: AgentConfig, survey: dict[str, Any]) -> dict[str, Any] | None:
     args: dict[str, Any] = {}
+    mem = _memory_relpath(config, survey)
+    if mem:
+        args["memory_relpath"] = mem
     for entry in survey.get("files") or []:
         kind = entry.get("kind")
         rel = entry.get("relpath")
@@ -74,9 +117,76 @@ def _correlate_args(config: AgentConfig, survey: dict[str, Any]) -> dict[str, An
             args["evtx_relpath"] = rel
         if kind == "mft" and "mft_relpath" not in args:
             args["mft_relpath"] = rel
-        if kind == "memory_image" and "memory_relpath" not in args:
-            args["memory_relpath"] = rel
+        if kind == "setupapi_log" and "setupapi_relpath" not in args:
+            args["setupapi_relpath"] = rel
+        if kind == "scheduled_task" and "scheduled_task_relpath" not in args:
+            args["scheduled_task_relpath"] = rel
+        if kind == "shimcache" and "shimcache_relpath" not in args:
+            args["shimcache_relpath"] = rel
     return args or None
+
+
+def _tool_succeeded(results: dict[str, list[dict[str, Any]]], tool: str) -> bool:
+    return any(run.get("ok") for run in results.get(tool) or [])
+
+
+def _coverage_action(
+    verifier: list[Any],
+    results: dict[str, list[dict[str, Any]]],
+    survey: dict[str, Any],
+    config: AgentConfig,
+    executed: set[str],
+    failed: set[str],
+) -> dict[str, Any] | None:
+    skipped = {r.rule_id for r in verifier if getattr(r, "status", None) == "skipped"}
+    for rule_id, tools in COVERAGE_RULES.items():
+        if rule_id not in skipped:
+            continue
+        if any(_tool_succeeded(results, tool) for tool in tools):
+            continue
+        for tool in tools:
+            args = _coverage_tool_args(tool, survey, config)
+            if args is None:
+                continue
+            key = _action_key(tool, args)
+            if key in executed or key in failed:
+                continue
+            return {
+                "action": "tool",
+                "tool": tool,
+                "arguments": args,
+                "reason": f"coverage for skipped {rule_id}",
+            }
+    return None
+
+
+def _coverage_tool_args(
+    tool: str,
+    survey: dict[str, Any],
+    config: AgentConfig,
+) -> dict[str, Any] | None:
+    if tool == "mem_netscan":
+        mem = _memory_relpath(config, survey)
+        return {"memory_relpath": mem} if mem else None
+    if tool in {"reg_amcache", "disk_parse_amcache"}:
+        rel = _first_relpath(survey, "amcache")
+        return {"artifact_relpath": rel} if rel else None
+    if tool == "disk_search_artifacts":
+        root = "extracted" if config.extracted_root else config.evidence_case
+        return {
+            "search_root_relpath": root,
+            "patterns": config.search_patterns or _default_search_patterns(),
+        }
+    if tool == "web_parse_access_log":
+        rel = _first_relpath(survey, "web_log")
+        return {"artifact_relpath": rel} if rel else None
+    if tool == "web_inspect_artifact":
+        rel = _first_relpath(survey, "web_artifact")
+        return {"artifact_relpath": rel} if rel else None
+    if tool == "logs_parse_structured":
+        rel = _first_relpath(survey, "structured_log")
+        return {"artifact_relpath": rel} if rel else None
+    return None
 
 
 def _build_candidates(
@@ -106,7 +216,7 @@ def _build_candidates(
             spec = CATALOG.get(tool_name)
             if spec is None:
                 continue
-            if tool_name == "disk_correlate_timeline":
+            if tool_name == "disk_correlate_timeline" or tool_name == "timeline_super":
                 arguments = _correlate_args(config, survey)
             else:
                 arguments = _arguments_for(spec, entry, config)
@@ -125,7 +235,7 @@ def _build_candidates(
         if tool_name == "evidence_manifest":
             arguments = {"case_relpath": config.evidence_case}
         elif tool_name.startswith("mem_"):
-            mem = _first_relpath(survey, "memory_image")
+            mem = _memory_relpath(config, survey)
             if not mem and config.use_fixtures:
                 mem = "fixture/mem_pslist.json"
             if not mem:
@@ -137,7 +247,35 @@ def _build_candidates(
         if key not in executed and key not in failed:
             candidates.append((5, tool_name, arguments, f"baseline {tool_name}"))
 
+    if config.extracted_root and config.extracted_root.is_dir():
+        key = _action_key(
+            "disk_search_artifacts",
+            {"search_root_relpath": "extracted", "patterns": config.search_patterns or _default_search_patterns()},
+        )
+        if key not in executed and key not in failed:
+            candidates.append(
+                (
+                    8,
+                    "disk_search_artifacts",
+                    {
+                        "search_root_relpath": "extracted",
+                        "patterns": config.search_patterns or _default_search_patterns(),
+                    },
+                    "breadth IOC search on extracted disk",
+                )
+            )
+
     return candidates
+
+
+def _default_search_patterns() -> list[str]:
+    return ["cmd.exe", "powershell", "php", "shell", "eval", "xampp", "apache"]
+
+
+def _memory_relpath(config: AgentConfig, survey: dict[str, Any]) -> str | None:
+    if config.memory_relpath:
+        return config.memory_relpath
+    return _first_relpath(survey, "memory_image")
 
 
 def _first_relpath(survey: dict[str, Any], kind: str) -> str | None:
@@ -149,8 +287,9 @@ def _first_relpath(survey: dict[str, Any], kind: str) -> str | None:
 
 def _score_candidate(
     tool: str,
-    state: InvestigationState,
+    results: dict[str, list[dict[str, Any]]],
     verifier: list[Any],
+    survey: dict[str, Any],
 ) -> int:
     spec = CATALOG.get(tool)
     if spec is None:
@@ -158,17 +297,45 @@ def _score_candidate(
     score = 0
     skipped = {r.rule_id for r in verifier if getattr(r, "status", None) == "skipped"}
     contradictions = {r.rule_id for r in verifier if getattr(r, "status", None) == "contradiction"}
+    survey_kinds = set(survey.get("kinds_present") or [])
 
     for rule_id in spec.feeds_rules:
         if rule_id in skipped:
+            if rule_id == "R10" and "linux_log" not in survey_kinds:
+                continue
+            if rule_id in {"R8", "R9"} and "pcap" not in survey_kinds:
+                continue
+            if rule_id in {"R11", "R12", "R13", "R16"} and not set(spec.consumes) & survey_kinds:
+                continue
             score += 100
+            if rule_id in {"R11", "R12", "R13", "R16"}:
+                score += 60
         if rule_id in contradictions:
             score += 80
         followups = FOLLOWUP.get(rule_id, ())
         if tool in followups and rule_id in contradictions:
             score += 120
 
-    if tool not in state.tool_results:
+    if "R1" in skipped and tool == "mem_psscan" and _tool_succeeded(results, "mem_pslist"):
+        score += 80
+    if "R6" in skipped and tool == "mem_netscan":
+        score += 90
+    if "R14" in skipped and tool == "disk_search_artifacts":
+        score += 140
+    if "R16" in skipped and tool in {"reg_amcache", "disk_parse_amcache", "disk_parse_prefetch"}:
+        score += 125
+    if "R19" in skipped and tool in {"web_parse_access_log", "web_inspect_artifact"}:
+        score += 140
+    if "R20" in skipped and tool == "logs_parse_structured":
+        score += 90
+    if "amcache" in survey_kinds and tool in {"reg_amcache", "disk_parse_amcache"}:
+        if not _tool_succeeded(results, tool):
+            score += 130
+
+    if _tool_succeeded(results, tool):
+        score -= 180
+
+    if tool not in results:
         score += 10
     return score
 
@@ -214,7 +381,25 @@ class PolicyReasoner:
             }
 
         candidates = _build_candidates(survey, catalog, self.config, self.executed, self.failed)
+        report = coverage_report(survey, self.config, self.executed, self.failed)
+
         if not candidates:
+            forced = _coverage_action(verifier, results, survey, self.config, self.executed, self.failed)
+            if forced:
+                return forced
+            frontier = next_frontier_action(report)
+            if frontier:
+                return frontier
+            if should_block_done(report):
+                pending = build_frontier(survey, self.config, self.executed, self.failed)
+                if pending:
+                    item = max(pending, key=lambda p: p.priority)
+                    return {
+                        "action": "tool",
+                        "tool": item.tool,
+                        "arguments": item.arguments,
+                        "reason": f"coverage frontier ({report.ratio:.0%} complete): {item.reason}",
+                    }
             return {
                 "action": "done",
                 "hypothesis": hypothesis,
@@ -223,18 +408,27 @@ class PolicyReasoner:
 
         best: tuple[int, str, dict[str, Any], str] | None = None
         for _, tool, arguments, reason in candidates:
-            score = _score_candidate(tool, _ResultsView(results), verifier)
+            score = _score_candidate(tool, results, verifier, survey)
             if best is None or score > best[0]:
                 best = (score, tool, arguments, reason)
 
         assert best is not None
         _, tool, arguments, reason = best
+
+        report = coverage_report(survey, self.config, self.executed, self.failed)
+        if tool != "disk_search_artifacts" and "R14" in {
+            r.rule_id for r in verifier if getattr(r, "status", None) == "skipped"
+        }:
+            for item in report.pending:
+                if item.tool == "disk_search_artifacts" and item.priority >= 12:
+                    return {
+                        "action": "tool",
+                        "tool": item.tool,
+                        "arguments": item.arguments,
+                        "reason": item.reason,
+                    }
+
         return {"action": "tool", "tool": tool, "arguments": arguments, "reason": reason}
-
-
-class _ResultsView:
-    def __init__(self, results: dict[str, list[dict[str, Any]]]) -> None:
-        self.tool_results = {k: v[-1] if v else {} for k, v in results.items()}
 
 
 def state_confidence(results: dict[str, list[dict[str, Any]]], verifier: list[Any]) -> float:
