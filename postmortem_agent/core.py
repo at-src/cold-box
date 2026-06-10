@@ -77,26 +77,34 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
         state.iteration += 1
         state.phase = "reason"
 
-        try:
-            action = reasoner.decide(
-                goal=GOAL,
-                survey=survey,
-                catalog={"tools": catalog_payload},
-                skills=skills,
-                results=state.tool_results,
-                verifier=state.verifier_results,
-                hypothesis=state.hypothesis,
-                lessons=state.lessons,
-                pattern_hints=pattern_hints,
-                budget={"iteration": state.iteration, "max": config.max_iterations},
-                failed_calls=sorted(failed_keys),
-            )
-        except Exception as exc:
-            lesson = f"reasoner error: {exc}"
-            state.lessons.append(lesson)
-            state.unresolved.append(str(exc))
-            _write_progress(state, progress_path, lesson)
-            continue
+        # Ingest-first: a raw disk image is useless to the typed parsers until it
+        # has been carved into the extracted tree. Force extraction before the
+        # reasoner gets a turn so this holds for the policy *and* the LLM brain —
+        # an architectural sequence, not a prompt the model can skip.
+        forced = _extract_first_action(survey, config, success_tools, failed_keys)
+        if forced is not None:
+            action = forced
+        else:
+            try:
+                action = reasoner.decide(
+                    goal=GOAL,
+                    survey=survey,
+                    catalog={"tools": catalog_payload},
+                    skills=skills,
+                    results=state.tool_results,
+                    verifier=state.verifier_results,
+                    hypothesis=state.hypothesis,
+                    lessons=state.lessons,
+                    pattern_hints=pattern_hints,
+                    budget={"iteration": state.iteration, "max": config.max_iterations},
+                    failed_calls=sorted(failed_keys),
+                )
+            except Exception as exc:
+                lesson = f"reasoner error: {exc}"
+                state.lessons.append(lesson)
+                state.unresolved.append(str(exc))
+                _write_progress(state, progress_path, lesson)
+                continue
 
         if action.get("action") == "done":
             candidate = str(action.get("hypothesis", state.hypothesis)).strip()
@@ -154,6 +162,16 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
 
         new_tool_data = tool not in success_tools
         success_tools.add(tool)
+
+        # Extraction just populated EXTRACTED_ROOT — re-survey so the freshly
+        # carved hives/EVTX/MFT/prefetch become first-class evidence the typed
+        # parsers and the reasoner can now address as ``extracted/<path>``.
+        if tool == "disk_extract_image":
+            survey = _initial_survey(config)
+            state.survey = survey
+            pattern_hints = hints_from_patterns(
+                load_similar_patterns(survey.get("kinds_present") or [])
+            )
         productive = bool(new_rules) or new_tool_data
         stall = 0 if productive else stall + 1
 
@@ -210,6 +228,41 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
 def _should_stop(stall: int, fired_rules: set[str]) -> bool:
     """Conclude once evidence is saturated: signals exist and nothing new is surfacing."""
     return stall >= STALL_LIMIT and bool(fired_rules)
+
+
+def _extract_first_action(
+    survey: dict[str, Any],
+    config: AgentConfig,
+    success_tools: set[str],
+    failed_keys: dict[str, str],
+) -> dict[str, Any] | None:
+    """Force raw-image extraction before any analysis when an unprocessed image exists.
+
+    Returns ``None`` once extraction has run (or already failed, so we degrade
+    gracefully instead of looping) or when there is nothing to extract.
+    """
+    if "disk_extract_image" in success_tools:
+        return None
+    if config.extracted_root and config.extracted_root.is_dir():
+        return None
+
+    image_relpath: str | None = None
+    for entry in survey.get("files") or []:
+        if entry.get("kind") == "disk_image":
+            image_relpath = entry.get("relpath")
+            break
+    if not image_relpath:
+        return None
+
+    arguments = {"image_relpath": image_relpath}
+    if _call_key("disk_extract_image", arguments) in failed_keys:
+        return None
+    return {
+        "action": "tool",
+        "tool": "disk_extract_image",
+        "arguments": arguments,
+        "reason": "raw disk image present → extract artifacts before analysis (ingest-first)",
+    }
 
 
 def _call_key(tool: str, arguments: dict[str, Any]) -> str:

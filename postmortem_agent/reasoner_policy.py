@@ -44,6 +44,7 @@ COVERAGE_RULES: dict[str, tuple[str, ...]] = {
     "R16": ("reg_amcache", "disk_parse_amcache", "disk_parse_prefetch"),
     "R19": ("web_parse_access_log", "web_inspect_artifact"),
     "R20": ("logs_parse_structured",),
+    "R21": ("disk_parse_usb",),
 }
 
 PRIORITY_TOOLS = ("evidence_manifest", "mem_pslist", "mem_psscan", "disk_search_artifacts")
@@ -70,6 +71,13 @@ def _arguments_for(spec: ToolSpec, file_entry: dict[str, Any], config: AgentConf
     if spec.name in {"linux_bash_history", "linux_cron"} and kind == "text":
         if not _linux_path_ok(relpath):
             return None
+
+    # USBSTOR lives only in the SYSTEM hive; and the RECmd services sweep only
+    # makes sense against SYSTEM. Targeting the right hive avoids burning
+    # iterations failing against NTUSER.DAT / UsrClass.dat / SOFTWARE.
+    basename = relpath.rsplit("/", 1)[-1].lower()
+    if spec.name in {"disk_parse_usb", "reg_services"} and kind == "registry_hive" and basename != "system":
+        return None
 
     args: dict[str, Any] = {}
 
@@ -186,6 +194,9 @@ def _coverage_tool_args(
     if tool == "logs_parse_structured":
         rel = _first_relpath(survey, "structured_log")
         return {"artifact_relpath": rel} if rel else None
+    if tool == "disk_parse_usb":
+        rel = _system_hive_relpath(survey)
+        return {"artifact_relpath": rel} if rel else None
     return None
 
 
@@ -285,6 +296,17 @@ def _first_relpath(survey: dict[str, Any], kind: str) -> str | None:
     return None
 
 
+def _system_hive_relpath(survey: dict[str, Any]) -> str | None:
+    """The SYSTEM hive specifically — USBSTOR / services live only there."""
+    for entry in survey.get("files") or []:
+        if entry.get("kind") != "registry_hive":
+            continue
+        rel = entry.get("relpath") or ""
+        if rel.rsplit("/", 1)[-1].lower() == "system":
+            return rel
+    return None
+
+
 def _score_candidate(
     tool: str,
     results: dict[str, list[dict[str, Any]]],
@@ -328,6 +350,8 @@ def _score_candidate(
         score += 140
     if "R20" in skipped and tool == "logs_parse_structured":
         score += 90
+    if "R21" in skipped and tool == "disk_parse_usb" and "registry_hive" in survey_kinds:
+        score += 135
     if "amcache" in survey_kinds and tool in {"reg_amcache", "disk_parse_amcache"}:
         if not _tool_succeeded(results, tool):
             score += 130
