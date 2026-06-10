@@ -9,7 +9,7 @@ description = "Autonomous DFIR investigator for SIFT (cold-box)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-dependencies = ["fastmcp>=2.14"]
+dependencies = ["fastmcp>=2.14", "regipy>=6.2"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]

@@ -19,6 +19,7 @@ from postmortem_mcp.paths import (
     resolve_csv_artifact_path,
     resolve_registry_path,
 )
+from postmortem_mcp.usb_parse import parse_usb_devices
 
 
 def _csv_tool(
@@ -232,6 +233,39 @@ def reg_persistence_sweep(
     return run_audited_tool(
         case_id=case_id,
         tool="reg_persistence_sweep",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def disk_parse_usb(
+    case_id: str,
+    artifact_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 200,
+) -> dict:
+    """Enumerate USB mass-storage devices from a SYSTEM hive (vendor/product/serial).
+
+    Attributes removable storage (USB sticks) to the host for data-exfil / insider
+    triage. Returns each device's vendor, product, serial, friendly name, container
+    id, and connection timestamps — every field traceable to its USBSTOR key (R21).
+    """
+    args = {
+        "case_id": case_id,
+        "artifact_relpath": artifact_relpath,
+        "max_records": max_records,
+    }
+
+    def execute() -> dict[str, Any]:
+        path = resolve_registry_path(artifact_relpath)
+        args["artifact_path"] = str(path)
+        return parse_usb_devices(path, max_records=max_records)
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="disk_parse_usb",
         args=args,
         iteration=iteration,
         execute=execute,

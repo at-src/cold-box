@@ -127,4 +127,6 @@ def test_mcp_server_registers_mem_pslist() -> None:
     tools = asyncio.run(list_tools())
     names = {tool.name for tool in tools}
     assert "mem_pslist" in names
-    assert len(names) == 52
+    assert "disk_extract_image" in names
+    assert "disk_parse_usb" in names
+    assert len(names) == 54

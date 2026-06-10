@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from postmortem_evidence.guard import resolve_read_path
+from postmortem_evidence.guard import get_extracted_root, resolve_read_path
 from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.catalog import tools_for_kind
 from postmortem_mcp.paths import resolve_case_directory
@@ -36,6 +36,8 @@ def classify_file(relpath: str, path: Path) -> str:
     suffix = path.suffix.lower()
     parts_lower = [p.lower() for p in path.parts]
 
+    if suffix in {".e01", ".ex01", ".dd", ".001", ".aff4", ".vhd", ".vhdx", ".vmdk"}:
+        return "disk_image"
     if suffix in {".mem", ".raw", ".dmp", ".vmem", ".img", ".crash"}:
         return "memory_image"
     if suffix == ".evtx":
@@ -195,7 +197,13 @@ def evidence_survey(case_id: str, case_relpath: str, *, iteration: int = 0) -> d
     def execute() -> dict[str, Any]:
         case_root = resolve_case_directory(case_relpath)
         args["case_path"] = str(case_root)
-        return build_survey_payload(case_root, case_relpath)
+        payload = build_survey_payload(case_root, case_relpath)
+        # If a raw image has been extracted (EXTRACTED_ROOT set), fold those
+        # artifacts into the inventory so the agent sees them as first-class.
+        extracted_root = get_extracted_root()
+        if extracted_root is not None:
+            payload = merge_extracted_survey(payload, extracted_root)
+        return payload
 
     return run_audited_tool(
         case_id=case_id,

@@ -26,6 +26,7 @@ from postmortem_mcp.tools.disk import (
 from postmortem_mcp.catalog import tool_catalog
 from postmortem_mcp.survey import evidence_survey
 from postmortem_mcp.tools.evidence import evidence_manifest
+from postmortem_mcp.tools.ingest import disk_extract_image
 from postmortem_mcp.tools.linux import (
     linux_auth_log,
     linux_bash_history,
@@ -57,6 +58,7 @@ from postmortem_mcp.tools.memory import (
 from postmortem_mcp.tools.logs import logs_parse_structured
 from postmortem_mcp.tools.web import web_inspect_artifact, web_parse_access_log
 from postmortem_mcp.tools.registry import (
+    disk_parse_usb,
     reg_amcache,
     reg_run_keys,
     reg_services,
@@ -137,7 +139,17 @@ WAVE6_TOOLS = [
     logs_parse_structured,
 ]
 
-ALL_TOOLS = WAVE1_TOOLS + WAVE2_TOOLS + WAVE3_TOOLS + META_TOOLS + WAVE4_TOOLS + WAVE5_TOOLS + WAVE6_TOOLS
+# Raw-image ingest — the front door that turns a disk image into the extracted
+# artifact tree every other tool consumes.
+INGEST_TOOLS = [
+    disk_extract_image,
+    disk_parse_usb,
+]
+
+ALL_TOOLS = (
+    WAVE1_TOOLS + WAVE2_TOOLS + WAVE3_TOOLS + META_TOOLS
+    + WAVE4_TOOLS + WAVE5_TOOLS + WAVE6_TOOLS + INGEST_TOOLS
+)
 
 __all__ = [
     fn.__name__
