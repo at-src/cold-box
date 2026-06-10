@@ -68,6 +68,7 @@ RULE_PROFILE: dict[str, RuleProfile] = {
     "R18": RuleProfile("Suspicious command-line leftovers", "medium", "Execution", ("T1059.003",)),
     "R19": RuleProfile("Web application attack / webshell", "critical", "Initial Access", ("T1190", "T1505.003")),
     "R20": RuleProfile("Structured-log security alert", "medium", "Initial Access", ("T1078",)),
+    "R21": RuleProfile("Removable USB mass-storage attribution", "medium", "Exfiltration", ("T1052.001", "T1200")),
 }
 
 # Remediation advice keyed by ATT&CK tactic present in the case.

@@ -51,6 +51,7 @@ class VerifyContext:
     web_suspicious_requests: list[dict[str, Any]] | None = None
     web_artifact_indicators: list[dict[str, Any]] | None = None
     structured_log_events: list[dict[str, Any]] | None = None
+    usb_devices: list[dict[str, Any]] | None = None
 
     pslist_audit_id: str | None = None
     psscan_audit_id: str | None = None
@@ -73,6 +74,7 @@ class VerifyContext:
     web_access_audit_id: str | None = None
     web_inspect_audit_id: str | None = None
     structured_log_audit_id: str | None = None
+    usb_audit_id: str | None = None
 
     pslist_source: str | None = None
     psscan_source: str | None = None
@@ -84,6 +86,7 @@ class VerifyContext:
     dns_source: str | None = None
     http_source: str | None = None
     linux_source: str | None = None
+    usb_source: str | None = None
 
     timestomp_tolerance_seconds: int = 1
 
@@ -116,6 +119,7 @@ class VerifyContext:
         web_access_data: dict[str, Any] | None = None,
         web_inspect_data: dict[str, Any] | None = None,
         structured_log_data: dict[str, Any] | None = None,
+        usb_data: dict[str, Any] | None = None,
         evidence_root: str | Path | None = None,
         pslist_audit_id: str | None = None,
         psscan_audit_id: str | None = None,
@@ -138,6 +142,7 @@ class VerifyContext:
         web_access_audit_id: str | None = None,
         web_inspect_audit_id: str | None = None,
         structured_log_audit_id: str | None = None,
+        usb_audit_id: str | None = None,
         timestomp_tolerance_seconds: int = 1,
     ) -> VerifyContext:
         mft_records = _extract_mft_records(mft_data)
@@ -175,6 +180,7 @@ class VerifyContext:
             web_suspicious_requests=_extract_web_suspicious(web_access_data),
             web_artifact_indicators=_extract_web_indicators(web_inspect_data),
             structured_log_events=_extract_structured_flagged(structured_log_data),
+            usb_devices=_extract_usb(usb_data),
             pslist_audit_id=pslist_audit_id,
             psscan_audit_id=psscan_audit_id,
             amcache_audit_id=amcache_audit_id,
@@ -200,6 +206,7 @@ class VerifyContext:
             web_inspect_audit_id=web_inspect_audit_id or (web_inspect_data or {}).get("audit_id"),
             structured_log_audit_id=structured_log_audit_id
             or (structured_log_data or {}).get("audit_id"),
+            usb_audit_id=usb_audit_id or (usb_data or {}).get("audit_id"),
             pslist_source=(pslist_data or {}).get("source"),
             psscan_source=(psscan_data or {}).get("source"),
             amcache_source=(amcache_data or {}).get("source"),
@@ -210,6 +217,7 @@ class VerifyContext:
             dns_source=(dns_data or {}).get("source"),
             http_source=(http_data or {}).get("source"),
             linux_source=(linux_persistence_data or linux_history_data or {}).get("source"),
+            usb_source=(usb_data or {}).get("source"),
             timestomp_tolerance_seconds=timestomp_tolerance_seconds,
         )
 
@@ -414,6 +422,17 @@ def _extract_structured_flagged(payload: dict[str, Any] | None) -> list[dict[str
     flagged = payload.get("flagged_events")
     if isinstance(flagged, list) and flagged:
         return list(flagged)
+    return None
+
+
+def _extract_usb(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    records = payload.get("records")
+    if records is None and isinstance(payload.get("data"), dict):
+        records = payload["data"].get("records")
+    if isinstance(records, list) and records:
+        return list(records)
     return None
 
 

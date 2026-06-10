@@ -42,6 +42,7 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         web_access_data=_data(state, "web_parse_access_log"),
         web_inspect_data=_data(state, "web_inspect_artifact"),
         structured_log_data=_data(state, "logs_parse_structured"),
+        usb_data=_data(state, "disk_parse_usb"),
         evidence_root=evidence_root,
         pslist_audit_id=state.audit_id("mem_pslist"),
         psscan_audit_id=state.audit_id("mem_psscan"),
@@ -66,6 +67,7 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         web_access_audit_id=state.audit_id("web_parse_access_log"),
         web_inspect_audit_id=state.audit_id("web_inspect_artifact"),
         structured_log_audit_id=state.audit_id("logs_parse_structured"),
+        usb_audit_id=state.audit_id("disk_parse_usb"),
     )
     if config.extracted_root and config.extracted_root.is_dir():
         from postmortem_verify.models import evidence_basenames

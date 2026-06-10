@@ -86,11 +86,33 @@ def test_run_verifier_returns_all_rules() -> None:
     processes = [_process(4, "System", "0x1")]
     ctx = VerifyContext(pslist_processes=processes, psscan_processes=processes)
     results = run_verifier(ctx)
-    assert len(results) == 19
+    assert len(results) == 20
     assert [result.rule_id for result in results] == [
         "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10",
-        "R11", "R12", "R13", "R14", "R15", "R16", "R18", "R19", "R20",
+        "R11", "R12", "R13", "R14", "R15", "R16", "R18", "R19", "R20", "R21",
     ]
+
+
+def test_r21_removable_storage_attribution() -> None:
+    usb = {
+        "source": "extracted/part0/Windows/System32/config/SYSTEM",
+        "audit_id": "aud-usb-1",
+        "records": [
+            {
+                "vendor": "SanDisk",
+                "product": "Cruzer_Fit",
+                "serial": "4C530001120606116561",
+                "friendly_name": "SanDisk Cruzer Fit USB Device",
+                "last_connected": "2015-03-25T16:01:50+00:00",
+            }
+        ],
+    }
+    ctx = VerifyContext.from_tool_payloads(usb_data=usb, usb_audit_id="aud-usb-1")
+    result = next(r for r in run_verifier(ctx) if r.rule_id == "R21")
+    assert result.status == "contradiction"
+    assert "SanDisk" in result.detail
+    assert any(s.get("type") == "audit" and s.get("audit_id") == "aud-usb-1" for s in result.sources)
+    assert any(s.get("serial") == "4C530001120606116561" for s in result.sources)
 
 
 def test_r2_contradiction_without_execution_trail() -> None:

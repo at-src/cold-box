@@ -937,3 +937,41 @@ def rule_r15_timeline_correlation(ctx: VerifyContext) -> RuleResult:
         f"Timeline has {len(events)} event(s) from {len(by_source)} source(s)",
         sources,
     )
+
+
+def rule_r21_removable_storage(ctx: VerifyContext) -> RuleResult:
+    """R21: removable USB mass-storage attributed to the host (data-exfil vector).
+
+    Surfaces every device with vendor/product/serial so it can be tied back to a
+    specific USBSTOR key. This is a confirmed *fact* (the device touched the host),
+    not an assertion of malice — intent is decided downstream against the case
+    narrative, so a lawful USB does not become a false MALICE call.
+    """
+    devices = ctx.usb_devices or []
+    if not devices:
+        return RuleResult("R21", "removable_storage", "skipped", "USB device input missing", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.usb_audit_id, "disk_parse_usb", ctx.usb_source)
+    if audit:
+        sources.append(audit)
+    fields = ("vendor", "product", "serial", "friendly_name", "last_connected", "key_path")
+    for device in devices[:10]:
+        sources.append(
+            {"type": "usb_device", **{k: device.get(k) for k in fields if device.get(k)}}
+        )
+
+    def _label(dev: dict[str, Any]) -> str:
+        vendor = dev.get("vendor") or "?"
+        product = dev.get("product") or ""
+        serial = dev.get("serial") or "?"
+        return f"{vendor} {product}".strip() + f" (SN {serial})"
+
+    names = "; ".join(_label(d) for d in devices[:3])
+    return RuleResult(
+        "R21",
+        "removable_storage",
+        "contradiction",
+        f"{len(devices)} removable USB mass-storage device(s) attributed to host ({names})",
+        sources,
+    )

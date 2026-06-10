@@ -15,6 +15,7 @@ from postmortem_verify.rules import (
     rule_r18_cmd_leftover,
     rule_r19_web_attack,
     rule_r20_structured_log_alert,
+    rule_r21_removable_storage,
     rule_r2_no_execution_trail,
     rule_r3_phantom_logon,
     rule_r4_timestomp,
@@ -45,6 +46,7 @@ ALL_RULES = [
     rule_r18_cmd_leftover,
     rule_r19_web_attack,
     rule_r20_structured_log_alert,
+    rule_r21_removable_storage,
 ]
 
 
