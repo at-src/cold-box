@@ -60,9 +60,11 @@ from postmortem_mcp.tools.web import web_inspect_artifact, web_parse_access_log
 from postmortem_mcp.tools.registry import (
     disk_parse_usb,
     reg_amcache,
+    reg_query,
     reg_run_keys,
     reg_services,
     reg_shellbags,
+    reg_system_profile,
     reg_userassist,
 )
 
@@ -125,6 +127,8 @@ WAVE5_TOOLS = [
     reg_userassist,
     reg_shellbags,
     reg_amcache,
+    reg_system_profile,
+    reg_query,
     mem_hivelist,
     mem_filescan,
     mem_cmdscan,

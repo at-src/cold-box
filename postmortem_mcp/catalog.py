@@ -94,6 +94,37 @@ CATALOG: dict[str, ToolSpec] = {
         mitre=("T1052.001", "T1200"),
         feeds_rules=("R21",),
     ),
+    "reg_system_profile": ToolSpec(
+        name="reg_system_profile",
+        summary="Host attribution + system state from SOFTWARE/SYSTEM hives (owner, NICs, shutdown, computer name)",
+        consumes=("registry_hive",),
+        produces=("system_profile",),
+        when_to_use=(
+            "Establish host identity early on any disk case: registered owner/org, OS "
+            "product/install date, computer name, installed network cards, last shutdown time"
+        ),
+        params=(
+            _p("artifact_relpath", "string", True, "SOFTWARE hive (e.g. extracted/.../config/software)"),
+            _p("system_relpath", "string", False, "SYSTEM hive for shutdown/computer name"),
+            _p("sam_relpath", "string", False, "SAM hive for local accounts / primary user"),
+        ),
+        mitre=("T1082",),
+        feeds_rules=("R23",),
+    ),
+    "reg_query": ToolSpec(
+        name="reg_query",
+        summary="Read an arbitrary registry key/value from a hive (read-only, python-registry)",
+        consumes=("registry_hive",),
+        produces=("registry_value",),
+        when_to_use="Answer a specific content question not covered by the artifact-specific parsers",
+        params=(
+            _p("artifact_relpath", "string", True, "Registry hive path"),
+            _p("key_path", "string", True, "Backslash-delimited key path within the hive"),
+            _p("value_name", "string", False, "Specific value name (omit to dump all values)"),
+        ),
+        mitre=("T1082",),
+        feeds_rules=(),
+    ),
     "mem_pslist": ToolSpec(
         name="mem_pslist",
         summary="Active process list from memory (Volatility pslist)",

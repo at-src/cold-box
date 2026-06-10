@@ -270,3 +270,92 @@ def disk_parse_usb(
         iteration=iteration,
         execute=execute,
     )
+
+
+def reg_query(
+    case_id: str,
+    artifact_relpath: str,
+    key_path: str,
+    *,
+    value_name: str | None = None,
+    iteration: int = 0,
+) -> dict:
+    """Read an arbitrary registry key/value from a hive (read-only, python-registry).
+
+    Generic value extraction for content-centric questions (host attribution,
+    system state) that the artifact-specific parsers do not cover.
+    """
+    from postmortem_mcp.registry_query import query_value
+
+    args: dict[str, Any] = {
+        "case_id": case_id,
+        "artifact_relpath": artifact_relpath,
+        "key_path": key_path,
+        "value_name": value_name,
+    }
+
+    def execute() -> dict[str, Any]:
+        path = resolve_registry_path(artifact_relpath)
+        args["artifact_path"] = str(path)
+        result = query_value(path, key_path, value_name)
+        result["parser"] = "python-registry"
+        result["source"] = str(path)
+        return result
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="reg_query",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def reg_system_profile(
+    case_id: str,
+    artifact_relpath: str,
+    *,
+    system_relpath: str | None = None,
+    sam_relpath: str | None = None,
+    iteration: int = 0,
+) -> dict:
+    """Extract a host-attribution / system-state profile from SOFTWARE (+ SYSTEM + SAM) hives.
+
+    Surfaces registered owner/org, OS product, install date, computer name,
+    installed network cards, last shutdown time, and local accounts (primary
+    user + logon count) — every fact traceable to its hive via the audit chain.
+    ``artifact_relpath`` is the SOFTWARE hive; ``system_relpath`` (optional) is
+    the SYSTEM hive; ``sam_relpath`` (optional) is the SAM hive.
+    """
+    from postmortem_mcp.registry_query import system_profile
+
+    args: dict[str, Any] = {
+        "case_id": case_id,
+        "artifact_relpath": artifact_relpath,
+        "system_relpath": system_relpath,
+        "sam_relpath": sam_relpath,
+    }
+
+    def execute() -> dict[str, Any]:
+        software_path = resolve_registry_path(artifact_relpath)
+        args["software_path"] = str(software_path)
+        system_path = None
+        if system_relpath:
+            system_path = resolve_registry_path(system_relpath)
+            args["system_path"] = str(system_path)
+        sam_path = None
+        if sam_relpath:
+            sam_path = resolve_registry_path(sam_relpath)
+            args["sam_path"] = str(sam_path)
+        profile = system_profile(software=software_path, system=system_path, sam=sam_path)
+        profile["parser"] = "python-registry"
+        profile["fact_count"] = len(profile.get("facts", []))
+        return profile
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="reg_system_profile",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
