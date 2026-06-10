@@ -34,6 +34,26 @@ REGISTRY_BASENAMES = frozenset(
     {"system", "software", "sam", "security", "ntuser.dat", "amcache.hve", "usrclass.dat"}
 )
 
+# Linux user-level command/shell history + rc artifacts that reveal what a user ran.
+LINUX_USER_HISTORY = frozenset(
+    {
+        ".bash_history",
+        ".zsh_history",
+        ".sh_history",
+        ".ash_history",
+        ".python_history",
+        ".mysql_history",
+        ".psql_history",
+        ".lesshst",
+        ".viminfo",
+        ".bashrc",
+        ".bash_profile",
+        ".bash_logout",
+        ".profile",
+        ".zshrc",
+    }
+)
+
 
 def classify_file(relpath: str, path: Path) -> str:
     """Return forensic kind for a file path."""
@@ -79,6 +99,11 @@ def classify_file(relpath: str, path: Path) -> str:
         if name in REGISTRY_BASENAMES or "registry" in parts_lower or "config" in parts_lower:
             return "registry_hive"
     if name in LINUX_LOG_NAMES or "bash_history" in name or name.endswith(".cron"):
+        return "linux_log"
+    if name in LINUX_USER_HISTORY:
+        return "linux_log"
+    # Midnight Commander / shell command history kept under app dot-dirs.
+    if name == "history" and any(p in {".mc", ".bash", ".local"} for p in parts_lower):
         return "linux_log"
     if "var/log" in "/".join(parts_lower):
         return "linux_log"

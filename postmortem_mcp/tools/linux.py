@@ -9,16 +9,34 @@ from typing import Any
 from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.paths import resolve_linux_log_path, resolve_readonly_file
 
-SUSPICIOUS_PATTERNS = (
-    re.compile(r"curl\s+.*\|\s*bash", re.I),
-    re.compile(r"wget\s+.*\|\s*sh", re.I),
-    re.compile(r"authorized_keys", re.I),
-    re.compile(r"history\s+-c", re.I),
-    re.compile(r"chmod\s+\+x", re.I),
-    re.compile(r"/tmp/", re.I),
+# (compiled regex, category) — category makes each hit explainable in findings.
+SUSPICIOUS_RULES: tuple[tuple[re.Pattern[str], str], ...] = (
+    # remote payload download / execution
+    (re.compile(r"(curl|wget)\s+.*\|\s*(ba)?sh", re.I), "remote_exec"),
+    (re.compile(r"\b(wget|curl)\s+(http|ftp)", re.I), "download"),
+    # privilege escalation / persistence
+    (re.compile(r"authorized_keys", re.I), "persistence"),
+    (re.compile(r"chmod\s+(\+x|[0-7]*[1-7]{3,4})", re.I), "make_executable"),
+    (re.compile(r"chmod\s+[ug]?\+s|chmod\s+[0-7]*[4-7][0-7]{3}", re.I), "setuid"),
+    # network / admin-share access (insider data access)
+    (re.compile(r"(/mnt/hgfs|admin[_-]?share|smb://|mount\s+.*cifs|net\s+use)", re.I), "admin_share"),
+    # data staging / exfil preparation
+    (re.compile(r"\b(scp|rsync|sftp)\b", re.I), "remote_copy"),
+    (re.compile(r"\btar\s+[-]?[a-z]*c|(\bzip\b|\bgzip\b|\b7z\b|\brar\b)", re.I), "archive"),
+    (re.compile(r"(retrieved_files|exfil|/media/|removable)", re.I), "data_staging"),
+    # anti-forensics
+    (re.compile(r"(history\s+-c|\bshred\b|\bwipe\b|rm\s+-rf|\.Trash)", re.I), "anti_forensic"),
+    # staging in world-writable tmp
+    (re.compile(r"/tmp/", re.I), "tmp_staging"),
 )
 
+# Backward-compatible flat tuple of patterns (used by linux_persistence scans).
+SUSPICIOUS_PATTERNS = tuple(rule[0] for rule in SUSPICIOUS_RULES)
+
 CRON_SUSPICIOUS = re.compile(r"(curl|wget|bash|/tmp/|\.sh\b)", re.I)
+
+# mc/history and some shells store entries as "N=command"; strip the index prefix.
+_MC_INDEX_PREFIX = re.compile(r"^\d+=")
 
 
 def _read_lines(path: Path, max_lines: int) -> list[str]:
@@ -121,9 +139,12 @@ def linux_bash_history(
             stripped = line.lstrip("#").strip()
             if not stripped or stripped.startswith("#"):
                 continue
-            for pattern in SUSPICIOUS_PATTERNS:
+            stripped = _MC_INDEX_PREFIX.sub("", stripped)
+            if not stripped:
+                continue
+            for pattern, category in SUSPICIOUS_RULES:
                 if pattern.search(stripped):
-                    hits.append({"command": stripped, "pattern": pattern.pattern})
+                    hits.append({"command": stripped, "pattern": pattern.pattern, "category": category})
                     break
         payload = {
             "source": str(path),

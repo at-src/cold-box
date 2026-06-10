@@ -27,6 +27,15 @@
     "tier": "validation (Tier 1)"
   },
   {
+    "case_id": "dfrws2008",
+    "evidence_root": "/evidence",
+    "evidence_case": "dfrws2008/evidence/response_data",
+    "ground_truth": "ground-truth/dfrws2008.json",
+    "llm": false,
+    "max_iterations": 18,
+    "tier": "validation (Tier 2) — Linux disk+mem+net"
+  },
+  {
     "case_id": "dart-sample-evidence",
     "evidence_root": "/opt/ref/agentic-dart/examples/sample-evidence",
     "evidence_case": ".",

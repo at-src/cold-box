@@ -46,6 +46,7 @@ COVERAGE_RULES: dict[str, tuple[str, ...]] = {
     "R20": ("logs_parse_structured",),
     "R21": ("disk_parse_usb",),
     "R22": ("net_http_extract",),
+    "R10": ("linux_bash_history", "linux_persistence", "linux_cron", "linux_auth_log"),
 }
 
 PRIORITY_TOOLS = ("evidence_manifest", "mem_pslist", "mem_psscan", "disk_search_artifacts")
@@ -354,6 +355,13 @@ def _score_candidate(
     if "R21" in skipped and tool == "disk_parse_usb" and "registry_hive" in survey_kinds:
         score += 135
     if "R22" in skipped and tool == "net_http_extract" and "pcap" in survey_kinds:
+        score += 135
+    if (
+        "R10" in skipped
+        and tool in {"linux_bash_history", "linux_persistence", "linux_cron",
+                     "linux_auth_log", "linux_syslog"}
+        and "linux_log" in survey_kinds
+    ):
         score += 135
     if "amcache" in survey_kinds and tool in {"reg_amcache", "disk_parse_amcache"}:
         if not _tool_succeeded(results, tool):
