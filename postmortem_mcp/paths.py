@@ -18,9 +18,16 @@ SCHEDULED_TASK_DIR = "tasks"
 
 
 def resolve_memory_path(relpath: str) -> Path:
+    from postmortem_mcp.survey import classify_file
+
     path = resolve_read_path(relpath)
     if not path.is_file():
         raise EvidencePathError(f"Memory image must be a file: {path}")
+    kind = classify_file(relpath.replace("\\", "/"), path)
+    if kind in {"android_mtd", "android_sdcard", "macos_ad1", "disk_image"}:
+        raise EvidencePathError(
+            f"Path is classified as {kind!r}, not a memory capture: {path.name!r}"
+        )
     if path.suffix.lower() not in MEMORY_SUFFIXES:
         raise EvidencePathError(
             f"Expected memory image suffix {sorted(MEMORY_SUFFIXES)}; got {path.name!r}"

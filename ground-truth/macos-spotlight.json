@@ -1,0 +1,24 @@
+{
+  "case_id": "macos-spotlight",
+  "description": "CyberDefenders Spotlight macOS challenge — FruitBook AD1 custom-content carve (APFS Catalina) with user artifacts for Hansel Apricot and Super Sneaky.",
+  "source": "https://cyberdefenders.org/blueteam-ctf-challenges/spotlight",
+  "ground_truth_type": "validation (Tier 3) — macOS AD1 Spotlight",
+  "expected_findings": [
+    {
+      "id": "F-MACOS-USERS",
+      "required": true,
+      "rule_tags": ["R33"],
+      "keywords": ["hansel.apricot", "Hansel Apricot", "Super Sneaky", "sneaky", "Users"],
+      "mitre": ["T1083"],
+      "note": "AD1 manifest and strings identify multiple macOS user home directories carved from APFS Catalina data volume."
+    },
+    {
+      "id": "F-MACOS-ARTIFACTS",
+      "required": false,
+      "rule_tags": ["R33"],
+      "keywords": ["spotlight", "Safari", "Downloads", "fruitincworkspace.slack.com", "plist", "APFS"],
+      "mitre": ["T1564", "T1083"],
+      "note": "Spotlight index, Safari preferences, Downloads folder, and Slack workspace local storage appear in carved AD1 content."
+    }
+  ]
+}

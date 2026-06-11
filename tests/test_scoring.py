@@ -86,9 +86,48 @@ def test_required_findings_matched_before_optional() -> None:
     assert any(m.expected_id == "AH-6" for m in report.matched)
 
 
+def test_score_macos_spotlight_ground_truth() -> None:
+    gt = load_ground_truth(REPO / "ground-truth" / "macos-spotlight.json")
+    findings = [
+        {
+            "id": "f-1",
+            "claim": (
+                "macOS AD1 APFS Catalina carve — users hansel.apricot, sneaky "
+                "(Hansel Apricot / Super Sneaky); Spotlight, Safari, Downloads, "
+                "fruitincworkspace.slack.com artifacts"
+            ),
+            "tags": ["R33", "macos_artifacts"],
+            "status": "confirmed",
+        }
+    ]
+    report = score_findings(findings, gt)
+    assert report.required_recall >= 1.0
+    assert "F-MACOS-USERS" not in report.missed
+
+
+def test_score_android_case1_ground_truth() -> None:
+    gt = load_ground_truth(REPO / "ground-truth" / "dfrws2011-android-case1.json")
+    findings = [
+        {
+            "id": "f-1",
+            "claim": (
+                "SuperOneClick root exploit used during acquisition. "
+                "psneuter temporary root during live acquisition. "
+                "ADB device serial 040373BF0B01B01A. Motorola A855 identified. "
+                "SMS received despite airplane mode. USB debugging enabled during acquisition."
+            ),
+            "tags": ["R32", "android_mobile"],
+            "status": "confirmed",
+        }
+    ]
+    report = score_findings(findings, gt)
+    assert report.required_recall >= 1.0
+    assert "F-ANDROID-ACQ" not in report.missed
+
+
 def test_narrative_template() -> None:
     from postmortem_agent.narrative import build_template_narrative
-    from postmortem_agent.state import AgentConfig, InvestigationState
+    from postmortem_agent.state import InvestigationState
     from postmortem_verify.models import RuleResult
 
     state = InvestigationState(

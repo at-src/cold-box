@@ -176,5 +176,5 @@ def test_rejects_non_memory_suffix(tmp_path: Path, monkeypatch: pytest.MonkeyPat
 
     result = mem_pslist("bad-case", "case-a/disk.E01")
     assert result["ok"] is False
-    assert "memory image suffix" in result["error"].lower()
+    assert "memory" in result["error"].lower() or "disk_image" in result["error"].lower()
     assert result["audit_id"]

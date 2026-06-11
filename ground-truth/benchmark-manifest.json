@@ -70,5 +70,32 @@
     "llm": false,
     "max_iterations": 16,
     "tier": "functional"
+  },
+  {
+    "case_id": "dfrws2011-android-case1",
+    "evidence_root": "/evidence",
+    "evidence_case": "dfrws2011-android/case1-extract",
+    "ground_truth": "ground-truth/dfrws2011-android-case1.json",
+    "llm": false,
+    "max_iterations": 14,
+    "tier": "validation (Tier 3) — Android mtd/sdcard"
+  },
+  {
+    "case_id": "dfrws2011-android-case2",
+    "evidence_root": "/evidence",
+    "evidence_case": "dfrws2011-android/case2-extract",
+    "ground_truth": "ground-truth/dfrws2011-android-case2.json",
+    "llm": false,
+    "max_iterations": 14,
+    "tier": "validation (Tier 3) — Android mtd/sdcard Case2"
+  },
+  {
+    "case_id": "macos-spotlight",
+    "evidence_root": "/evidence",
+    "evidence_case": "macos-spotlight/c18-spotlight",
+    "ground_truth": "ground-truth/macos-spotlight.json",
+    "llm": false,
+    "max_iterations": 12,
+    "tier": "validation (Tier 3) — macOS AD1 Spotlight"
   }
 ]

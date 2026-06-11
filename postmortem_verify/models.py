@@ -56,6 +56,10 @@ class VerifyContext:
     exfil_hits: list[dict[str, Any]] | None = None
     yara_matches: list[dict[str, Any]] | None = None
     linux_memory_probe: dict[str, Any] | None = None
+    android_probe: dict[str, Any] | None = None
+    android_findings: list[dict[str, Any]] | None = None
+    macos_probe: dict[str, Any] | None = None
+    macos_findings: list[dict[str, Any]] | None = None
 
     pslist_audit_id: str | None = None
     psscan_audit_id: str | None = None
@@ -82,6 +86,8 @@ class VerifyContext:
     exfil_audit_id: str | None = None
     yara_audit_id: str | None = None
     linux_memory_audit_id: str | None = None
+    android_audit_id: str | None = None
+    macos_audit_id: str | None = None
 
     pslist_source: str | None = None
     psscan_source: str | None = None
@@ -97,6 +103,8 @@ class VerifyContext:
     exfil_source: str | None = None
     yara_source: str | None = None
     linux_memory_source: str | None = None
+    android_source: str | None = None
+    macos_source: str | None = None
 
     timestomp_tolerance_seconds: int = 1
 
@@ -133,6 +141,10 @@ class VerifyContext:
         exfil_data: dict[str, Any] | None = None,
         yara_data: dict[str, Any] | None = None,
         linux_memory_data: dict[str, Any] | None = None,
+        android_probe_data: dict[str, Any] | None = None,
+        android_scan_data: dict[str, Any] | None = None,
+        macos_probe_data: dict[str, Any] | None = None,
+        macos_scan_data: dict[str, Any] | None = None,
         evidence_root: str | Path | None = None,
         pslist_audit_id: str | None = None,
         psscan_audit_id: str | None = None,
@@ -159,6 +171,8 @@ class VerifyContext:
         exfil_audit_id: str | None = None,
         yara_audit_id: str | None = None,
         linux_memory_audit_id: str | None = None,
+        android_audit_id: str | None = None,
+        macos_audit_id: str | None = None,
         timestomp_tolerance_seconds: int = 1,
     ) -> VerifyContext:
         mft_records = _extract_mft_records(mft_data)
@@ -201,6 +215,10 @@ class VerifyContext:
             exfil_hits=_extract_exfil_hits(exfil_data),
             yara_matches=_extract_yara_matches(yara_data),
             linux_memory_probe=_extract_linux_memory_probe(linux_memory_data),
+            android_probe=_extract_android_probe(android_probe_data),
+            android_findings=_extract_android_findings(android_scan_data),
+            macos_probe=_extract_macos_probe(macos_probe_data),
+            macos_findings=_extract_macos_findings(macos_scan_data),
             pslist_audit_id=pslist_audit_id,
             psscan_audit_id=psscan_audit_id,
             amcache_audit_id=amcache_audit_id,
@@ -231,6 +249,10 @@ class VerifyContext:
             yara_audit_id=yara_audit_id or (yara_data or {}).get("audit_id"),
             linux_memory_audit_id=linux_memory_audit_id
             or (linux_memory_data or {}).get("audit_id"),
+            android_audit_id=android_audit_id
+            or (android_scan_data or android_probe_data or {}).get("audit_id"),
+            macos_audit_id=macos_audit_id
+            or (macos_scan_data or macos_probe_data or {}).get("audit_id"),
             pslist_source=(pslist_data or {}).get("source"),
             psscan_source=(psscan_data or {}).get("source"),
             amcache_source=(amcache_data or {}).get("source"),
@@ -245,6 +267,8 @@ class VerifyContext:
             exfil_source=(exfil_data or {}).get("source"),
             yara_source=(yara_data or {}).get("source"),
             linux_memory_source=(linux_memory_data or {}).get("source"),
+            android_source=(android_scan_data or android_probe_data or {}).get("source"),
+            macos_source=(macos_scan_data or macos_probe_data or {}).get("source"),
             timestomp_tolerance_seconds=timestomp_tolerance_seconds,
         )
 
@@ -495,6 +519,43 @@ def _extract_linux_memory_probe(payload: dict[str, Any] | None) -> dict[str, Any
         return None
     if payload.get("parser") == "linux-memory-probe" or "isf_gap" in payload:
         return dict(payload)
+    return None
+
+
+def _extract_android_probe(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+    if payload is None:
+        return None
+    if payload.get("parser") == "android-probe":
+        return dict(payload)
+    return None
+
+
+def _extract_android_findings(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    findings = payload.get("findings")
+    if isinstance(findings, list) and findings:
+        return list(findings)
+    notes = payload.get("acquisition_notes")
+    if isinstance(notes, list) and notes:
+        return list(notes)
+    return None
+
+
+def _extract_macos_probe(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+    if payload is None:
+        return None
+    if payload.get("parser") == "macos-probe":
+        return dict(payload)
+    return None
+
+
+def _extract_macos_findings(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    findings = payload.get("findings")
+    if isinstance(findings, list) and findings:
+        return list(findings)
     return None
 
 

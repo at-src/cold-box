@@ -57,6 +57,7 @@ class InvestigationState:
     lessons: list[str] = field(default_factory=list)
     tool_results: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     verifier_results: list[RuleResult] = field(default_factory=list)
+    peak_contradictions: dict[str, RuleResult] = field(default_factory=dict)
     last_notes: str = ""
     llm_transcript: list[dict[str, Any]] = field(default_factory=list)
 

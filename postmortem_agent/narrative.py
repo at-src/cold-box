@@ -75,6 +75,18 @@ def append_narrative_finding(
         return narrative
 
     restraint = "no confirmed indicators" in claim.lower()
+    has_platform = any(
+        tag in {"R32", "R33"} for f in state.findings for tag in (f.get("tags") or [])
+    )
+    if restraint and has_platform:
+        platform_claims = [
+            str(f.get("claim", ""))
+            for f in state.findings
+            if f.get("status") == "confirmed" and any(t in {"R32", "R33"} for t in (f.get("tags") or []))
+        ]
+        if platform_claims:
+            claim = platform_claims[0]
+            restraint = False
     status = "inference" if restraint else ("confirmed" if state.confidence >= 0.5 else "inference")
 
     state.findings.append(

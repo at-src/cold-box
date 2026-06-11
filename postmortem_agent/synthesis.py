@@ -75,6 +75,8 @@ RULE_PROFILE: dict[str, RuleProfile] = {
     "R29": RuleProfile("Optical media / CD-R burn indicators", "medium", "Exfiltration", ("T1052",)),
     "R30": RuleProfile("YARA / suspicious malware patterns", "high", "Execution", ("T1204", "T1059")),
     "R31": RuleProfile("Linux memory Volatility ISF requirement", "info", "Discovery", ("T1082",)),
+    "R32": RuleProfile("Android mobile acquisition / artifact signals", "medium", "Collection", ("T1430", "T1404")),
+    "R33": RuleProfile("macOS AD1 user / Spotlight / Safari artifacts", "medium", "Collection", ("T1083", "T1564")),
     "R23": RuleProfile("Host attribution / system profile", "info", "Discovery", ("T1082",)),
     "R24": RuleProfile("Recycle Bin deleted executables", "medium", "Defense Evasion", ("T1070.004",)),
     "R25": RuleProfile("Legacy IE / webmail identity", "medium", "Collection", ("T1071.001",)),
@@ -219,6 +221,24 @@ def synthesize_hypothesis(signals: list[dict[str, Any]], *, audit_count: int) ->
 
     high_critical = [s for s in signals if s["severity"] in COMPROMISE_SEVERITIES]
     if not high_critical:
+        fact_signals = [
+            s
+            for s in signals
+            if s["rule"] in {"R10", "R21", "R22", "R27", "R28", "R29", "R30", "R32", "R33"}
+        ]
+        if fact_signals:
+            phrases = []
+            seen: set[str] = set()
+            for sig in fact_signals[:4]:
+                title = sig["title"]
+                if title in seen:
+                    continue
+                seen.add(title)
+                phrases.append(f"{title.lower()} ({sig['rule']})")
+            return (
+                f"Forensic case documented from audited mobile/platform artifacts: {', '.join(phrases)}. "
+                f"Conclusion grounded in {audit_count} audited tool execution(s); every finding carries an audit_id."
+            )
         return (
             "No confirmed indicators of compromise were produced by the verifier on the available evidence."
         )

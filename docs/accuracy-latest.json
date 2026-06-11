@@ -285,5 +285,20 @@
       "R5",
       "R6"
     ]
+  },
+  "cold_box_policy": {
+    "generated": "2026-06-11T12:01:49Z",
+    "brain": "policy",
+    "mean_required_recall": 1.0,
+    "mean_strict_recall": 0.857,
+    "cases": [
+      {"case_id": "nist-ndlc", "required_recall": 1.0, "recall": 1.0, "precision": 0.75},
+      {"case_id": "ali-hadi-1", "required_recall": 1.0, "recall": 1.0, "precision": 0.778},
+      {"case_id": "nitroba", "required_recall": 1.0, "recall": 1.0, "precision": 0.75},
+      {"case_id": "dfrws2008", "required_recall": 1.0, "recall": 1.0, "precision": 0.444},
+      {"case_id": "ali-hadi-7", "required_recall": 1.0, "recall": 1.0, "precision": 0.8},
+      {"case_id": "ali-hadi-9", "required_recall": 1.0, "recall": 0.0, "precision": 0.0, "note": "restraint/precision case — all-optional GT"},
+      {"case_id": "nist-hacking", "required_recall": 1.0, "recall": 1.0, "precision": 0.6}
+    ]
   }
 }

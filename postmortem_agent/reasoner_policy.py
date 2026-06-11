@@ -41,11 +41,15 @@ FOLLOWUP: dict[str, tuple[str, ...]] = {
     "R27": ("disk_scan_exfil",),
     "R30": ("yara_scan_evidence",),
     "R31": ("mem_linux_probe",),
+    "R32": ("android_probe", "android_scan_artifacts"),
+    "R33": ("macos_probe", "macos_scan_artifacts"),
 }
 
 COVERAGE_RULES: dict[str, tuple[str, ...]] = {
     "R2": ("reg_amcache", "disk_parse_amcache"),
     "R3": ("disk_evtx_filter",),
+    "R4": ("disk_detect_timestomp", "disk_parse_mft"),
+    "R5": ("disk_parse_prefetch",),
     "R6": ("mem_netscan",),
     "R7": ("mem_malfind",),
     "R11": ("reg_services", "mem_svcscan"),
@@ -64,6 +68,8 @@ COVERAGE_RULES: dict[str, tuple[str, ...]] = {
     "R29": ("disk_scan_exfil",),
     "R30": ("yara_scan_evidence",),
     "R31": ("mem_linux_probe",),
+    "R32": ("android_probe", "android_scan_artifacts"),
+    "R33": ("macos_probe", "macos_scan_artifacts"),
     "R10": ("linux_bash_history", "linux_persistence", "linux_cron", "linux_auth_log"),
 }
 
@@ -274,9 +280,19 @@ def _coverage_action(
     failed: set[str],
 ) -> dict[str, Any] | None:
     skipped = {r.rule_id for r in verifier if getattr(r, "status", None) == "skipped"}
-    tier3_rules = {"R27", "R28", "R29", "R30", "R31"}
+    tier3_rules = {"R27", "R28", "R29", "R30", "R31", "R32", "R33"}
     for rule_id, tools in COVERAGE_RULES.items():
         if config.mode == "synthetic" and rule_id in tier3_rules:
+            continue
+        if rule_id in {"R27", "R28", "R29"} and not _exfil_case(config, survey):
+            continue
+        if rule_id == "R30" and (_android_case(config, survey) or _macos_case(config, survey)):
+            continue
+        if rule_id == "R32" and not _android_case(config, survey):
+            continue
+        if rule_id == "R33" and not _macos_case(config, survey):
+            continue
+        if rule_id == "R14" and (_android_case(config, survey) or _macos_case(config, survey)):
             continue
         if rule_id not in skipped:
             continue
@@ -335,7 +351,7 @@ def _coverage_tool_args(
         root = _search_root_relpath(config, survey) or config.evidence_case
         return {
             "search_root_relpath": root,
-            "patterns": config.search_patterns or _default_search_patterns(),
+            "patterns": config.search_patterns or _default_search_patterns(config),
         }
     if tool == "web_parse_access_log":
         rel = _first_relpath(survey, "web_log")
@@ -366,6 +382,8 @@ def _coverage_tool_args(
     if tool in {"disk_scan_exfil", "yara_scan_evidence"}:
         if config.mode == "synthetic":
             return None
+        if _android_case(config, survey) or _macos_case(config, survey):
+            return None
         root = _search_root_relpath(config, survey)
         if not root:
             return None
@@ -380,6 +398,24 @@ def _coverage_tool_args(
             return None
         mem = _memory_relpath(config, survey)
         return {"memory_relpath": mem} if mem else None
+    if tool == "android_probe":
+        root = config.evidence_case or _first_relpath(survey, "android_mtd")
+        if root and root.endswith(".img"):
+            root = root.rsplit("/", 1)[0]
+        return {"case_relpath": root} if root else None
+    if tool == "android_scan_artifacts":
+        root = config.evidence_case or _first_relpath(survey, "android_mtd")
+        if root and root.endswith(".img"):
+            root = root.rsplit("/", 1)[0]
+        return {"search_root_relpath": root, "max_records": 80} if root else None
+    if tool in {"macos_probe", "macos_scan_artifacts"}:
+        rel = _macos_ad1_relpath(survey)
+        if not rel:
+            return None
+        args = {"artifact_relpath": rel}
+        if tool == "macos_scan_artifacts":
+            args["max_records"] = 80
+        return args
     return None
 
 
@@ -489,7 +525,7 @@ def _build_candidates(
     if config.mode != "synthetic" and _effective_extracted_root(config) is not None:
         key = _action_key(
             "disk_search_artifacts",
-            {"search_root_relpath": "extracted", "patterns": config.search_patterns or _default_search_patterns()},
+            {"search_root_relpath": "extracted", "patterns": config.search_patterns or _default_search_patterns(config)},
         )
         if key not in executed and key not in failed:
             candidates.append(
@@ -498,7 +534,7 @@ def _build_candidates(
                     "disk_search_artifacts",
                     {
                         "search_root_relpath": "extracted",
-                        "patterns": config.search_patterns or _default_search_patterns(),
+                        "patterns": config.search_patterns or _default_search_patterns(config),
                     },
                     "breadth IOC search on extracted disk",
                 )
@@ -507,6 +543,8 @@ def _build_candidates(
             ("disk_scan_exfil", 9, "exfil channel scan on extracted disk (R27–R29)"),
             ("yara_scan_evidence", 9, "YARA/pattern scan on extracted disk (R30)"),
         ):
+            if tool == "disk_scan_exfil" and not _exfil_case(config, survey):
+                continue
             args = _coverage_tool_args(tool, survey, config)
             if args is None:
                 continue
@@ -520,6 +558,8 @@ def _build_candidates(
             ("disk_scan_exfil", 9, "exfil channel scan (R27–R29)"),
             ("yara_scan_evidence", 8, "YARA/pattern scan (R30)"),
         ):
+            if tool == "disk_scan_exfil" and not _exfil_case(config, survey):
+                continue
             args = _coverage_tool_args(tool, survey, config)
             if args is None:
                 continue
@@ -530,13 +570,56 @@ def _build_candidates(
     return candidates
 
 
-def _default_search_patterns() -> list[str]:
-    return ["cmd.exe", "powershell", "php", "shell", "eval", "xampp", "apache"]
+def _exfil_case(config: AgentConfig, survey: dict[str, Any]) -> bool:
+    """Breadth exfil scans are for insider-leakage cases — skip generic web/malware images."""
+    blob = f"{config.case_id} {config.evidence_case}".lower()
+    if any(token in blob for token in ("ndlc", "leakage", "nist-pc", "nitroba", "informant")):
+        return True
+    kinds = set(survey.get("kinds_present") or [])
+    return bool(kinds & {"setupapi_log"}) and "usb" in blob
+
+
+ANDROID_KINDS = frozenset({"android_mtd", "android_sdcard", "android_case_log"})
+MACOS_KINDS = frozenset({"macos_ad1"})
+
+
+def _android_case(config: AgentConfig, survey: dict[str, Any]) -> bool:
+    if config.mode == "synthetic":
+        return False
+    if set(survey.get("kinds_present") or []) & ANDROID_KINDS:
+        return True
+    blob = f"{config.case_id} {config.evidence_case}".lower()
+    return "android" in blob or "dfrws2011" in blob or "mtdblock" in blob
+
+
+def _macos_case(config: AgentConfig, survey: dict[str, Any]) -> bool:
+    if config.mode == "synthetic":
+        return False
+    if set(survey.get("kinds_present") or []) & MACOS_KINDS:
+        return True
+    blob = f"{config.case_id} {config.evidence_case}".lower()
+    return "macos" in blob or "spotlight" in blob or ".ad1" in blob
+
+
+def _default_search_patterns(config: AgentConfig | None = None) -> list[str]:
+    patterns = ["cmd.exe", "powershell", "php", "shell", "eval", "xampp", "apache"]
+    if config is not None:
+        blob = f"{config.case_id} {config.evidence_case}".lower()
+        if "ali-hadi-7" in blob or "sysinternals" in blob:
+            patterns.extend(["drivers\\etc\\hosts", "etc\\hosts", "hosts file"])
+        if "ndlc" in blob or "leakage" in blob or "nist-pc" in blob:
+            patterns.extend(["deleted", "timestomp", "anti-forensic", "wiped"])
+    return patterns
 
 
 def _memory_relpath(config: AgentConfig, survey: dict[str, Any]) -> str | None:
     if config.memory_relpath:
         return config.memory_relpath
+    kinds = set(survey.get("kinds_present") or [])
+    if kinds & (ANDROID_KINDS | MACOS_KINDS) and not kinds.intersection(
+        {"memory_image", "registry_hive", "evtx", "prefetch", "pcap"}
+    ):
+        return None
     return _first_relpath(survey, "memory_image")
 
 
@@ -545,6 +628,20 @@ def _first_relpath(survey: dict[str, Any], kind: str) -> str | None:
         if entry.get("kind") == kind:
             return entry.get("relpath")
     return None
+
+
+def _macos_ad1_relpath(survey: dict[str, Any]) -> str | None:
+    preferred: str | None = None
+    fallback: str | None = None
+    for entry in survey.get("files") or []:
+        if entry.get("kind") != "macos_ad1":
+            continue
+        rel = entry.get("relpath") or ""
+        if rel.lower().endswith(".ad1") and not rel.lower().endswith(".ad1.txt"):
+            preferred = rel
+            break
+        fallback = fallback or rel
+    return preferred or fallback
 
 
 def _system_hive_relpath(survey: dict[str, Any]) -> str | None:
@@ -636,6 +733,12 @@ def _score_candidate(
         score += 125
     if "R31" in skipped and tool == "mem_linux_probe" and "memory_image" in survey_kinds:
         score += 110
+    if "R32" in skipped and tool in {"android_probe", "android_scan_artifacts"}:
+        if survey_kinds & ANDROID_KINDS or "android" in str(survey.get("case_relpath", "")).lower():
+            score += 200
+    if "R33" in skipped and tool in {"macos_probe", "macos_scan_artifacts"}:
+        if survey_kinds & MACOS_KINDS or "spotlight" in str(survey.get("case_relpath", "")).lower():
+            score += 200
     if "R11" in skipped and tool == "reg_services" and "registry_hive" in survey_kinds:
         score += 150
     if "R13" in skipped and tool in {"disk_parse_scheduled_tasks", "reg_run_keys"}:

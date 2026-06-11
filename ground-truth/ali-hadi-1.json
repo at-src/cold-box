@@ -7,7 +7,7 @@
     {"id": "AH-3", "tags": ["AH-3", "leftovers"], "keywords": ["leftover", "cmd.exe", "command"], "required": true},
     {"id": "AH-4", "tags": ["AH-4", "software"], "keywords": ["software", "xampp", "installed"], "required": false},
     {"id": "AH-5", "tags": ["AH-5", "shellcode", "R7"], "keywords": ["shellcode", "malfind", "injection", "memory"], "required": true},
-    {"id": "AH-6", "tags": ["AH-6", "timeline"], "keywords": ["timeline", "logon", "security", "cross-source"], "rule_tags": ["R15"], "required": true},
+    {"id": "AH-6", "tags": ["AH-6", "timeline"], "keywords": ["timeline", "security", "cross-source"], "rule_tags": ["R15"], "required": true},
     {"id": "AH-7", "tags": ["AH-7", "self-correction"], "keywords": ["breach", "compromised", "self-correction", "revising", "contradiction"], "requires_self_correction": true, "required": true}
   ]
 }

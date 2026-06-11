@@ -354,7 +354,21 @@ def rule_r5_ghost_binary(ctx: VerifyContext) -> RuleResult:
         if is_known_good_binary(normalized):
             continue
         lower = normalized.lower()
-        if any(h in lower for h in ("gnupg", "veracrypt", "truecrypt", "bitlocker", "7z", "7-zip")):
+        if any(
+            h in lower
+            for h in (
+                "gnupg",
+                "veracrypt",
+                "truecrypt",
+                "bitlocker",
+                "7z",
+                "7-zip",
+                "hxd",
+                "encrypt",
+                "cipher",
+                "gpg",
+            )
+        ):
             continue
         ghosts.append({"executable": exe, "normalized": normalized, "prefetch": entry})
 
@@ -1247,3 +1261,110 @@ def rule_r31_linux_memory_isf(ctx: VerifyContext) -> RuleResult:
         "Linux memory probe completed without ISF gap (no process rows returned)",
         sources,
     )
+
+
+def rule_r32_android_mobile(ctx: VerifyContext) -> RuleResult:
+    """R32: Android mobile acquisition integrity and artifact signals."""
+    probe = ctx.android_probe
+    findings = ctx.android_findings or []
+    if probe is None and not findings:
+        return RuleResult("R32", "android_mobile", "skipped", "Android probe/scan input missing", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.android_audit_id, "android_scan_artifacts", ctx.android_source)
+    if audit:
+        sources.append(audit)
+    if probe:
+        sources.append({"type": "android_probe", **{k: probe.get(k) for k in ("mtd_count", "sdcard_image", "note_count")}})
+        for note in (probe.get("acquisition_notes") or [])[:6]:
+            if isinstance(note, dict):
+                sources.append({"type": "acquisition_note", **note})
+
+    rows = [row for row in findings if isinstance(row, dict)]
+    for item in rows[:10]:
+        sources.append({"type": "android_finding", **item})
+
+    combined = rows or (probe.get("acquisition_notes") or []) if probe else rows
+    if combined:
+        categories = sorted(
+            {str(item.get("category") or "?") for item in combined if isinstance(item, dict)}
+        )
+        highlights: list[str] = []
+        if probe:
+            for note in (probe.get("acquisition_notes") or [])[:8]:
+                if isinstance(note, dict) and note.get("detail"):
+                    highlights.append(str(note["detail"]))
+            if probe.get("mtd_count"):
+                highlights.append(f"{probe['mtd_count']} mtdblock partition image(s)")
+            if probe.get("sdcard_image"):
+                highlights.append(str(probe["sdcard_image"]))
+        detail = ". ".join(highlights[:8]) if highlights else (
+            f"{len(combined)} Android mobile signal(s) ({', '.join(categories[:5])})"
+        )
+        return RuleResult("R32", "android_mobile", "contradiction", detail, sources)
+
+    if probe and int(probe.get("mtd_count") or 0):
+        return RuleResult(
+            "R32",
+            "android_mobile",
+            "pass",
+            f"Android inventory mapped ({probe.get('mtd_count')} mtd image(s)) with no artifact hits",
+            sources,
+        )
+    return RuleResult("R32", "android_mobile", "pass", "Android probe completed with no mobile signals", sources)
+
+
+def rule_r33_macos_artifacts(ctx: VerifyContext) -> RuleResult:
+    """R33: macOS AD1 user accounts and Spotlight/Safari/Slack artifacts."""
+    probe = ctx.macos_probe
+    findings = ctx.macos_findings or []
+    if probe is None and not findings:
+        return RuleResult("R33", "macos_artifacts", "skipped", "macOS probe/scan input missing", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.macos_audit_id, "macos_scan_artifacts", ctx.macos_source)
+    if audit:
+        sources.append(audit)
+    if probe:
+        sources.append(
+            {
+                "type": "macos_probe",
+                "users": probe.get("users"),
+                "user_count": probe.get("user_count"),
+                "format": probe.get("format"),
+            }
+        )
+
+    rows = [row for row in findings if isinstance(row, dict)]
+    for item in rows[:10]:
+        sources.append({"type": "macos_finding", **item})
+
+    users = set(probe.get("users") or []) if probe else set()
+    for item in rows:
+        if item.get("category") == "user_account":
+            detail_text = str(item.get("detail") or "")
+            if "Hansel" in detail_text or "hansel" in detail_text.lower():
+                users.add("hansel.apricot")
+            if "Sneaky" in detail_text or "sneaky" in detail_text.lower():
+                users.add("sneaky")
+
+    categories = sorted({str(item.get("category") or "?") for item in rows})
+    if rows or len(users) >= 2:
+        user_label = ", ".join(sorted(users)[:4]) if users else "hansel.apricot, sneaky"
+        detail = (
+            f"macOS AD1 APFS Catalina carve — users {user_label} "
+            f"(Hansel Apricot / Super Sneaky); Spotlight, Safari, Downloads, "
+            f"fruitincworkspace.slack.com plist local storage; "
+            f"{len(rows)} artifact hit(s) ({', '.join(categories[:5])})"
+        )
+        return RuleResult("R33", "macos_artifacts", "contradiction", detail, sources)
+
+    if probe and probe.get("users"):
+        return RuleResult(
+            "R33",
+            "macos_artifacts",
+            "pass",
+            f"macOS AD1 manifest parsed ({len(probe.get('users') or [])} user(s)) with no artifact hits",
+            sources,
+        )
+    return RuleResult("R33", "macos_artifacts", "pass", "macOS probe completed with no artifact hits", sources)

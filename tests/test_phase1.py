@@ -19,7 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_catalog_drift_phase1() -> None:
-    assert len(TOOL_REGISTRY) == len(CATALOG) == 62
+    assert len(TOOL_REGISTRY) == len(CATALOG) == 66
 
 
 def test_net_dns_extract_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

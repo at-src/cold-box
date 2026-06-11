@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +61,23 @@ def classify_file(relpath: str, path: Path) -> str:
     name = path.name.lower()
     suffix = path.suffix.lower()
     parts_lower = [p.lower() for p in path.parts]
+
+    parts_joined = "/".join(parts_lower)
+    android_ctx = "android" in parts_joined or "dfrws2011" in parts_joined
+
+    if suffix == ".ad1" or name.endswith(".ad1.txt"):
+        return "macos_ad1"
+    if android_ctx and re.match(r"mtd\d+\.dd$", name):
+        return "android_mtd"
+    if name.startswith("mtdblock") and suffix == ".img":
+        return "android_mtd"
+    if android_ctx and (
+        name.lower() in {"sdcard.img", "sdcard.dd"}
+        or ("sdcard" in name.lower() and suffix in {".img", ".dd"})
+    ):
+        return "android_sdcard"
+    if name in {"acquisition.log", "collection.log"} and android_ctx:
+        return "android_case_log"
 
     if suffix in {".e01", ".ex01", ".dd", ".001", ".aff4", ".vhd", ".vhdx", ".vmdk"}:
         return "disk_image"

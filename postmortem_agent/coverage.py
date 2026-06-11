@@ -28,6 +28,10 @@ LINUX_TOOLS = frozenset(
     }
 )
 
+ANDROID_KINDS = frozenset({"android_mtd", "android_sdcard", "android_case_log"})
+MACOS_KINDS = frozenset({"macos_ad1"})
+PLATFORM_KINDS = ANDROID_KINDS | MACOS_KINDS
+
 SKIP_TOOLS = frozenset({"tool_catalog", "evidence_survey"})
 
 WEB_TOOLS = frozenset({"web_parse_access_log", "web_inspect_artifact"})
@@ -138,10 +142,20 @@ def _correlate_args(config: AgentConfig, survey: dict[str, Any]) -> dict[str, An
 def _memory_relpath(config: AgentConfig, survey: dict[str, Any]) -> str | None:
     if config.memory_relpath:
         return config.memory_relpath
+    kinds = set(survey.get("kinds_present") or [])
+    if kinds & PLATFORM_KINDS and not kinds.intersection(
+        {"memory_image", "registry_hive", "evtx", "prefetch", "pcap"}
+    ):
+        return None
     for entry in survey.get("files") or []:
         if entry.get("kind") == "memory_image":
             return entry.get("relpath")
     return None
+
+
+def _survey_is_platform_breadth(survey: dict[str, Any]) -> bool:
+    kinds = set(survey.get("kinds_present") or [])
+    return bool(kinds & PLATFORM_KINDS)
 
 
 def _default_search_patterns() -> list[str]:
@@ -240,7 +254,7 @@ def build_frontier(
         "patterns": config.search_patterns or _default_search_patterns(),
     }
     search_key = action_key("disk_search_artifacts", search_args)
-    if search_key not in executed and search_key not in failed:
+    if search_key not in executed and search_key not in failed and not _survey_is_platform_breadth(survey):
         priority = 15 if _survey_has_web_surface(survey) else 5
         items.append(
             FrontierItem(

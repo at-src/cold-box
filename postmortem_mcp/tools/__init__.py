@@ -59,6 +59,8 @@ from postmortem_mcp.tools.memory import (
     mem_pstree,
     mem_svcscan,
 )
+from postmortem_mcp.tools.android import android_probe, android_scan_artifacts
+from postmortem_mcp.tools.macos import macos_probe, macos_scan_artifacts
 from postmortem_mcp.tools.tier3 import disk_scan_exfil, yara_scan_evidence
 from postmortem_mcp.tools.logs import logs_parse_structured
 from postmortem_mcp.tools.web import web_inspect_artifact, web_parse_access_log
@@ -157,6 +159,13 @@ WAVE7_TOOLS = [
     mem_linux_probe,
 ]
 
+WAVE8_TOOLS = [
+    android_probe,
+    android_scan_artifacts,
+    macos_probe,
+    macos_scan_artifacts,
+]
+
 # Raw-image ingest — the front door that turns a disk image into the extracted
 # artifact tree every other tool consumes.
 INGEST_TOOLS = [
@@ -166,7 +175,7 @@ INGEST_TOOLS = [
 
 ALL_TOOLS = (
     WAVE1_TOOLS + WAVE2_TOOLS + WAVE3_TOOLS + META_TOOLS
-    + WAVE4_TOOLS + WAVE5_TOOLS + WAVE6_TOOLS + WAVE7_TOOLS + INGEST_TOOLS
+    + WAVE4_TOOLS + WAVE5_TOOLS + WAVE6_TOOLS + WAVE7_TOOLS + WAVE8_TOOLS + INGEST_TOOLS
 )
 
 __all__ = [

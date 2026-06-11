@@ -9,7 +9,13 @@ from postmortem_agent.state import AgentConfig, InvestigationState
 from postmortem_evidence.guard import resolve_read_path
 from postmortem_mcp.timeline import build_super_timeline
 from postmortem_verify import VerifyContext, run_verifier
-from postmortem_verify.models import RuleResult, _extract_cmdlines, _extract_processes, _extract_records
+from postmortem_verify.models import (
+    RuleResult,
+    _extract_cmdlines,
+    _extract_prefetch,
+    _extract_processes,
+    _extract_records,
+)
 
 
 def build_verify_context(state: InvestigationState, config: AgentConfig) -> VerifyContext:
@@ -20,7 +26,7 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         pslist_data=state.pslist_payload(),
         psscan_data=state.psscan_payload(),
         amcache_data=_data(state, "disk_parse_amcache") or _data(state, "reg_amcache"),
-        prefetch_data=_prefetch_data(state),
+        prefetch_data=_best_prefetch_data(state),
         mft_data=_data(state, "disk_parse_mft"),
         timestomp_data=_data(state, "disk_detect_timestomp"),
         netscan_data=_data(state, "mem_netscan"),
@@ -46,6 +52,10 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         exfil_data=_data(state, "disk_scan_exfil"),
         yara_data=_data(state, "yara_scan_evidence"),
         linux_memory_data=_data(state, "mem_linux_probe"),
+        android_probe_data=_data(state, "android_probe"),
+        android_scan_data=_data(state, "android_scan_artifacts"),
+        macos_probe_data=_best_macos_probe_data(state),
+        macos_scan_data=_data(state, "macos_scan_artifacts"),
         evidence_root=evidence_root,
         pslist_audit_id=state.audit_id("mem_pslist"),
         psscan_audit_id=state.audit_id("mem_psscan"),
@@ -74,6 +84,8 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         exfil_audit_id=state.audit_id("disk_scan_exfil"),
         yara_audit_id=state.audit_id("yara_scan_evidence"),
         linux_memory_audit_id=state.audit_id("mem_linux_probe"),
+        android_audit_id=state.audit_id("android_scan_artifacts") or state.audit_id("android_probe"),
+        macos_audit_id=state.audit_id("macos_scan_artifacts") or state.audit_id("macos_probe"),
     )
     if config.extracted_root and config.extracted_root.is_dir():
         from postmortem_verify.models import evidence_basenames
@@ -95,7 +107,22 @@ def _evidence_root(config: AgentConfig) -> Path | None:
         return None
 
 
-def _prefetch_data(state: InvestigationState) -> dict | None:
+def _best_prefetch_data(state: InvestigationState) -> dict | None:
+    """Merge all successful prefetch parses — do not let the last narrow run drop R5 ghosts."""
+    entries: list[dict[str, Any]] = []
+    audit_id: str | None = None
+    source: str | None = None
+    for run in state.tool_results.get("disk_parse_prefetch") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        parsed = _extract_prefetch(data)
+        if parsed:
+            entries.extend(parsed)
+        audit_id = audit_id or run.get("audit_id")
+        source = source or data.get("source")
+    if entries:
+        return {"executables": entries, "prefetch_audit_id": audit_id, "source": source}
     data = _data(state, "disk_parse_prefetch")
     if data:
         return data
@@ -162,6 +189,21 @@ def _best_linux_persistence_data(state: InvestigationState) -> dict | None:
     if best is not None:
         return best
     return _data(state, "linux_cron")
+
+
+def _best_macos_probe_data(state: InvestigationState) -> dict | None:
+    """Prefer macos_probe runs that enumerate user accounts from the AD1 manifest."""
+    best: dict | None = None
+    best_count = -1
+    for run in state.tool_results.get("macos_probe") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        count = int(data.get("user_count") or len(data.get("users") or []))
+        if count > best_count:
+            best_count = count
+            best = data
+    return best or _data(state, "macos_probe")
 
 
 def _best_linux_history_data(state: InvestigationState) -> dict | None:

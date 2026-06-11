@@ -157,6 +157,9 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
             continue
 
         state.verifier_results = run_verifier(build_verify_context(state, config))
+        for verifier_hit in state.verifier_results:
+            if verifier_hit.status == "contradiction":
+                state.peak_contradictions[verifier_hit.rule_id] = verifier_hit
         current_rules = {r.rule_id for r in state.verifier_results if r.status == "contradiction"}
         new_rules = current_rules - fired_rules
         fired_rules |= current_rules
@@ -414,6 +417,9 @@ def _finalize(
     state.phase = "finalize"
     state.done = True
     state.verifier_results = run_verifier(build_verify_context(state, config))
+    for verifier_hit in state.verifier_results:
+        if verifier_hit.status == "contradiction":
+            state.peak_contradictions[verifier_hit.rule_id] = verifier_hit
 
     # Never let a placeholder ("Contradiction ... revising") or a partial interim hypothesis
     # survive into the report. Unless the LLM explicitly authored a final conclusion via "done",
