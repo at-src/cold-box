@@ -287,10 +287,10 @@
     ]
   },
   "cold_box_policy": {
-    "generated": "2026-06-11T12:01:49Z",
+    "generated": "2026-06-11T14:30:00Z",
     "brain": "policy",
+    "manifest": "ground-truth/benchmark-manifest.json",
     "mean_required_recall": 1.0,
-    "mean_strict_recall": 0.857,
     "cases": [
       {"case_id": "nist-ndlc", "required_recall": 1.0, "recall": 1.0, "precision": 0.75},
       {"case_id": "ali-hadi-1", "required_recall": 1.0, "recall": 1.0, "precision": 0.778},
@@ -298,7 +298,11 @@
       {"case_id": "dfrws2008", "required_recall": 1.0, "recall": 1.0, "precision": 0.444},
       {"case_id": "ali-hadi-7", "required_recall": 1.0, "recall": 1.0, "precision": 0.8},
       {"case_id": "ali-hadi-9", "required_recall": 1.0, "recall": 0.0, "precision": 0.0, "note": "restraint/precision case — all-optional GT"},
-      {"case_id": "nist-hacking", "required_recall": 1.0, "recall": 1.0, "precision": 0.6}
+      {"case_id": "nist-hacking", "required_recall": 1.0, "recall": 1.0, "precision": 0.6},
+      {"case_id": "dart-sample-evidence", "required_recall": 1.0, "recall": 1.0, "precision": 0.417},
+      {"case_id": "dfrws2011-android-case1", "required_recall": 1.0, "recall": 1.0, "precision": 0.667},
+      {"case_id": "dfrws2011-android-case2", "required_recall": 1.0, "recall": 1.0, "precision": 0.667},
+      {"case_id": "macos-spotlight", "required_recall": 1.0, "recall": 1.0, "precision": 0.667}
     ]
   }
 }

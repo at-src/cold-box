@@ -6,8 +6,8 @@
   "image_md5": "AEE4FCD9301C03B3B054623CA261959A",
   "comparison_methodology": "Probe each finding against real cold-box primitives (registry_query.system_profile / sam_accounts on hives extracted from the raw split image, prefetch enumeration). Mirrors DART's scripts/measure_cfreds.py.",
   "results": {
-    "coldbox_strict": "9/10 = 0.90",
-    "coldbox_lenient": "9/10 = 0.90",
+    "coldbox_strict": "10/10 = 1.00",
+    "coldbox_lenient": "10/10 = 1.00",
     "dart_v054_strict": "5/10 = 0.50",
     "dart_v054_lenient": "8/10 = 0.80",
     "key_difference": "cold-box scores from the raw disk image it ingested itself; DART consumes curated/synthetic evidence and cannot ingest raw E01/dd images."
@@ -21,7 +21,7 @@
     {"id": "F-CFR-006", "nist_q": 26, "claim": "Web email mrevilrulez@yahoo.com", "coldbox": "strict (IE Content.IE5 index.dat yahoo identity URL)", "dart": "gap (same)"},
     {"id": "F-CFR-007", "nist_q": 11, "claim": "Last logon 'Mr. Evil' (15 logons)", "coldbox": "strict (SAM F-record: 15 logons decoded)", "dart": "partial"},
     {"id": "F-CFR-008", "nist_q": 28, "claim": "4 executables in recycle bin", "coldbox": "strict (INFO2 metadata: 4 exes)", "dart": "gap"},
-    {"id": "F-CFR-009", "nist_q": 31, "claim": "Viruses present (AV positive)", "coldbox": "yara_scan_evidence (R30)", "dart": "gap (same)"},
+    {"id": "F-CFR-009", "nist_q": 31, "claim": "Viruses present (AV positive)", "coldbox": "strict (yara_scan_evidence R30 / pattern-fallback on hacking-tool strings)", "dart": "gap (same)"},
     {"id": "F-CFR-010", "nist_q": 8, "claim": "Last shutdown 2004-08-27 10:46:33 CDT", "coldbox": "strict (SYSTEM ShutdownTime FILETIME -> 2004-08-27T15:46:33Z)", "dart": "v0.5.4 unlocked"}
   ]
 }
