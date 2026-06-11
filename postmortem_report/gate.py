@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 REQUIRED_FIELDS = frozenset({"id", "claim", "audit_ids", "confidence", "status"})
-ALLOWED_STATUS = frozenset({"confirmed", "inference", "unresolved"})
+ALLOWED_STATUS = frozenset({"confirmed", "inference", "unresolved", "context"})
 
 
 class FindingGateError(ValueError):

@@ -89,27 +89,33 @@ def score_findings(
     used_findings: set[str] = set()
     missed: list[str] = []
 
-    for expected in expected_list:
+    def _match_expected(expected: dict[str, Any]) -> None:
         expected_id = str(expected.get("id", "?"))
-        hit: MatchedFinding | None = None
         for finding in pool:
             fid = str(finding.get("id", ""))
             if fid in used_findings:
                 continue
             reason = _matches_expected(finding, expected, self_corrected=self_corrected)
             if reason:
-                hit = MatchedFinding(
-                    expected_id=expected_id,
-                    finding_id=fid,
-                    claim=str(finding.get("claim", ""))[:200],
-                    match_reason=reason,
+                matched.append(
+                    MatchedFinding(
+                        expected_id=expected_id,
+                        finding_id=fid,
+                        claim=str(finding.get("claim", ""))[:200],
+                        match_reason=reason,
+                    )
                 )
                 used_findings.add(fid)
-                break
-        if hit:
-            matched.append(hit)
-        elif expected.get("required", True):
+                return
+        if expected.get("required", True):
             missed.append(expected_id)
+
+    required_expected = [e for e in expected_list if e.get("required", True)]
+    optional_expected = [e for e in expected_list if not e.get("required", True)]
+    for expected in required_expected:
+        _match_expected(expected)
+    for expected in optional_expected:
+        _match_expected(expected)
 
     required = [e for e in expected_list if e.get("required", True)]
     required_hits = sum(1 for m in matched if m.expected_id in {e["id"] for e in required})

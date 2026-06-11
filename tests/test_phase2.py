@@ -69,6 +69,36 @@ def test_reg_services_ghost(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     assert "ghost-service.exe" in basenames
 
 
+def test_reg_services_system_hive(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    hive = Path("/tmp/cb-cases/ali-hadi-7/extracted/part0/Windows/System32/config/SYSTEM")
+    if not hive.is_file():
+        pytest.skip("ali-hadi-7 SYSTEM hive not available")
+    monkeypatch.setenv("EVIDENCE_ROOT", "/tmp/cb-cases/ali-hadi-7")
+    monkeypatch.setenv("EXTRACTED_ROOT", "/tmp/cb-cases/ali-hadi-7/extracted")
+    monkeypatch.setenv("CASE_OUTPUT", str(tmp_path / "cases"))
+    result = reg_services("t", "extracted/part0/Windows/System32/config/SYSTEM")
+    assert result["ok"] is True
+    assert result["data"]["parser"] == "regipy-services"
+    basenames = {row["binary_basename"] for row in result["data"]["records"]}
+    assert "vmtoolsio.exe" in basenames
+
+
+def test_r11_skips_known_good_service_binaries() -> None:
+    ctx = VerifyContext(
+        service_entries=[
+            {
+                "name": "Spooler",
+                "binary": r"C:\Windows\System32\spoolsv.exe",
+                "binary_basename": "spoolsv.exe",
+            }
+        ],
+        evidence_basenames=evidence_basenames(CASE_WINDOWS),
+        services_audit_id="aaaabbbb",
+    )
+    result = rule_r11_ghost_service(ctx)
+    assert result.status == "pass"
+
+
 def test_r12_usb_rule() -> None:
     ctx = VerifyContext(
         setupapi_devices=[

@@ -8,7 +8,7 @@ from typing import Any, Literal
 
 from postmortem_verify.models import RuleResult
 
-RunMode = Literal["autonomous", "llm", "synthetic"]
+RunMode = Literal["autonomous", "llm", "hybrid", "synthetic"]
 InvestigationProfile = Literal["autonomous"]
 
 

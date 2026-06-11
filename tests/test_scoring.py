@@ -65,6 +65,27 @@ def test_score_ali_partial() -> None:
     assert "AH-1" in report.missed or "AH-6" in report.missed
 
 
+def test_required_findings_matched_before_optional() -> None:
+    gt = load_ground_truth(REPO / "ground-truth" / "ali-hadi-1.json")
+    findings = [
+        {
+            "id": "f-timeline",
+            "claim": "Cross-source timeline: 92 events; 8 security logon events",
+            "tags": ["R15", "timeline_correlation"],
+            "status": "confirmed",
+        },
+        {
+            "id": "f-malfind",
+            "claim": "1 injected/RWX memory region(s) detected by malfind",
+            "tags": ["R7"],
+            "status": "confirmed",
+        },
+    ]
+    report = score_findings(findings, gt, self_corrected=True)
+    assert "AH-6" not in report.missed
+    assert any(m.expected_id == "AH-6" for m in report.matched)
+
+
 def test_narrative_template() -> None:
     from postmortem_agent.narrative import build_template_narrative
     from postmortem_agent.state import AgentConfig, InvestigationState

@@ -84,6 +84,10 @@ def _arguments_for(
     if spec.name in LINUX_TOOLS and kind == "text" and not _linux_path_ok(relpath):
         return None
 
+    basename = relpath.rsplit("/", 1)[-1].lower()
+    if spec.name in {"disk_parse_usb", "reg_services"} and kind == "registry_hive" and basename != "system":
+        return None
+
     for param in spec.params:
         if param.name == "memory_relpath" and kind == "memory_image":
             args["memory_relpath"] = relpath

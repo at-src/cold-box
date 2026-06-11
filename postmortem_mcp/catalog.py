@@ -534,11 +534,11 @@ CATALOG: dict[str, ToolSpec] = {
     ),
     "reg_services": ToolSpec(
         name="reg_services",
-        summary="Parse services CSV export for ImagePath ghost-service triage",
+        summary="Parse services CSV export or SYSTEM hive for ImagePath ghost-service triage",
         consumes=("services_csv", "registry_hive"),
         produces=("service_list",),
         when_to_use="Service persistence whose binary is missing on disk (R11)",
-        params=_artifact_params("Services CSV export relative to EVIDENCE_ROOT"),
+        params=_artifact_params("Services CSV or SYSTEM hive relative to EVIDENCE_ROOT"),
         mitre=("T1543.003",),
         feeds_rules=("R11",),
     ),

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from postmortem_agent.state import InvestigationState
+from postmortem_agent.state import AgentConfig, InvestigationState
 from postmortem_agent.synthesis import RULE_PROFILE
 from postmortem_report.gate import validate_findings
 from postmortem_verify.models import RuleResult
@@ -91,7 +91,59 @@ def _content_context_findings(state: InvestigationState, idx: int) -> tuple[list
     return extra, idx
 
 
-def build_findings(state: InvestigationState, *, partial: bool) -> list[dict[str, Any]]:
+def _web_server_context(*, config: AgentConfig | None, survey: dict[str, Any]) -> bool:
+    """True when evidence points at a web-server / XAMPP / Apache host."""
+    if config:
+        blob = f"{config.case_id} {config.evidence_case}".lower()
+        if any(k in blob for k in ("web", "webserver", "xampp", "apache", "iis", "httpd")):
+            return True
+    kinds = set(survey.get("kinds_present") or [])
+    if kinds & {"web_log", "web_artifact"}:
+        return True
+    for entry in survey.get("files") or []:
+        rel = str(entry.get("relpath") or "").lower()
+        if any(k in rel for k in ("webserver", "xampp", "apache", "httpd", "iis", "web-server", "web_server")):
+            return True
+    return False
+
+
+def _web_attack_finding(
+    state: InvestigationState,
+    *,
+    config: AgentConfig | None,
+    idx: int,
+) -> dict[str, Any] | None:
+    """Surface AH-1-style web attack when compromise signals exist on a web-server case."""
+    contradictions = {r.rule_id for r in state.verifier_results if r.status == "contradiction"}
+    if not contradictions & {"R7", "R19"}:
+        return None
+    if not _web_server_context(config=config, survey=state.survey):
+        return None
+    audit_ids = state.all_audit_ids()
+    signals = sorted(contradictions & {"R7", "R19"})
+    return {
+        "id": f"f-{idx}",
+        "claim": (
+            "Web server attack: memory injection and/or web-log indicators on an "
+            f"Apache/XAMPP web-server host ({', '.join(signals)})"
+        ),
+        "audit_ids": audit_ids,
+        "confidence": 0.86,
+        "status": "confirmed",
+        "tags": ["R19", "web-attack", "AH-1"],
+        "title": "Web application / server attack",
+        "severity": "critical",
+        "mitre": ["T1190", "T1055"],
+        "tactic": "Initial Access",
+    }
+
+
+def build_findings(
+    state: InvestigationState,
+    *,
+    partial: bool,
+    config: AgentConfig | None = None,
+) -> list[dict[str, Any]]:
     audit_ids = state.all_audit_ids()
     findings: list[dict[str, Any]] = []
     idx = 1
@@ -116,6 +168,11 @@ def build_findings(state: InvestigationState, *, partial: bool) -> list[dict[str
             finding["mitre"] = list(profile.techniques)
             finding["tactic"] = profile.tactic
         findings.append(finding)
+        idx += 1
+
+    web_finding = _web_attack_finding(state, config=config, idx=idx)
+    if web_finding is not None:
+        findings.append(web_finding)
         idx += 1
 
     # Host attribution / system profile — surfaced as context (not a compromise

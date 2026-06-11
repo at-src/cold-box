@@ -17,6 +17,8 @@ from postmortem_mcp.config import audit_log_path, case_dir
 def _parse_mode(args: argparse.Namespace) -> str:
     if args.synthetic:
         return "synthetic"
+    if args.hybrid:
+        return "hybrid"
     if args.llm:
         return "llm"
     return "autonomous"
@@ -111,6 +113,11 @@ def main(argv: list[str] | None = None) -> int:
         "--llm",
         action="store_true",
         help="Use LLM reasoner (requires ANTHROPIC_API_KEY)",
+    )
+    p_run.add_argument(
+        "--hybrid",
+        action="store_true",
+        help="Hybrid brain: policy coverage floor + LLM ordering (requires ANTHROPIC_API_KEY)",
     )
     p_run.add_argument(
         "--synthetic",

@@ -5,12 +5,15 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from postmortem_agent.reasoner_hybrid import HybridReasoner
 from postmortem_agent.reasoner_llm import LLMReasoner
 from postmortem_agent.reasoner_policy import PolicyReasoner
 from postmortem_agent.state import AgentConfig
 
 
 def make_reasoner(config: AgentConfig):
+    if config.mode == "hybrid":
+        return HybridReasoner(config)
     if config.mode == "llm":
         return LLMReasoner(config)
     return PolicyReasoner(config)

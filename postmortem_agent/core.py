@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from postmortem_agent.coverage import build_frontier, coverage_report
 from postmortem_agent.diagnostic_memory import (
     hints_from_patterns,
     load_similar_patterns,
@@ -131,7 +132,7 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
                 state.lessons.append(lesson)
             _write_progress(state, progress_path, f"skipped repeat of failed call: {tool}",
                             extra={"tool": tool, "reason": action.get("reason")})
-            if _should_stop(stall, fired_rules):
+            if _should_stop(stall, fired_rules, state=state, survey=survey, config=config):
                 break
             continue
 
@@ -151,7 +152,7 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
             if lesson not in state.lessons:
                 state.lessons.append(lesson)
             _write_progress(state, progress_path, lesson, extra={"tool": tool, "action": action})
-            if _should_stop(stall, fired_rules):
+            if _should_stop(stall, fired_rules, state=state, survey=survey, config=config):
                 break
             continue
 
@@ -211,7 +212,7 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
             },
         )
 
-        if _should_stop(stall, fired_rules):
+        if _should_stop(stall, fired_rules, state=state, survey=survey, config=config):
             _write_progress(
                 state,
                 progress_path,
@@ -225,9 +226,39 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
     return state
 
 
-def _should_stop(stall: int, fired_rules: set[str]) -> bool:
+def _executed_and_failed(state: InvestigationState) -> tuple[set[str], set[str]]:
+    executed: set[str] = set()
+    failed: set[str] = set()
+    for tool, runs in state.tool_results.items():
+        for run in runs:
+            args = run.get("args") or {}
+            key = _call_key(tool, args)
+            if run.get("ok"):
+                executed.add(key)
+            else:
+                failed.add(key)
+    return executed, failed
+
+
+def _should_stop(
+    stall: int,
+    fired_rules: set[str],
+    *,
+    state: InvestigationState | None = None,
+    survey: dict[str, Any] | None = None,
+    config: AgentConfig | None = None,
+) -> bool:
     """Conclude once evidence is saturated: signals exist and nothing new is surfacing."""
-    return stall >= STALL_LIMIT and bool(fired_rules)
+    if stall < STALL_LIMIT or not fired_rules:
+        return False
+    if state is not None and survey is not None and config is not None:
+        executed, failed = _executed_and_failed(state)
+        report = coverage_report(survey, config, executed, failed)
+        if any(item.priority >= 14 for item in report.pending):
+            return False
+        if any(item.tool in {"reg_services", "disk_parse_scheduled_tasks"} for item in report.pending):
+            return False
+    return True
 
 
 def _extract_first_action(
@@ -391,7 +422,7 @@ def _finalize(
             state.confidence = max(state.confidence, 0.6)
 
     try:
-        state.findings = build_findings(state, partial=partial)
+        state.findings = build_findings(state, partial=partial, config=config)
     except ValueError:
         state.findings = []
 

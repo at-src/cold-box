@@ -176,6 +176,12 @@ def synthesize_hypothesis(signals: list[dict[str, Any]], *, audit_count: int) ->
     if not signals:
         return "No confirmed indicators of compromise were produced by the verifier on the available evidence."
 
+    high_critical = [s for s in signals if s["severity"] in {"critical", "high"}]
+    if not high_critical:
+        return (
+            "No confirmed indicators of compromise were produced by the verifier on the available evidence."
+        )
+
     # Highest-severity signals lead the sentence.
     ranked = sorted(signals, key=lambda s: -SEVERITY_RANK.get(s["severity"], 0))
     lead = ranked[0]
@@ -380,7 +386,7 @@ def build_llm_report(state: InvestigationState, config: AgentConfig) -> dict[str
 
 
 def build_incident_report(state: InvestigationState, config: AgentConfig) -> dict[str, Any]:
-    if config.mode == "llm":
+    if config.mode in {"llm", "hybrid"}:
         try:
             return build_llm_report(state, config)
         except Exception:

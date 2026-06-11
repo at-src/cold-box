@@ -91,8 +91,9 @@ def reg_services(
     iteration: int = 0,
     max_records: int = 300,
 ) -> dict:
-    """Parse services CSV export for ImagePath / ghost-service triage (R11)."""
+    """Parse services from a CSV export or SYSTEM hive for ghost-service triage (R11)."""
     from postmortem_mcp.artifact_parse import parse_services_csv
+    from postmortem_mcp.services_parse import parse_services_hive
 
     args = {
         "case_id": case_id,
@@ -101,9 +102,15 @@ def reg_services(
     }
 
     def execute() -> dict[str, Any]:
-        path = resolve_csv_artifact_path(artifact_relpath)
+        if artifact_relpath.lower().endswith(".csv"):
+            path = resolve_csv_artifact_path(artifact_relpath)
+            args["artifact_path"] = str(path)
+            return parse_services_csv(path, max_records=max_records)
+        path = resolve_registry_path(artifact_relpath)
         args["artifact_path"] = str(path)
-        return parse_services_csv(path, max_records=max_records)
+        # SYSTEM hives typically hold 600+ services; enumerate enough for R11.
+        hive_cap = max(max_records, 2000)
+        return parse_services_hive(path, max_records=hive_cap)
 
     return run_audited_tool(
         case_id=case_id,

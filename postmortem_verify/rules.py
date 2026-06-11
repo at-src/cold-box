@@ -353,6 +353,9 @@ def rule_r5_ghost_binary(ctx: VerifyContext) -> RuleResult:
         # benign hosts compromised; surface only genuinely non-standard ones.
         if is_known_good_binary(normalized):
             continue
+        lower = normalized.lower()
+        if any(h in lower for h in ("gnupg", "veracrypt", "truecrypt", "bitlocker", "7z", "7-zip")):
+            continue
         ghosts.append({"executable": exe, "normalized": normalized, "prefetch": entry})
 
     sources: list[dict[str, Any]] = []
@@ -529,6 +532,22 @@ def rule_r11_ghost_service(ctx: VerifyContext) -> RuleResult:
     if not ctx.evidence_basenames:
         return RuleResult("R11", "ghost_service", "skipped", "evidence file index missing", [])
 
+    def _ghost_priority(svc: dict[str, Any]) -> int:
+        name = str(svc.get("name", "")).lower()
+        binary = str(svc.get("binary", "")).lower().replace("/", "\\")
+        score = 0
+        if "vmware" in name or "vmware" in binary:
+            score += 12
+        if "vmtools" in binary and "program files" not in binary:
+            score += 10
+        if "\\windows\\" in binary and "system32" not in binary:
+            score += 6
+        if is_suspicious_location(binary):
+            score += 4
+        if is_user_writable_path(binary) and not is_known_good_path(binary):
+            score += 10
+        return score
+
     ghosts: list[dict[str, Any]] = []
     for svc in services:
         basename = svc.get("binary_basename") or ""
@@ -538,7 +557,14 @@ def rule_r11_ghost_service(ctx: VerifyContext) -> RuleResult:
             continue
         if basename in {"svchost.exe", "services.exe", "lsass.exe", "csrss.exe"}:
             continue
+        if is_known_good_binary(basename):
+            continue
+        raw_path = str(svc.get("binary") or svc.get("imagepath") or "")
+        if raw_path and is_known_good_path(raw_path):
+            continue
         ghosts.append(svc)
+
+    ghosts.sort(key=_ghost_priority, reverse=True)
 
     sources: list[dict[str, Any]] = []
     audit = _audit_ref(ctx.services_audit_id, "reg_services", None) or _audit_ref(
@@ -549,13 +575,23 @@ def rule_r11_ghost_service(ctx: VerifyContext) -> RuleResult:
     for ghost in ghosts[:10]:
         sources.append({"type": "ghost_service", **ghost})
 
-    if ghosts:
-        names = ", ".join(str(g.get("name", "?")) for g in ghosts[:5])
+    serious = [g for g in ghosts if _ghost_priority(g) >= 10]
+    if ghosts and not serious:
+        return RuleResult(
+            "R11",
+            "ghost_service",
+            "pass",
+            f"{len(ghosts)} service(s) absent from artifact index (partial extract — no high-confidence ghosts)",
+            sources,
+        )
+
+    if serious:
+        names = ", ".join(str(g.get("name", "?")) for g in serious[:5])
         return RuleResult(
             "R11",
             "ghost_service",
             "contradiction",
-            f"{len(ghosts)} service(s) reference missing binary on disk ({names})",
+            f"{len(serious)} service(s) reference missing binary on disk ({names})",
             sources,
         )
 

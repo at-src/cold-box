@@ -14,6 +14,7 @@ Manifest entry (JSON list):
     "evidence_case": "nist-pc-only",  # case dir relative to evidence_root
     "ground_truth": "ground-truth/nist-ndlc.json",
     "llm": false,                      # use --llm brain (else policy/no-LLM)
+    "hybrid": false,                   # policy coverage floor + --llm ordering
     "max_iterations": 20,
     "tier": "validation"              # free-text label for the report
   }
@@ -41,9 +42,26 @@ from postmortem_agent.scoring import ScoreReport, score_from_output_dir  # noqa:
 from postmortem_mcp.config import case_dir  # noqa: E402
 
 
+def _load_repo_env(env: dict[str, str]) -> dict[str, str]:
+    """Merge repo .env into subprocess env (Anthropic key for --llm / --hybrid)."""
+    dotenv = REPO_ROOT / ".env"
+    if not dotenv.is_file():
+        return env
+    for line in dotenv.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, _, value = stripped.partition("=")
+        key = key.strip()
+        if not key or key in env:
+            continue
+        env[key] = value.strip().strip("'").strip('"')
+    return env
+
+
 def _run_case(entry: dict, *, case_output: str) -> tuple[bool, str]:
     """Run the agent for one case. Returns (ok, message)."""
-    env = dict(os.environ)
+    env = _load_repo_env(dict(os.environ))
     env["EVIDENCE_ROOT"] = str(Path(entry["evidence_root"]).expanduser())
     env["CASE_OUTPUT"] = case_output
     cmd = [
@@ -52,7 +70,9 @@ def _run_case(entry: dict, *, case_output: str) -> tuple[bool, str]:
         "--evidence-case", entry.get("evidence_case", "."),
         "--max-iterations", str(entry.get("max_iterations", 20)),
     ]
-    if entry.get("llm"):
+    if entry.get("hybrid"):
+        cmd.append("--hybrid")
+    elif entry.get("llm"):
         cmd.append("--llm")
     proc = subprocess.run(cmd, cwd=str(REPO_ROOT), env=env, capture_output=True, text=True)
     if proc.returncode != 0:
@@ -60,11 +80,19 @@ def _run_case(entry: dict, *, case_output: str) -> tuple[bool, str]:
     return True, "ok"
 
 
+def _brain_label(entry: dict) -> str:
+    if entry.get("hybrid"):
+        return "hybrid"
+    if entry.get("llm"):
+        return "llm"
+    return "policy"
+
+
 def _score_row(entry: dict, report: ScoreReport) -> dict:
     return {
         "case_id": entry["case_id"],
         "tier": entry.get("tier", "-"),
-        "brain": "llm" if entry.get("llm") else "policy",
+        "brain": _brain_label(entry),
         "required_recall": report.required_recall,
         "recall": report.recall,
         "precision": report.precision,
@@ -119,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"[FAIL] {entry['case_id']}: {msg}", file=sys.stderr)
                 rows.append({
                     "case_id": entry["case_id"], "tier": entry.get("tier", "-"),
-                    "brain": "llm" if entry.get("llm") else "policy",
+                    "brain": _brain_label(entry),
                     "required_recall": 0.0, "recall": 0.0, "precision": 0.0,
                     "matched": 0, "missed": ["RUN_FAILED"], "findings": 0,
                 })

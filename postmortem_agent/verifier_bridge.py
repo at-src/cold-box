@@ -33,7 +33,7 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         linux_history_data=_data(state, "linux_bash_history"),
         setupapi_data=_data(state, "disk_parse_setupapi"),
         scheduled_task_data=_data(state, "disk_parse_scheduled_tasks"),
-        services_data=_data(state, "reg_services"),
+        services_data=_best_services_data(state),
         svcscan_data=_data(state, "mem_svcscan"),
         search_data=_data(state, "disk_search_artifacts"),
         timeline_data=timeline_data,
@@ -42,7 +42,7 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         web_access_data=_data(state, "web_parse_access_log"),
         web_inspect_data=_data(state, "web_inspect_artifact"),
         structured_log_data=_data(state, "logs_parse_structured"),
-        usb_data=_data(state, "disk_parse_usb"),
+        usb_data=_best_usb_data(state),
         evidence_root=evidence_root,
         pslist_audit_id=state.audit_id("mem_pslist"),
         psscan_audit_id=state.audit_id("mem_psscan"),
@@ -101,6 +101,36 @@ def _prefetch_data(state: InvestigationState) -> dict | None:
 
 def _data(state: InvestigationState, tool: str) -> dict | None:
     return state._tool_data(tool)
+
+
+def _best_usb_data(state: InvestigationState) -> dict | None:
+    """Prefer the richest successful USB parse (SYSTEM hive), not the last empty hive."""
+    best: dict | None = None
+    best_count = -1
+    for run in state.tool_results.get("disk_parse_usb") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        count = int(data.get("device_count") or len(data.get("records") or []))
+        if count > best_count:
+            best_count = count
+            best = data
+    return best
+
+
+def _best_services_data(state: InvestigationState) -> dict | None:
+    """Prefer the largest successful service enumeration (SYSTEM hive)."""
+    best: dict | None = None
+    best_count = -1
+    for run in state.tool_results.get("reg_services") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        count = len(data.get("records") or [])
+        if count > best_count:
+            best_count = count
+            best = data
+    return best
 
 
 def _timeline_cross_source(data: dict[str, Any] | None) -> bool:

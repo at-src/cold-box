@@ -1,0 +1,74 @@
+[
+  {
+    "case_id": "nist-ndlc-hybrid",
+    "evidence_root": "/evidence",
+    "evidence_case": "nist-pc-only",
+    "ground_truth": "ground-truth/nist-ndlc.json",
+    "hybrid": true,
+    "max_iterations": 20,
+    "tier": "validation (Tier 1)"
+  },
+  {
+    "case_id": "ali-hadi-1-hybrid",
+    "evidence_root": "/evidence",
+    "evidence_case": "ali-hadi-1",
+    "ground_truth": "ground-truth/ali-hadi-1.json",
+    "hybrid": true,
+    "max_iterations": 22,
+    "tier": "validation (Tier 2)"
+  },
+  {
+    "case_id": "nitroba-hybrid",
+    "evidence_root": "/evidence",
+    "evidence_case": "nitroba",
+    "ground_truth": "ground-truth/nitroba.json",
+    "hybrid": true,
+    "max_iterations": 14,
+    "tier": "validation (Tier 1)"
+  },
+  {
+    "case_id": "dfrws2008-hybrid",
+    "evidence_root": "/evidence",
+    "evidence_case": "dfrws2008/evidence/response_data",
+    "ground_truth": "ground-truth/dfrws2008.json",
+    "hybrid": true,
+    "max_iterations": 18,
+    "tier": "validation (Tier 2) — Linux disk+mem+net"
+  },
+  {
+    "case_id": "ali-hadi-7-hybrid",
+    "evidence_root": "/evidence",
+    "evidence_case": "ali-hadi-7",
+    "ground_truth": "ground-truth/ali-hadi-7.json",
+    "hybrid": true,
+    "max_iterations": 16,
+    "tier": "validation (Tier 2) — Windows malware/persistence"
+  },
+  {
+    "case_id": "ali-hadi-9-hybrid",
+    "evidence_root": "/evidence",
+    "evidence_case": "ali-hadi-9",
+    "ground_truth": "ground-truth/ali-hadi-9.json",
+    "hybrid": true,
+    "max_iterations": 16,
+    "tier": "validation (Tier 2) — false-positive / restraint test"
+  },
+  {
+    "case_id": "nist-hacking-hybrid",
+    "evidence_root": "/evidence",
+    "evidence_case": "nist-hacking",
+    "ground_truth": "ground-truth/nist-hacking.json",
+    "hybrid": true,
+    "max_iterations": 16,
+    "tier": "validation (Tier 1) — Windows XP split-raw"
+  },
+  {
+    "case_id": "dart-sample-evidence-hybrid",
+    "evidence_root": "/opt/ref/agentic-dart/examples/sample-evidence",
+    "evidence_case": ".",
+    "ground_truth": "ground-truth/dart-sample-evidence.json",
+    "hybrid": true,
+    "max_iterations": 16,
+    "tier": "functional"
+  }
+]
