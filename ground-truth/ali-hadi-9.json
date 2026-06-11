@@ -25,7 +25,7 @@
       "rule_tags": [],
       "keywords": ["suspicion", "no confirmed", "benign", "inconclusive", "insufficient"],
       "mitre": [],
-      "note": "Correct outcome is restraint. CURRENT GAP: engine over-calls (R5 on BACKGROUNDTASKHOST.EXE, R16 on OneDrive filecoauth.exe) and asserts 'Host assessed as compromised' — precision should score ~0.0 here, which is the intended signal."
+      "note": "Correct outcome is restraint — engine should emit 'no confirmed indicators' without escalating encryption artifacts to malice."
     }
   ]
 }

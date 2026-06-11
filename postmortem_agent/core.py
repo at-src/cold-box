@@ -14,7 +14,7 @@ from postmortem_agent.diagnostic_memory import (
 )
 from postmortem_agent.findings import build_findings
 from postmortem_agent.narrative import append_narrative_finding
-from postmortem_agent.synthesis import _is_placeholder, confirmed_signals, synthesize_hypothesis
+from postmortem_agent.synthesis import _is_placeholder, compromise_signals, synthesize_hypothesis
 from postmortem_agent.invoke import call_agent_tool
 from postmortem_agent.progress import append_progress, progress_log_path
 from postmortem_agent.reasoner import load_skill_index, make_reasoner
@@ -375,7 +375,7 @@ def _signal_lesson(new_results: list[RuleResult]) -> str:
 
 
 def _interim_hypothesis(state: InvestigationState) -> str:
-    signals = confirmed_signals(state)
+    signals = compromise_signals(state)
     return synthesize_hypothesis(signals, audit_count=len(state.all_audit_ids()))
 
 
@@ -415,11 +415,14 @@ def _finalize(
     # survive into the report. Unless the LLM explicitly authored a final conclusion via "done",
     # synthesize one from the COMPLETE set of confirmed signals so the executive summary matches
     # the full narrative.
-    if not state.hypothesis_authored or _is_placeholder(state.hypothesis):
-        signals = confirmed_signals(state)
-        state.hypothesis = synthesize_hypothesis(signals, audit_count=len(state.all_audit_ids()))
-        if signals:
+    compromise = compromise_signals(state)
+    if compromise:
+        if not state.hypothesis_authored or _is_placeholder(state.hypothesis):
+            state.hypothesis = synthesize_hypothesis(compromise, audit_count=len(state.all_audit_ids()))
             state.confidence = max(state.confidence, 0.6)
+    else:
+        state.hypothesis = synthesize_hypothesis([], audit_count=len(state.all_audit_ids()))
+        state.confidence = min(state.confidence, 0.5)
 
     try:
         state.findings = build_findings(state, partial=partial, config=config)

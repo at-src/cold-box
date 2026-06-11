@@ -168,17 +168,19 @@ bash examples/demo-ali-hadi.sh
 
 | Flag | Behavior |
 |------|----------|
+| *(default)* | **Policy** — evidence survey + verifier-driven tool scoring + optional coverage floor |
+| `--hybrid` | Policy coverage floor, then LLM ordering for the rest |
+| `--llm` | **LLM-only** — model picks tools from the catalog; no mandatory coverage checklist. Best for **genuinely unseen** cases where you want exploratory ordering rather than a fixed playbook |
 | `--synthetic` | Fixture-backed R1 self-correction (CI) |
-| `--profile lab` | Multi-finding cold-box-lab playbook |
-| `--mode llm` | Anthropic-driven tool loop + verifier feedback |
-| `--from-cache DIR` | Replay cached Vol JSON on real memory |
+
+For benchmarked validation cases, policy/hybrid scores highest on required-recall; on novel corpora, try **`--llm`** first and compare against `--hybrid` if you need guaranteed artifact-class coverage (USB, setupapi, web logs, etc.).
 
 ```bash
-export ANTHROPIC_API_KEY=...   # see .env.example
-cold-box-agent run --mode llm --case-id live-1 \
-  --evidence-case ali-hadi-1 \
-  --memory ali-hadi-1/memdump/memdump.mem \
-  --from-cache "$HOME/cases/ali-hadi-1/cache"
+source bin/load-agent-env   # loads ANTHROPIC_API_KEY from .env
+cold-box-agent run --llm --case-id live-1 --evidence-case ali-hadi-1 \
+  --memory ali-hadi-1/memdump/memdump.mem --max-iterations 22
+cold-box-agent run --hybrid --case-id live-1 --evidence-case ali-hadi-1 \
+  --memory ali-hadi-1/memdump/memdump.mem --max-iterations 22
 ```
 
 ## Verifier R1–R6

@@ -115,6 +115,42 @@ def _audit_ids_from_sources(sources: list[dict[str, Any]]) -> list[str]:
     return ids
 
 
+COMPROMISE_SEVERITIES = frozenset({"critical", "high"})
+
+
+def _signal_from_result(result: RuleResult, state: InvestigationState) -> dict[str, Any]:
+    profile = RULE_PROFILE.get(result.rule_id)
+    if profile is None:
+        profile = RuleProfile(result.rule_name.replace("_", " ").title(), "medium", "Correlation", ())
+    return {
+        "rule": result.rule_id,
+        "name": result.rule_name,
+        "title": profile.title,
+        "severity": profile.severity,
+        "tactic": profile.tactic,
+        "mitre": list(profile.techniques),
+        "detail": result.detail,
+        "audit_ids": _audit_ids_from_sources(result.sources) or state.all_audit_ids()[:1],
+    }
+
+
+def compromise_signals(state: InvestigationState) -> list[dict[str, Any]]:
+    """High/critical contradiction signals only — the bar for a compromise verdict."""
+    signals = [
+        _signal_from_result(r, state)
+        for r in state.verifier_results
+        if r.status == "contradiction"
+        and RULE_PROFILE.get(r.rule_id, RuleProfile("", "medium", "", ())).severity in COMPROMISE_SEVERITIES
+    ]
+    signals.sort(
+        key=lambda s: (
+            TACTIC_ORDER.get(s["tactic"], 99),
+            -SEVERITY_RANK.get(s["severity"], 0),
+        )
+    )
+    return signals
+
+
 def confirmed_signals(state: InvestigationState) -> list[dict[str, Any]]:
     """Confirmed verifier signals enriched with analyst metadata, kill-chain ordered."""
     signals: list[dict[str, Any]] = []
@@ -176,14 +212,14 @@ def synthesize_hypothesis(signals: list[dict[str, Any]], *, audit_count: int) ->
     if not signals:
         return "No confirmed indicators of compromise were produced by the verifier on the available evidence."
 
-    high_critical = [s for s in signals if s["severity"] in {"critical", "high"}]
+    high_critical = [s for s in signals if s["severity"] in COMPROMISE_SEVERITIES]
     if not high_critical:
         return (
             "No confirmed indicators of compromise were produced by the verifier on the available evidence."
         )
 
     # Highest-severity signals lead the sentence.
-    ranked = sorted(signals, key=lambda s: -SEVERITY_RANK.get(s["severity"], 0))
+    ranked = sorted(high_critical, key=lambda s: -SEVERITY_RANK.get(s["severity"], 0))
     lead = ranked[0]
     phrases = []
     seen_titles: set[str] = set()
@@ -268,13 +304,14 @@ def _alternative_hypothesis(signals: list[dict[str, Any]]) -> str:
 
 def build_template_report(state: InvestigationState) -> dict[str, Any]:
     """Deterministic structured incident report (no LLM)."""
-    signals = confirmed_signals(state)
+    compromise = compromise_signals(state)
+    signals = compromise if compromise else []
     audit_ids = state.all_audit_ids()
     chain = _build_attack_chain(signals)
     mitre = mitre_for_rules([s["rule"] for s in signals])
 
     hypothesis = state.hypothesis
-    if _is_placeholder(hypothesis):
+    if _is_placeholder(hypothesis) or not compromise:
         hypothesis = synthesize_hypothesis(signals, audit_count=len(audit_ids))
 
     summary_bits = [step["description"] for step in chain]

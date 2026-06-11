@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from postmortem_agent.state import AgentConfig, InvestigationState
-from postmortem_agent.synthesis import RULE_PROFILE
+from postmortem_agent.synthesis import RULE_PROFILE, COMPROMISE_SEVERITIES
 from postmortem_report.gate import validate_findings
 from postmortem_verify.models import RuleResult
 
@@ -138,6 +138,28 @@ def _web_attack_finding(
     }
 
 
+def _compromise_contradictions(verifier_results: list[RuleResult]) -> bool:
+    for result in verifier_results:
+        if result.status != "contradiction":
+            continue
+        profile = RULE_PROFILE.get(result.rule_id)
+        if profile and profile.severity in COMPROMISE_SEVERITIES:
+            return True
+    return False
+
+
+def _contradiction_finding_status(result: RuleResult, *, compromise_present: bool) -> str:
+    profile = RULE_PROFILE.get(result.rule_id)
+    severity = profile.severity if profile else "medium"
+    if severity in COMPROMISE_SEVERITIES:
+        return "confirmed"
+    if result.rule_id in {"R15", "R23"} or severity == "info":
+        return "context"
+    if not compromise_present:
+        return "context"
+    return "confirmed"
+
+
 def build_findings(
     state: InvestigationState,
     *,
@@ -147,6 +169,7 @@ def build_findings(
     audit_ids = state.all_audit_ids()
     findings: list[dict[str, Any]] = []
     idx = 1
+    compromise_present = _compromise_contradictions(state.verifier_results)
 
     for result in state.verifier_results:
         if result.status != "contradiction":
@@ -154,12 +177,13 @@ def build_findings(
         rule_audit = audit_ids_from_sources(result.sources)
         claim_audit = rule_audit or audit_ids
         profile = RULE_PROFILE.get(result.rule_id)
+        status = _contradiction_finding_status(result, compromise_present=compromise_present)
         finding: dict[str, Any] = {
             "id": f"f-{idx}",
             "claim": result.detail,
             "audit_ids": claim_audit,
             "confidence": 0.85,
-            "status": "confirmed",
+            "status": status,
             "tags": [result.rule_id, result.rule_name],
         }
         if profile is not None:
@@ -185,6 +209,29 @@ def build_findings(
 
     content_findings, idx = _content_context_findings(state, idx)
     findings.extend(content_findings)
+
+    has_confirmed = any(f["status"] == "confirmed" for f in findings)
+    if not has_confirmed:
+        restraint = (
+            state.hypothesis
+            if state.hypothesis
+            and "no confirmed indicators" in state.hypothesis.lower()
+            else "No confirmed indicators of compromise were produced by the verifier on the available evidence."
+        )
+        findings.append(
+            {
+                "id": f"f-{idx}",
+                "claim": restraint,
+                "audit_ids": audit_ids[:1] if audit_ids else ["audit-missing"],
+                "confidence": 0.55,
+                "status": "confirmed",
+                "tags": ["restraint", "assessment"],
+                "title": "Incident assessment",
+                "severity": "info",
+            }
+        )
+        idx += 1
+        has_confirmed = True
 
     # The grounded conclusion is carried by the narrative finding (appended later). Only emit a
     # standalone hypothesis finding when no rule-backed confirmed finding exists, so the report

@@ -89,12 +89,22 @@ def test_required_findings_matched_before_optional() -> None:
 def test_narrative_template() -> None:
     from postmortem_agent.narrative import build_template_narrative
     from postmortem_agent.state import AgentConfig, InvestigationState
+    from postmortem_verify.models import RuleResult
 
     state = InvestigationState(
         hypothesis="Host likely compromised",
         confidence=0.75,
         self_corrected=True,
     )
+    state.verifier_results = [
+        RuleResult(
+            "R12",
+            "usb_initial_access",
+            "contradiction",
+            "IP-KVM/diagnostic USB inserted (USB\\VID_0557&PID_2419)",
+            [{"audit_id": "abc12345"}],
+        )
+    ]
     state.findings = [
         {
             "id": "f-1",

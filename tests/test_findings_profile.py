@@ -44,3 +44,23 @@ def test_web_attack_finding_on_webserver_case_with_r7() -> None:
     web = [f for f in findings if "AH-1" in f.get("tags", [])]
     assert web
     assert "apache" in web[0]["claim"].lower() or "web" in web[0]["claim"].lower()
+
+
+def test_restraint_case_demotes_timeline_and_emits_no_confirmed() -> None:
+    state = InvestigationState(hypothesis="Host assessed as compromised")
+    state.verifier_results = [
+        RuleResult(
+            "R15",
+            "timeline_correlation",
+            "contradiction",
+            "Cross-source timeline: 20 event(s) from evtx=19",
+            [{"audit_id": "tl-1"}],
+        )
+    ]
+    state.tool_results["timeline_super"] = [{"ok": True, "audit_id": "tl-1", "data": {}}]
+    findings = build_findings(state, partial=False)
+    confirmed = [f for f in findings if f.get("status") == "confirmed"]
+    assert len(confirmed) == 1
+    assert "no confirmed indicators" in confirmed[0]["claim"].lower()
+    context = [f for f in findings if f.get("status") == "context"]
+    assert any("timeline" in f.get("claim", "").lower() for f in context)

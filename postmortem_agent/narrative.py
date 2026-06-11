@@ -71,6 +71,11 @@ def append_narrative_finding(
     mitre = narrative.get("mitre") or []
     tags = ["narrative", "incident_summary", *mitre]
     claim = str(report.get("primary_hypothesis") or report.get("summary") or state.hypothesis).strip()
+    if any(f.get("claim", "").strip() == claim for f in state.findings):
+        return narrative
+
+    restraint = "no confirmed indicators" in claim.lower()
+    status = "inference" if restraint else ("confirmed" if state.confidence >= 0.5 else "inference")
 
     state.findings.append(
         {
@@ -78,7 +83,7 @@ def append_narrative_finding(
             "claim": claim,
             "audit_ids": audit_ids[:20],
             "confidence": min(0.9, max(report.get("confidence", state.confidence), state.confidence)),
-            "status": "confirmed" if state.confidence >= 0.5 else "inference",
+            "status": status,
             "tags": tags,
             "title": "Incident Assessment",
         }

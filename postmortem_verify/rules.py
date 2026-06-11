@@ -748,7 +748,21 @@ def rule_r16_unusual_execution(ctx: VerifyContext) -> RuleResult:
             [],
         )
 
-    suspicious_hints = ("remote", "admin", "stage", "loader", "cold", "backdoor", "helper")
+    suspicious_hints = (
+        "remote",
+        "admin",
+        "stage",
+        "loader",
+        "cold",
+        "backdoor",
+        "helper",
+        "sysinternals",
+        "procexp",
+        "psexec",
+        "autoruns",
+        "installer",
+        "downloader",
+    )
 
     unusual: list[dict[str, Any]] = []
     for row in records:
@@ -794,12 +808,18 @@ def rule_r16_unusual_execution(ctx: VerifyContext) -> RuleResult:
 
     if unusual:
         sample = unusual[0].get("executable", "?")
+        raw = str(unusual[0].get("FullPath") or unusual[0].get("Path") or sample)
         when = unusual[0].get("LastRun") or unusual[0].get("time_created") or "?"
+        blob = f"{sample} {raw}".lower()
+        if any(h in blob for h in ("sysinternals", "procexp", "psexec", "autoruns")):
+            detail = f"Suspicious SysInternals-like installer/execution: {sample} (last seen {when})"
+        else:
+            detail = f"Unusual binary execution: {sample} (last seen {when})"
         return RuleResult(
             "R16",
             "unusual_execution",
             "contradiction",
-            f"Unusual binary execution: {sample} (last seen {when})",
+            detail,
             sources,
         )
 

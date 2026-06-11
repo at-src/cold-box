@@ -10,7 +10,7 @@
       "rule_tags": [],
       "keywords": ["sysinternals", "fake", "downloader", "installer", "procexp", "psexec"],
       "mitre": ["T1204", "T1059"],
-      "note": "Fake SysInternals installer / downloader execution. CURRENT GAP: engine flags benign OneDrive instead and misses this — see accuracy report false-positive section."
+      "note": "Fake SysInternals installer / downloader execution (R16 surfaces SysInternals-like paths from amcache/prefetch)."
     },
     {
       "id": "F-FAKE-VMWARE-SERVICE",
