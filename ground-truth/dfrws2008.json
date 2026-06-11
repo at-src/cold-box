@@ -3,7 +3,7 @@
   "description": "DFRWS 2008 Challenge — Linux insider scenario (user 'stevev' on a CentOS 5 desktop). The user copies files off a mounted admin share (/mnt/hgfs/Admin_share), stages them to removable media (/media/disk/DFRWS, retrieved_files), and browses the web. Evidence is fused across Linux home-directory artifacts, a physical memory dump, and a network capture.",
   "source": "https://github.com/dfrws/dfrws2008-challenge",
   "ground_truth_type": "validation (Tier 2) — community VIGIA ground truth; gated answer key",
-  "notes": "Multi-source breadth test (disk + memory + network on Linux). Linux memory (challenge.mem, kernel 2.6.18-8.1.15.el5) requires a custom Volatility ISF; see F-MEM-GAP.",
+  "notes": "Multi-source breadth test (disk + memory + network on Linux). Linux memory (challenge.mem, kernel 2.6.18-8.1.15.el5) requires a custom Volatility ISF; mem_linux_probe (R31) documents the gap when plugins cannot run.",
   "expected_findings": [
     {
       "id": "F-LINUX-ACTIVITY",
@@ -24,10 +24,10 @@
     {
       "id": "F-MEM-GAP",
       "required": false,
-      "rule_tags": [],
+      "rule_tags": ["R31"],
       "keywords": ["memory", "volatility", "isf", "linux memory"],
       "mitre": [],
-      "note": "KNOWN COVERAGE GAP — Linux memory (challenge.mem) needs a custom Volatility ISF for kernel 2.6.18-8.1.15.el5. Windows-profile plugins fail gracefully (logged as lessons, not crashes). DART has equivalent vol3 Linux wrappers with the same ISF dependency and no demonstrated Linux-memory result."
+      "note": "Linux memory (challenge.mem) needs a custom Volatility ISF for kernel 2.6.18-8.1.15.el5. mem_linux_probe surfaces the ISF requirement instead of crashing; Windows-profile plugins are not attempted for process enumeration."
     },
     {
       "id": "F-SELFCORRECT",

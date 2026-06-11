@@ -472,5 +472,68 @@ def run_modules(
     return _rows_payload(data, "modules", "module_count")
 
 
+def probe_linux_memory(
+    memory_path: Path,
+    *,
+    vol_binary: str,
+    timeout_sec: int = 120,
+) -> dict[str, Any]:
+    """Attempt Linux Volatility plugins; document ISF/symbol-table gaps (DFRWS 2008)."""
+    banner_proc = subprocess.run(
+        [vol_binary, "-f", str(memory_path), "linux.banner"],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=timeout_sec,
+    )
+    combined = f"{banner_proc.stdout}\n{banner_proc.stderr}".strip()
+    lower = combined.lower()
+    isf_gap = any(
+        token in lower
+        for token in (
+            "isf",
+            "symbol",
+            "symbol table",
+            "linux memory",
+            "unsupported",
+            "did not identify",
+            "no suitable",
+            "unable to find",
+        )
+    )
+    banner_line = ""
+    for line in banner_proc.stdout.splitlines():
+        if line.strip() and not line.startswith("Progress:") and "Volatility" not in line:
+            banner_line = line.strip()
+            break
+
+    process_count = 0
+    if banner_proc.returncode == 0 and banner_line and not isf_gap:
+        ps_proc = subprocess.run(
+            [vol_binary, "-f", str(memory_path), "linux.pslist"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout_sec,
+        )
+        if ps_proc.returncode == 0:
+            process_count = sum(
+                1
+                for line in ps_proc.stdout.splitlines()
+                if line.strip() and not line.startswith(("Progress:", "PID", "Volatility"))
+            )
+
+    return {
+        "source": str(memory_path),
+        "parser": "linux-memory-probe",
+        "platform": "linux" if banner_line or isf_gap else "unknown",
+        "banner": banner_line or None,
+        "isf_gap": isf_gap or (banner_proc.returncode != 0 and "windows" not in lower),
+        "isf_detail": combined[:400] if isf_gap else None,
+        "process_count": process_count,
+        "volatility": vol_binary,
+    }
+
+
 # Backward-compatible alias used in tests
 parse_pslist_table = parse_vol_process_table

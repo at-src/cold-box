@@ -8,6 +8,7 @@ from postmortem_mcp.audit_tool import run_audited_tool
 from postmortem_mcp.config import vol3_binary
 from postmortem_mcp.paths import resolve_memory_path
 from postmortem_mcp.vol import (
+    probe_linux_memory,
     run_cmdline,
     run_cmdscan,
     run_dlllist,
@@ -325,4 +326,30 @@ def mem_modules(
         iteration=iteration,
         max_records=max_records,
         runner=run_modules,
+    )
+
+
+def mem_linux_probe(
+    case_id: str,
+    memory_relpath: str,
+    *,
+    iteration: int = 0,
+) -> dict:
+    """Probe Linux memory images; surface Volatility ISF requirements when plugins cannot run."""
+    args: dict[str, Any] = {
+        "case_id": case_id,
+        "memory_relpath": memory_relpath,
+    }
+
+    def execute() -> dict[str, Any]:
+        memory_path = resolve_memory_path(memory_relpath)
+        args["memory_path"] = str(memory_path)
+        return probe_linux_memory(memory_path, vol_binary=vol3_binary())
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="mem_linux_probe",
+        args=args,
+        iteration=iteration,
+        execute=execute,
     )

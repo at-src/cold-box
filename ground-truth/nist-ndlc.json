@@ -23,26 +23,26 @@
     {
       "id": "F-EMAIL-EXFIL",
       "required": false,
-      "rule_tags": [],
+      "rule_tags": ["R27"],
       "keywords": ["email", "gmail", "webmail", "attachment", "sent"],
       "mitre": ["T1048", "T1567"],
-      "note": "Exfiltration over web e-mail. KNOWN COVERAGE GAP — no e-mail/webmail artifact parser yet."
+      "note": "Exfiltration over web e-mail — surfaced by disk_scan_exfil (R27) when Gmail/webmail/attachment strings appear in evidence."
     },
     {
       "id": "F-CLOUD-EXFIL",
       "required": false,
-      "rule_tags": [],
+      "rule_tags": ["R28"],
       "keywords": ["cloud", "google drive", "dropbox", "upload", "naver"],
       "mitre": ["T1567.002"],
-      "note": "Exfiltration to personal cloud storage. KNOWN COVERAGE GAP."
+      "note": "Exfiltration to personal cloud storage — disk_scan_exfil (R28) hunts Dropbox/Drive/Naver/sync-client strings."
     },
     {
       "id": "F-CDR-EXFIL",
       "required": false,
-      "rule_tags": [],
+      "rule_tags": ["R29"],
       "keywords": ["cd-r", "optical", "burn", "iso", "disc"],
       "mitre": ["T1052"],
-      "note": "Exfiltration to CD-R optical media. KNOWN COVERAGE GAP."
+      "note": "Exfiltration to CD-R optical media — disk_scan_exfil (R29) hunts burn/optical/imapi/imgburn themes."
     },
     {
       "id": "F-SELFCORRECT",

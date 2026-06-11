@@ -17,6 +17,11 @@ from postmortem_verify.rules import (
     rule_r20_structured_log_alert,
     rule_r21_removable_storage,
     rule_r22_cleartext_identity,
+    rule_r27_email_exfil,
+    rule_r28_cloud_exfil,
+    rule_r29_optical_exfil,
+    rule_r30_yara_malware,
+    rule_r31_linux_memory_isf,
     rule_r2_no_execution_trail,
     rule_r3_phantom_logon,
     rule_r4_timestomp,
@@ -49,6 +54,11 @@ ALL_RULES = [
     rule_r20_structured_log_alert,
     rule_r21_removable_storage,
     rule_r22_cleartext_identity,
+    rule_r27_email_exfil,
+    rule_r28_cloud_exfil,
+    rule_r29_optical_exfil,
+    rule_r30_yara_malware,
+    rule_r31_linux_memory_isf,
 ]
 
 

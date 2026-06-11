@@ -53,6 +53,9 @@ class VerifyContext:
     web_artifact_indicators: list[dict[str, Any]] | None = None
     structured_log_events: list[dict[str, Any]] | None = None
     usb_devices: list[dict[str, Any]] | None = None
+    exfil_hits: list[dict[str, Any]] | None = None
+    yara_matches: list[dict[str, Any]] | None = None
+    linux_memory_probe: dict[str, Any] | None = None
 
     pslist_audit_id: str | None = None
     psscan_audit_id: str | None = None
@@ -76,6 +79,9 @@ class VerifyContext:
     web_inspect_audit_id: str | None = None
     structured_log_audit_id: str | None = None
     usb_audit_id: str | None = None
+    exfil_audit_id: str | None = None
+    yara_audit_id: str | None = None
+    linux_memory_audit_id: str | None = None
 
     pslist_source: str | None = None
     psscan_source: str | None = None
@@ -88,6 +94,9 @@ class VerifyContext:
     http_source: str | None = None
     linux_source: str | None = None
     usb_source: str | None = None
+    exfil_source: str | None = None
+    yara_source: str | None = None
+    linux_memory_source: str | None = None
 
     timestomp_tolerance_seconds: int = 1
 
@@ -121,6 +130,9 @@ class VerifyContext:
         web_inspect_data: dict[str, Any] | None = None,
         structured_log_data: dict[str, Any] | None = None,
         usb_data: dict[str, Any] | None = None,
+        exfil_data: dict[str, Any] | None = None,
+        yara_data: dict[str, Any] | None = None,
+        linux_memory_data: dict[str, Any] | None = None,
         evidence_root: str | Path | None = None,
         pslist_audit_id: str | None = None,
         psscan_audit_id: str | None = None,
@@ -144,6 +156,9 @@ class VerifyContext:
         web_inspect_audit_id: str | None = None,
         structured_log_audit_id: str | None = None,
         usb_audit_id: str | None = None,
+        exfil_audit_id: str | None = None,
+        yara_audit_id: str | None = None,
+        linux_memory_audit_id: str | None = None,
         timestomp_tolerance_seconds: int = 1,
     ) -> VerifyContext:
         mft_records = _extract_mft_records(mft_data)
@@ -183,6 +198,9 @@ class VerifyContext:
             web_artifact_indicators=_extract_web_indicators(web_inspect_data),
             structured_log_events=_extract_structured_flagged(structured_log_data),
             usb_devices=_extract_usb(usb_data),
+            exfil_hits=_extract_exfil_hits(exfil_data),
+            yara_matches=_extract_yara_matches(yara_data),
+            linux_memory_probe=_extract_linux_memory_probe(linux_memory_data),
             pslist_audit_id=pslist_audit_id,
             psscan_audit_id=psscan_audit_id,
             amcache_audit_id=amcache_audit_id,
@@ -209,6 +227,10 @@ class VerifyContext:
             structured_log_audit_id=structured_log_audit_id
             or (structured_log_data or {}).get("audit_id"),
             usb_audit_id=usb_audit_id or (usb_data or {}).get("audit_id"),
+            exfil_audit_id=exfil_audit_id or (exfil_data or {}).get("audit_id"),
+            yara_audit_id=yara_audit_id or (yara_data or {}).get("audit_id"),
+            linux_memory_audit_id=linux_memory_audit_id
+            or (linux_memory_data or {}).get("audit_id"),
             pslist_source=(pslist_data or {}).get("source"),
             psscan_source=(psscan_data or {}).get("source"),
             amcache_source=(amcache_data or {}).get("source"),
@@ -220,6 +242,9 @@ class VerifyContext:
             http_source=(http_data or {}).get("source"),
             linux_source=(linux_persistence_data or linux_history_data or {}).get("source"),
             usb_source=(usb_data or {}).get("source"),
+            exfil_source=(exfil_data or {}).get("source"),
+            yara_source=(yara_data or {}).get("source"),
+            linux_memory_source=(linux_memory_data or {}).get("source"),
             timestomp_tolerance_seconds=timestomp_tolerance_seconds,
         )
 
@@ -444,6 +469,32 @@ def _extract_usb(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
         records = payload["data"].get("records")
     if isinstance(records, list) and records:
         return list(records)
+    return None
+
+
+def _extract_exfil_hits(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    hits = payload.get("hits")
+    if isinstance(hits, list) and hits:
+        return list(hits)
+    return None
+
+
+def _extract_yara_matches(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    matches = payload.get("matches")
+    if isinstance(matches, list) and matches:
+        return list(matches)
+    return None
+
+
+def _extract_linux_memory_probe(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+    if payload is None:
+        return None
+    if payload.get("parser") == "linux-memory-probe" or "isf_gap" in payload:
+        return dict(payload)
     return None
 
 

@@ -1087,3 +1087,163 @@ def rule_r22_cleartext_identity(ctx: VerifyContext) -> RuleResult:
         f"strongest: {ip} (relay(s): {relays}; identity: {email})"
     )
     return RuleResult("R22", "cleartext_identity", "contradiction", detail, sources)
+
+
+def _exfil_channel_hits(hits: list[dict[str, Any]] | None, channel: str) -> list[dict[str, Any]]:
+    return [hit for hit in (hits or []) if hit.get("channel") == channel]
+
+
+def rule_r27_email_exfil(ctx: VerifyContext) -> RuleResult:
+    """R27: email / webmail exfiltration channel indicators in evidence."""
+    hits = ctx.exfil_hits
+    if hits is None:
+        return RuleResult("R27", "email_exfil", "skipped", "Exfil channel scan input missing", [])
+
+    email_hits = _exfil_channel_hits(hits, "email")
+    if not email_hits:
+        return RuleResult("R27", "email_exfil", "pass", "No email/webmail exfil indicators found", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.exfil_audit_id, "disk_scan_exfil", ctx.exfil_source)
+    if audit:
+        sources.append(audit)
+    for hit in email_hits[:5]:
+        sources.append(
+            {
+                "type": "exfil_hit",
+                "channel": "email",
+                "pattern": hit.get("pattern"),
+                "relpath": hit.get("relpath"),
+                "snippet": hit.get("snippet"),
+            }
+        )
+    patterns = ", ".join(sorted({str(h.get("pattern") or "?") for h in email_hits[:5]}))
+    detail = f"{len(email_hits)} email/webmail exfil indicator(s) ({patterns})"
+    return RuleResult("R27", "email_exfil", "contradiction", detail, sources)
+
+
+def rule_r28_cloud_exfil(ctx: VerifyContext) -> RuleResult:
+    """R28: personal cloud storage upload/sync exfil indicators."""
+    hits = ctx.exfil_hits
+    if hits is None:
+        return RuleResult("R28", "cloud_exfil", "skipped", "Exfil channel scan input missing", [])
+
+    cloud_hits = _exfil_channel_hits(hits, "cloud")
+    if not cloud_hits:
+        return RuleResult("R28", "cloud_exfil", "pass", "No cloud storage exfil indicators found", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.exfil_audit_id, "disk_scan_exfil", ctx.exfil_source)
+    if audit:
+        sources.append(audit)
+    for hit in cloud_hits[:5]:
+        sources.append(
+            {
+                "type": "exfil_hit",
+                "channel": "cloud",
+                "pattern": hit.get("pattern"),
+                "relpath": hit.get("relpath"),
+                "snippet": hit.get("snippet"),
+            }
+        )
+    patterns = ", ".join(sorted({str(h.get("pattern") or "?") for h in cloud_hits[:5]}))
+    detail = f"{len(cloud_hits)} cloud storage exfil indicator(s) ({patterns})"
+    return RuleResult("R28", "cloud_exfil", "contradiction", detail, sources)
+
+
+def rule_r29_optical_exfil(ctx: VerifyContext) -> RuleResult:
+    """R29: optical media / CD-R burn exfil indicators."""
+    hits = ctx.exfil_hits
+    if hits is None:
+        return RuleResult("R29", "optical_exfil", "skipped", "Exfil channel scan input missing", [])
+
+    optical_hits = _exfil_channel_hits(hits, "optical")
+    if not optical_hits:
+        return RuleResult("R29", "optical_exfil", "pass", "No optical media burn indicators found", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.exfil_audit_id, "disk_scan_exfil", ctx.exfil_source)
+    if audit:
+        sources.append(audit)
+    for hit in optical_hits[:5]:
+        sources.append(
+            {
+                "type": "exfil_hit",
+                "channel": "optical",
+                "pattern": hit.get("pattern"),
+                "relpath": hit.get("relpath"),
+                "snippet": hit.get("snippet"),
+            }
+        )
+    patterns = ", ".join(sorted({str(h.get("pattern") or "?") for h in optical_hits[:5]}))
+    detail = f"{len(optical_hits)} optical media burn indicator(s) ({patterns})"
+    return RuleResult("R29", "optical_exfil", "contradiction", detail, sources)
+
+
+def rule_r30_yara_malware(ctx: VerifyContext) -> RuleResult:
+    """R30: YARA or bundled pattern matches for suspicious malware strings."""
+    matches = ctx.yara_matches
+    if matches is None:
+        return RuleResult("R30", "yara_malware", "skipped", "YARA scan input missing", [])
+
+    if not matches:
+        return RuleResult("R30", "yara_malware", "pass", "No YARA/pattern malware matches", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.yara_audit_id, "yara_scan_evidence", ctx.yara_source)
+    if audit:
+        sources.append(audit)
+    for match in matches[:8]:
+        sources.append(
+            {
+                "type": "yara_match",
+                "rule": match.get("rule"),
+                "path": match.get("path"),
+                "severity": match.get("severity"),
+                "engine": match.get("engine"),
+            }
+        )
+    rules = ", ".join(sorted({str(m.get("rule") or "?") for m in matches[:5]}))
+    detail = f"{len(matches)} YARA/pattern match(es) ({rules})"
+    return RuleResult("R30", "yara_malware", "contradiction", detail, sources)
+
+
+def rule_r31_linux_memory_isf(ctx: VerifyContext) -> RuleResult:
+    """R31: Linux memory image requires Volatility ISF — document platform gap."""
+    probe = ctx.linux_memory_probe
+    if probe is None:
+        return RuleResult("R31", "linux_memory_isf", "skipped", "Linux memory probe input missing", [])
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.linux_memory_audit_id, "mem_linux_probe", ctx.linux_memory_source)
+    if audit:
+        sources.append(audit)
+    sources.append(
+        {
+            "type": "linux_memory_probe",
+            "platform": probe.get("platform"),
+            "banner": probe.get("banner"),
+            "isf_gap": probe.get("isf_gap"),
+            "process_count": probe.get("process_count"),
+        }
+    )
+
+    if probe.get("isf_gap"):
+        detail = (
+            "Linux memory analysis blocked — Volatility ISF/symbol table required for this kernel "
+            f"({(probe.get('isf_detail') or probe.get('banner') or 'plugin failure')[:160]})"
+        )
+        return RuleResult("R31", "linux_memory_isf", "pass", detail, sources)
+
+    process_count = int(probe.get("process_count") or 0)
+    if process_count:
+        detail = f"Linux memory plugins succeeded ({process_count} process row(s) from linux.pslist)"
+        return RuleResult("R31", "linux_memory_isf", "pass", detail, sources)
+
+    return RuleResult(
+        "R31",
+        "linux_memory_isf",
+        "pass",
+        "Linux memory probe completed without ISF gap (no process rows returned)",
+        sources,
+    )

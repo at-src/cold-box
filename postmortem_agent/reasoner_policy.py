@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 from postmortem_agent.coverage import (
@@ -14,6 +15,8 @@ from postmortem_agent.coverage import (
 )
 from postmortem_agent.state import AgentConfig, InvestigationState
 from postmortem_mcp.catalog import CATALOG, ToolSpec
+from postmortem_mcp.config import case_dir
+from postmortem_evidence.guard import get_extracted_root
 
 FOLLOWUP: dict[str, tuple[str, ...]] = {
     "R1": ("mem_cmdline", "mem_malfind", "mem_psscan"),
@@ -35,6 +38,9 @@ FOLLOWUP: dict[str, tuple[str, ...]] = {
     "R18": ("mem_cmdline", "mem_cmdscan"),
     "R19": ("web_parse_access_log", "web_inspect_artifact"),
     "R20": ("logs_parse_structured",),
+    "R27": ("disk_scan_exfil",),
+    "R30": ("yara_scan_evidence",),
+    "R31": ("mem_linux_probe",),
 }
 
 COVERAGE_RULES: dict[str, tuple[str, ...]] = {
@@ -53,6 +59,11 @@ COVERAGE_RULES: dict[str, tuple[str, ...]] = {
     "R20": ("logs_parse_structured",),
     "R21": ("disk_parse_usb",),
     "R22": ("net_http_extract",),
+    "R27": ("disk_scan_exfil",),
+    "R28": ("disk_scan_exfil",),
+    "R29": ("disk_scan_exfil",),
+    "R30": ("yara_scan_evidence",),
+    "R31": ("mem_linux_probe",),
     "R10": ("linux_bash_history", "linux_persistence", "linux_cron", "linux_auth_log"),
 }
 
@@ -147,6 +158,53 @@ def _tool_succeeded(results: dict[str, list[dict[str, Any]]], tool: str) -> bool
     return any(run.get("ok") for run in results.get(tool) or [])
 
 
+def _effective_extracted_root(config: AgentConfig) -> Path | None:
+    if config.extracted_root and config.extracted_root.is_dir():
+        return config.extracted_root.expanduser().resolve()
+    env_root = get_extracted_root()
+    if env_root and env_root.is_dir():
+        return env_root.expanduser().resolve()
+    candidate = case_dir(config.case_id) / "extracted"
+    if candidate.is_dir() and any(candidate.iterdir()):
+        return candidate.resolve()
+    return None
+
+
+def _scan_relpath_is_extracted(relpath: str) -> bool:
+    normalized = relpath.replace("\\", "/").strip("/")
+    return normalized == "extracted" or normalized.startswith("extracted/")
+
+
+def _exfil_scan_on_extracted(results: dict[str, list[dict[str, Any]]]) -> bool:
+    for run in results.get("disk_scan_exfil") or []:
+        if not run.get("ok"):
+            continue
+        rel = str((run.get("args") or {}).get("search_root_relpath") or "")
+        if _scan_relpath_is_extracted(rel):
+            return True
+    return False
+
+
+def _coverage_tool_done(
+    rule_id: str,
+    tools: tuple[str, ...],
+    results: dict[str, list[dict[str, Any]]],
+    config: AgentConfig,
+) -> bool:
+    if not any(_tool_succeeded(results, tool) for tool in tools):
+        return False
+    if rule_id in {"R27", "R28", "R29"} and _effective_extracted_root(config) is not None:
+        return _exfil_scan_on_extracted(results)
+    if rule_id == "R30" and _effective_extracted_root(config) is not None:
+        for run in results.get("yara_scan_evidence") or []:
+            if run.get("ok") and _scan_relpath_is_extracted(
+                str((run.get("args") or {}).get("search_root_relpath") or "")
+            ):
+                return True
+        return False
+    return True
+
+
 CRITICAL_COVERAGE_TOOLS: frozenset[str] = frozenset(
     tool for tools in COVERAGE_RULES.values() for tool in tools
 )
@@ -216,10 +274,13 @@ def _coverage_action(
     failed: set[str],
 ) -> dict[str, Any] | None:
     skipped = {r.rule_id for r in verifier if getattr(r, "status", None) == "skipped"}
+    tier3_rules = {"R27", "R28", "R29", "R30", "R31"}
     for rule_id, tools in COVERAGE_RULES.items():
+        if config.mode == "synthetic" and rule_id in tier3_rules:
+            continue
         if rule_id not in skipped:
             continue
-        if any(_tool_succeeded(results, tool) for tool in tools):
+        if _coverage_tool_done(rule_id, tools, results, config):
             continue
         for tool in tools:
             args = _coverage_tool_args(tool, survey, config)
@@ -271,7 +332,7 @@ def _coverage_tool_args(
         rel = _first_relpath(survey, "amcache")
         return {"artifact_relpath": rel} if rel else None
     if tool == "disk_search_artifacts":
-        root = "extracted" if config.extracted_root else config.evidence_case
+        root = _search_root_relpath(config, survey) or config.evidence_case
         return {
             "search_root_relpath": root,
             "patterns": config.search_patterns or _default_search_patterns(),
@@ -302,7 +363,33 @@ def _coverage_tool_args(
         if not rel:
             rel = _first_relpath(survey, "registry_export")
         return {"artifact_relpath": rel} if rel else None
+    if tool in {"disk_scan_exfil", "yara_scan_evidence"}:
+        if config.mode == "synthetic":
+            return None
+        root = _search_root_relpath(config, survey)
+        if not root:
+            return None
+        args: dict[str, Any] = {"search_root_relpath": root}
+        if tool == "disk_scan_exfil":
+            args["max_hits"] = 40
+        else:
+            args["max_matches"] = 30
+        return args
+    if tool == "mem_linux_probe":
+        if config.mode == "synthetic":
+            return None
+        mem = _memory_relpath(config, survey)
+        return {"memory_relpath": mem} if mem else None
     return None
+
+
+def _search_root_relpath(config: AgentConfig, survey: dict[str, Any]) -> str | None:
+    """Best directory for breadth scans (extracted disk tree or raw case folder)."""
+    if config.mode != "synthetic" and _effective_extracted_root(config) is not None:
+        return "extracted"
+    if config.evidence_case:
+        return config.evidence_case
+    return _first_relpath(survey, "case_directory")
 
 
 def _build_candidates(
@@ -328,6 +415,12 @@ def _build_candidates(
     for entry in files:
         for tool_name in entry.get("applicable_tools") or []:
             if tool_name in {"tool_catalog", "evidence_survey"}:
+                continue
+            if config.mode == "synthetic" and tool_name in {
+                "disk_scan_exfil",
+                "yara_scan_evidence",
+                "mem_linux_probe",
+            }:
                 continue
             spec = CATALOG.get(tool_name)
             if spec is None:
@@ -365,7 +458,7 @@ def _build_candidates(
         if key not in executed and key not in failed:
             candidates.append((5, tool_name, arguments, f"baseline {tool_name}"))
 
-    if config.extracted_root and config.extracted_root.is_dir():
+    if config.mode != "synthetic" and _effective_extracted_root(config) is not None:
         profile_args = _system_profile_args(survey)
         if profile_args:
             key = _action_key("reg_system_profile", profile_args)
@@ -393,7 +486,7 @@ def _build_candidates(
                 )
             )
 
-    if config.extracted_root and config.extracted_root.is_dir():
+    if config.mode != "synthetic" and _effective_extracted_root(config) is not None:
         key = _action_key(
             "disk_search_artifacts",
             {"search_root_relpath": "extracted", "patterns": config.search_patterns or _default_search_patterns()},
@@ -410,6 +503,29 @@ def _build_candidates(
                     "breadth IOC search on extracted disk",
                 )
             )
+        for tool, priority, reason in (
+            ("disk_scan_exfil", 9, "exfil channel scan on extracted disk (R27–R29)"),
+            ("yara_scan_evidence", 9, "YARA/pattern scan on extracted disk (R30)"),
+        ):
+            args = _coverage_tool_args(tool, survey, config)
+            if args is None:
+                continue
+            key = _action_key(tool, args)
+            if key not in executed and key not in failed:
+                candidates.append((priority, tool, args, reason))
+
+    search_root = _search_root_relpath(config, survey)
+    if config.mode != "synthetic" and search_root and not config.extracted_root:
+        for tool, priority, reason in (
+            ("disk_scan_exfil", 9, "exfil channel scan (R27–R29)"),
+            ("yara_scan_evidence", 8, "YARA/pattern scan (R30)"),
+        ):
+            args = _coverage_tool_args(tool, survey, config)
+            if args is None:
+                continue
+            key = _action_key(tool, args)
+            if key not in executed and key not in failed:
+                candidates.append((priority, tool, args, reason))
 
     return candidates
 
@@ -514,6 +630,12 @@ def _score_candidate(
         score += 150
     if "R21" in skipped and tool == "disk_parse_usb" and "registry_hive" in survey_kinds:
         score += 135
+    if skipped & {"R27", "R28", "R29"} and tool == "disk_scan_exfil":
+        score += 130
+    if "R30" in skipped and tool == "yara_scan_evidence":
+        score += 125
+    if "R31" in skipped and tool == "mem_linux_probe" and "memory_image" in survey_kinds:
+        score += 110
     if "R11" in skipped and tool == "reg_services" and "registry_hive" in survey_kinds:
         score += 150
     if "R13" in skipped and tool in {"disk_parse_scheduled_tasks", "reg_run_keys"}:

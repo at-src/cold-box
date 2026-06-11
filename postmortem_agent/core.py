@@ -168,6 +168,10 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
         # carved hives/EVTX/MFT/prefetch become first-class evidence the typed
         # parsers and the reasoner can now address as ``extracted/<path>``.
         if tool == "disk_extract_image":
+            extract_path = case_dir(config.case_id) / "extracted"
+            if extract_path.is_dir():
+                config.extracted_root = extract_path
+                os.environ["EXTRACTED_ROOT"] = str(extract_path.resolve())
             survey = _initial_survey(config)
             state.survey = survey
             pattern_hints = hints_from_patterns(

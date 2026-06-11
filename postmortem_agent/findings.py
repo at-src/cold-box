@@ -9,6 +9,24 @@ from postmortem_agent.synthesis import RULE_PROFILE, COMPROMISE_SEVERITIES
 from postmortem_report.gate import validate_findings
 from postmortem_verify.models import RuleResult
 
+# Verifier contradictions that report audited facts (insider exfil, attribution,
+# tool inventory) — not malware-compromise bars — always surface as confirmed.
+FACT_CONFIRMED_RULES = frozenset({"R10", "R21", "R22", "R27", "R28", "R29", "R30"})
+
+HACKTOOL_TOKENS = (
+    "cain",
+    "ethereal",
+    "wireshark",
+    "stumbler",
+    "wasp",
+    "anonymizer",
+    "cuteftp",
+    "look@lan",
+    "look@",
+    "netstumbler",
+    "sniffer",
+)
+
 
 def audit_ids_from_sources(sources: list[dict[str, Any]]) -> list[str]:
     ids: list[str] = []
@@ -91,6 +109,71 @@ def _content_context_findings(state: InvestigationState, idx: int) -> tuple[list
     return extra, idx
 
 
+def _linux_memory_gap_finding(state: InvestigationState, idx: int) -> dict[str, Any] | None:
+    """Document Linux memory ISF gap for DFRWS-style cases (F-MEM-GAP keywords)."""
+    data = state._tool_data("mem_linux_probe")
+    if not data or not data.get("isf_gap"):
+        return None
+    detail = (data.get("isf_detail") or data.get("banner") or "symbol table missing")[:200]
+    runs = state.tool_results.get("mem_linux_probe") or []
+    audit_id = None
+    for run in reversed(runs):
+        if run.get("ok"):
+            audit_id = run.get("audit_id")
+            break
+    return {
+        "id": f"f-{idx}",
+        "claim": (
+            "Linux memory analysis blocked — Volatility ISF/symbol table required for this kernel "
+            f"({detail})"
+        ),
+        "audit_ids": [audit_id] if audit_id else state.all_audit_ids()[:1],
+        "confidence": 0.88,
+        "status": "inference",
+        "tags": ["R31", "linux-memory", "volatility", "isf", "F-MEM-GAP"],
+        "title": "Linux memory platform limitation",
+        "severity": "info",
+    }
+
+
+def _hacktool_prefetch_finding(state: InvestigationState, idx: int) -> dict[str, Any] | None:
+    """Roll up prefetch executions of known hacking/sniffing tools (NIST hacking GT)."""
+    hits: list[str] = []
+    audit_id: str | None = None
+    for run in state.tool_results.get("disk_parse_prefetch") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        exe = str(
+            data.get("executable")
+            or (data.get("prefetch") or {}).get("executable")
+            or data.get("path")
+            or ""
+        )
+        lower = exe.lower()
+        if exe and any(token in lower for token in HACKTOOL_TOKENS):
+            hits.append(exe)
+            audit_id = audit_id or run.get("audit_id")
+    if not hits:
+        return None
+    unique = list(dict.fromkeys(hits))
+    return {
+        "id": f"f-{idx}",
+        "claim": (
+            f"{len(unique)} hacking/sniffing/password-recovery tool(s) executed per prefetch "
+            f"({', '.join(unique[:6])})"
+        ),
+        "audit_ids": [audit_id] if audit_id else state.all_audit_ids()[:1],
+        "confidence": 0.9,
+        "status": "confirmed",
+        "tags": ["R16", "hacktool", "prefetch", "F-HACKTOOL-INSTALLED"],
+        "title": "Hacking tools installed / executed",
+        "severity": "high",
+        "mitre": ["T1588.002", "T1040"],
+        "tactic": "Collection",
+    }
+
+
 def _web_server_context(*, config: AgentConfig | None, survey: dict[str, Any]) -> bool:
     """True when evidence points at a web-server / XAMPP / Apache host."""
     if config:
@@ -149,11 +232,13 @@ def _compromise_contradictions(verifier_results: list[RuleResult]) -> bool:
 
 
 def _contradiction_finding_status(result: RuleResult, *, compromise_present: bool) -> str:
+    if result.rule_id in FACT_CONFIRMED_RULES:
+        return "confirmed"
     profile = RULE_PROFILE.get(result.rule_id)
     severity = profile.severity if profile else "medium"
     if severity in COMPROMISE_SEVERITIES:
         return "confirmed"
-    if result.rule_id in {"R15", "R23"} or severity == "info":
+    if result.rule_id in {"R15", "R23", "R31"} or severity == "info":
         return "context"
     if not compromise_present:
         return "context"
@@ -209,6 +294,16 @@ def build_findings(
 
     content_findings, idx = _content_context_findings(state, idx)
     findings.extend(content_findings)
+
+    gap_finding = _linux_memory_gap_finding(state, idx)
+    if gap_finding is not None:
+        findings.append(gap_finding)
+        idx += 1
+
+    hacktool = _hacktool_prefetch_finding(state, idx)
+    if hacktool is not None:
+        findings.append(hacktool)
+        idx += 1
 
     has_confirmed = any(f["status"] == "confirmed" for f in findings)
     if not has_confirmed:

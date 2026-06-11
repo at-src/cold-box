@@ -29,8 +29,8 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         evtx_data=_data(state, "disk_parse_evtx") or _data(state, "disk_evtx_filter"),
         dns_data=_data(state, "net_dns_extract"),
         http_data=_data(state, "net_http_extract"),
-        linux_persistence_data=_data(state, "linux_persistence") or _data(state, "linux_cron"),
-        linux_history_data=_data(state, "linux_bash_history"),
+        linux_persistence_data=_best_linux_persistence_data(state),
+        linux_history_data=_best_linux_history_data(state),
         setupapi_data=_data(state, "disk_parse_setupapi"),
         scheduled_task_data=_data(state, "disk_parse_scheduled_tasks"),
         services_data=_best_services_data(state),
@@ -43,6 +43,9 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         web_inspect_data=_data(state, "web_inspect_artifact"),
         structured_log_data=_data(state, "logs_parse_structured"),
         usb_data=_best_usb_data(state),
+        exfil_data=_data(state, "disk_scan_exfil"),
+        yara_data=_data(state, "yara_scan_evidence"),
+        linux_memory_data=_data(state, "mem_linux_probe"),
         evidence_root=evidence_root,
         pslist_audit_id=state.audit_id("mem_pslist"),
         psscan_audit_id=state.audit_id("mem_psscan"),
@@ -68,6 +71,9 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         web_inspect_audit_id=state.audit_id("web_inspect_artifact"),
         structured_log_audit_id=state.audit_id("logs_parse_structured"),
         usb_audit_id=state.audit_id("disk_parse_usb"),
+        exfil_audit_id=state.audit_id("disk_scan_exfil"),
+        yara_audit_id=state.audit_id("yara_scan_evidence"),
+        linux_memory_audit_id=state.audit_id("mem_linux_probe"),
     )
     if config.extracted_root and config.extracted_root.is_dir():
         from postmortem_verify.models import evidence_basenames
@@ -127,6 +133,46 @@ def _best_services_data(state: InvestigationState) -> dict | None:
             continue
         data = run.get("data") or {}
         count = len(data.get("records") or [])
+        if count > best_count:
+            best_count = count
+            best = data
+    return best
+
+
+def _linux_row_count(data: dict[str, Any]) -> int:
+    for key in ("findings", "entries", "hits", "records"):
+        items = data.get(key)
+        if isinstance(items, list):
+            return len(items)
+    return 0
+
+
+def _best_linux_persistence_data(state: InvestigationState) -> dict | None:
+    """Prefer the broadest successful linux_persistence sweep (not the last narrow retry)."""
+    best: dict | None = None
+    best_count = -1
+    for run in state.tool_results.get("linux_persistence") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        count = _linux_row_count(data)
+        if count > best_count:
+            best_count = count
+            best = data
+    if best is not None:
+        return best
+    return _data(state, "linux_cron")
+
+
+def _best_linux_history_data(state: InvestigationState) -> dict | None:
+    """Prefer bash history runs that actually contain command lines."""
+    best: dict | None = None
+    best_count = -1
+    for run in state.tool_results.get("linux_bash_history") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        count = _linux_row_count(data)
         if count > best_count:
             best_count = count
             best = data

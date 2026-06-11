@@ -36,6 +36,7 @@ from postmortem_mcp.legacy_parse import (  # noqa: E402
     summarize_recycle_bin,
 )
 from postmortem_mcp.registry_query import sam_accounts, system_profile  # noqa: E402
+from postmortem_mcp.yara_scan import scan_with_yara  # noqa: E402
 
 HACKING_TOOL_RE = ("cain", "ethereal", "wireshark", "stumbler", "wasp", "anonymizer", "cuteftp", "look")
 
@@ -122,6 +123,10 @@ def measure(case_dir: Path) -> list[dict]:
             summary = summarize_recycle_bin(path)
             recycle_exe_count = max(recycle_exe_count, int(summary.get("executable_count") or 0))
 
+    yara = scan_with_yara(extracted, max_matches=30)
+    yara_hits = int(yara.get("match_count") or 0)
+    yara_rules = sorted({m.get("rule") for m in (yara.get("matches") or []) if m.get("rule")})
+
     # status: "strict" = directly detected, "partial" = lenient-only, "gap" = not supported
     findings = [
         {
@@ -169,8 +174,11 @@ def measure(case_dir: Path) -> list[dict]:
         },
         {
             "id": "F-CFR-009", "claim": "Viruses present (AV positive)",
-            "status": "gap",
-            "detail": "No bundled YARA rule library (same gap as DART)",
+            "status": "strict" if yara_hits else "gap",
+            "detail": (
+                f"{yara_hits} YARA/pattern match(es) via {yara.get('engine', '?')}"
+                + (f" ({', '.join(yara_rules[:5])})" if yara_rules else "")
+            ),
         },
         {
             "id": "F-CFR-010", "claim": "Last shutdown 2004-08-27",
