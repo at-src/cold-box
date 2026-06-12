@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from postmortem_agent.reasoner_llm import LLMReasoner
+from postmortem_agent.reasoner_policy import PolicyReasoner
 from postmortem_agent.state import AgentConfig
 
 
@@ -14,6 +15,7 @@ class HybridReasoner:
     def __init__(self, config: AgentConfig) -> None:
         self.config = config
         self._llm = LLMReasoner(config)
+        self._policy = PolicyReasoner(config)
 
     def decide(
         self,
@@ -29,16 +31,29 @@ class HybridReasoner:
         pattern_hints: list[str],
         **kwargs: Any,
     ) -> dict[str, Any]:
-        action = self._llm.decide(
-            goal=goal,
-            survey=survey,
-            catalog=catalog,
-            skills=skills,
-            results=results,
-            verifier=verifier,
-            hypothesis=hypothesis,
-            lessons=lessons,
-            pattern_hints=pattern_hints,
-            **kwargs,
-        )
-        return action
+        try:
+            return self._llm.decide(
+                goal=goal,
+                survey=survey,
+                catalog=catalog,
+                skills=skills,
+                results=results,
+                verifier=verifier,
+                hypothesis=hypothesis,
+                lessons=lessons,
+                pattern_hints=pattern_hints,
+                **kwargs,
+            )
+        except Exception:
+            return self._policy.decide(
+                goal=goal,
+                survey=survey,
+                catalog=catalog,
+                skills=skills,
+                results=results,
+                verifier=verifier,
+                hypothesis=hypothesis,
+                lessons=lessons,
+                pattern_hints=pattern_hints,
+                **kwargs,
+            )

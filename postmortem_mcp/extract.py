@@ -178,9 +178,24 @@ LINUX_TARGETS: tuple[ArtifactTarget, ...] = (
     ArtifactTarget(_ci(r"^etc/passwd$"), "linux_log"),
 )
 
+# Mac-formatted removable media (FAT32 USB sticks with .Spotlight-V100 / .Trashes).
+MACOS_USB_TARGETS: tuple[ArtifactTarget, ...] = (
+    ArtifactTarget(_ci(r"^\.spotlight-v100/store-v1/stores/.+/store\.db$"), "macos_spotlight", cap=5),
+    ArtifactTarget(_ci(r"^\.spotlight-v100/store-v1/volumeconfig\.plist$"), "macos_spotlight", cap=2),
+    ArtifactTarget(_ci(r"^[^/]+\.(py|txt|doc|xls|xlsx|pdf|zip|pst|csv)$"), "text", cap=120),
+    ArtifactTarget(_ci(r"^[^/]+/[^/]+\.(py|txt|doc|xls|xlsx|pdf|zip|pst|csv)$"), "text", cap=120),
+)
+
+# Generic FAT/USB volumes without a full Windows/Linux install tree.
+GENERIC_USB_TARGETS: tuple[ArtifactTarget, ...] = (
+    ArtifactTarget(_ci(r"^[^/]+\.(py|txt|doc|xls|xlsx|pdf|zip|pst|csv|html|htm)$"), "text", cap=120),
+    ArtifactTarget(_ci(r"^[^/]+/[^/]+\.(py|txt|doc|xls|xlsx|pdf|zip|pst|csv|html|htm)$"), "text", cap=120),
+)
+
 # Sentinel paths used to identify the OS hosted on a partition.
 _WINDOWS_SENTINELS = ("windows/system32/config/system", "windows/system32/ntoskrnl.exe")
 _LINUX_SENTINELS = ("etc/passwd", "etc/shadow", "var/log/syslog", "etc/fstab")
+_MACOS_USB_SENTINELS = (".spotlight-v100", ".trashes")
 
 
 def _run(cmd: list[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
@@ -245,7 +260,24 @@ def _detect_os(paths: list[str]) -> str:
         p.startswith("etc/") for p in lowered
     ):
         return "linux"
+    if any(
+        s in p for p in lowered for s in _MACOS_USB_SENTINELS
+    ):
+        return "macos_usb"
     return "unknown"
+
+
+def _targets_for_partition(os_guess: str, description: str) -> tuple[ArtifactTarget, ...] | None:
+    if os_guess == "windows":
+        return WINDOWS_TARGETS
+    if os_guess == "linux":
+        return LINUX_TARGETS
+    if os_guess == "macos_usb":
+        return MACOS_USB_TARGETS
+    desc = description.lower()
+    if "fat" in desc or "exfat" in desc:
+        return GENERIC_USB_TARGETS
+    return None
 
 
 def _sha256_file(path: Path) -> str:
@@ -340,12 +372,10 @@ def extract_image(
 
         if targets_override is not None:
             targets = targets_override
-        elif os_guess == "windows":
-            targets = WINDOWS_TARGETS
-        elif os_guess == "linux":
-            targets = LINUX_TARGETS
         else:
-            continue
+            targets = _targets_for_partition(os_guess, part.description)
+            if targets is None:
+                continue
 
         # Explicitly grab $MFT (metadata address 0) on Windows/NTFS volumes —
         # it is not reliably surfaced by `fls -F`.

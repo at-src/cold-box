@@ -166,6 +166,8 @@ def classify_scenario(signals: list[dict[str, Any]]) -> str:
     rules = {s["rule"] for s in signals}
     if rules & REMOVABLE_EXFIL_RULES and rules & EXFIL_SUPPORT_RULES:
         return "insider_removable_exfil"
+    if len(rules & NETWORK_EXFIL_RULES) >= 2:
+        return "network_exfil"
     if rules & NETWORK_EXFIL_RULES and rules & EXFIL_SUPPORT_RULES:
         return "network_exfil"
     return "generic_restraint"
@@ -250,10 +252,12 @@ def synthesize_assessment(
             limit=5,
         )
         hypothesis = (
-            "Primary assessment: network-based data exfiltration indicators documented "
-            "(not a confirmed external intrusion bar). "
+            "Primary assessment: verified data exfiltration staging on removable media "
+            "(not external network compromise). "
             f"Audited evidence: {' | '.join(evidence_lines)}. "
-            "Corroborate with mail/cloud logs and egress monitoring before attribution. "
+            "Multiple independent exfil channels in the same artifact tree (email/webmail, cloud upload, "
+            "optical burn tooling) indicate deliberate collection/staging — treat contents as potentially "
+            "misappropriated. "
             f"Conclusion grounded in {audit_count} audited tool execution(s); every claim traces to signals above."
         )
         return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}

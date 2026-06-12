@@ -72,6 +72,7 @@ def test_list_partitions_bare_image(monkeypatch):
     [
         (["Windows/System32/config/SYSTEM", "Users/x/NTUSER.DAT"], "windows"),
         (["etc/passwd", "var/log/syslog"], "linux"),
+        ([".Spotlight-V100/Store-V1/VolumeConfig.plist", "webauto.py"], "macos_usb"),
         (["random/file.txt"], "unknown"),
     ],
 )
