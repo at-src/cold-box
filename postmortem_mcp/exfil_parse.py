@@ -73,7 +73,7 @@ def scan_exfil_channels(
         suffix = path.suffix.lower()
         if suffix in BINARY_SKIP_SUFFIXES:
             continue
-        if suffix and suffix not in TEXT_SUFFIXES and suffix not in {".hve", ".dat", ".pf", ".json"}:
+        if suffix and suffix not in TEXT_SUFFIXES and suffix not in {".hve", ".dat", ".pf", ".json", ".pst"}:
             continue
         try:
             size = path.stat().st_size
@@ -84,7 +84,10 @@ def scan_exfil_channels(
 
         files_scanned += 1
         try:
-            text = path.read_text(encoding="utf-8", errors="ignore")
+            if suffix == ".pst":
+                text = path.read_bytes()[: min(size, max_file_bytes)].decode("latin-1", errors="ignore")
+            else:
+                text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
 

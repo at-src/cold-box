@@ -12,7 +12,7 @@ from postmortem_verify.models import RuleResult
 
 # Verifier contradictions that report audited facts (insider exfil, attribution,
 # tool inventory) — not malware-compromise bars — always surface as confirmed.
-FACT_CONFIRMED_RULES = frozenset({"R10", "R21", "R22", "R27", "R28", "R29", "R30", "R32", "R33"})
+FACT_CONFIRMED_RULES = frozenset({"R10", "R21", "R22", "R27", "R28", "R29", "R30", "R32", "R33", "R34"})
 
 PLATFORM_CASE_TOKENS = ("android", "dfrws2011", "macos", "spotlight")
 

@@ -39,6 +39,7 @@ FOLLOWUP: dict[str, tuple[str, ...]] = {
     "R19": ("web_parse_access_log", "web_inspect_artifact"),
     "R20": ("logs_parse_structured",),
     "R27": ("disk_scan_exfil",),
+    "R34": ("disk_mft_user_docs", "disk_parse_pst"),
     "R30": ("yara_scan_evidence",),
     "R31": ("mem_linux_probe",),
     "R32": ("android_probe", "android_scan_artifacts"),
@@ -64,6 +65,7 @@ COVERAGE_RULES: dict[str, tuple[str, ...]] = {
     "R21": ("disk_parse_usb",),
     "R22": ("net_http_extract",),
     "R27": ("disk_scan_exfil",),
+    "R34": ("disk_mft_user_docs", "disk_parse_pst"),
     "R28": ("disk_scan_exfil",),
     "R29": ("disk_scan_exfil",),
     "R30": ("yara_scan_evidence",),
@@ -239,6 +241,119 @@ def _tag_hybrid_reason(action: dict[str, Any], detail: str) -> dict[str, Any]:
     return tagged
 
 
+def _pcap_led_case(survey: dict[str, Any]) -> bool:
+    """True when PCAP is the primary evidence (nitroba-like), not a full OS disk image."""
+    kinds = set(survey.get("kinds_present") or [])
+    if "pcap" not in kinds:
+        return False
+    if kinds & {"registry_hive", "prefetch", "mft", "evtx", "amcache", "recycle_bin"}:
+        return False
+    return True
+
+
+PCAP_BASELINE_TOOLS = ("net_http_extract", "net_dns_extract", "net_conversations")
+EMAIL_BASELINE_TOOLS = ("disk_mft_user_docs", "disk_parse_pst")
+LINUX_BASELINE_TOOLS = ("linux_bash_history", "linux_persistence", "linux_cron")
+
+
+def _pcap_baseline_action(
+    *,
+    results: dict[str, list[dict[str, Any]]],
+    survey: dict[str, Any],
+    config: AgentConfig,
+    executed: set[str],
+    failed: set[str],
+) -> dict[str, Any] | None:
+    """Run PCAP parsers before disk tools on capture-led cases."""
+    if config.mode == "synthetic" or not _pcap_led_case(survey):
+        return None
+    for tool in PCAP_BASELINE_TOOLS:
+        if _tool_succeeded(results, tool):
+            continue
+        args = _coverage_tool_args(tool, survey, config, results)
+        if args is None:
+            continue
+        key = _action_key(tool, args)
+        if key in executed or key in failed:
+            continue
+        return {
+            "action": "tool",
+            "tool": tool,
+            "arguments": args,
+            "reason": f"pcap-first baseline ({tool})",
+        }
+    return None
+
+
+def _windows_disk_led_case(survey: dict[str, Any]) -> bool:
+    kinds = set(survey.get("kinds_present") or [])
+    return bool(kinds & {"registry_hive", "prefetch", "mft"})
+
+
+def _email_exfil_baseline_action(
+    *,
+    results: dict[str, list[dict[str, Any]]],
+    survey: dict[str, Any],
+    config: AgentConfig,
+    executed: set[str],
+    failed: set[str],
+) -> dict[str, Any] | None:
+    """Run MFT user-doc discovery + PST parse on Windows disk cases before generic exfil scan."""
+    if config.mode == "synthetic" or not _windows_disk_led_case(survey):
+        return None
+    if _effective_extracted_root(config) is None:
+        return None
+    for tool in EMAIL_BASELINE_TOOLS:
+        if _tool_succeeded(results, tool):
+            continue
+        args = _coverage_tool_args(tool, survey, config, results)
+        if args is None:
+            continue
+        key = _action_key(tool, args)
+        if key in executed or key in failed:
+            continue
+        return {
+            "action": "tool",
+            "tool": tool,
+            "arguments": args,
+            "reason": f"email-exfil baseline ({tool})",
+        }
+    return None
+
+
+def _linux_led_case(survey: dict[str, Any]) -> bool:
+    kinds = set(survey.get("kinds_present") or [])
+    return "linux_log" in kinds and not kinds & {"registry_hive", "prefetch", "disk_image"}
+
+
+def _linux_baseline_action(
+    *,
+    results: dict[str, list[dict[str, Any]]],
+    survey: dict[str, Any],
+    config: AgentConfig,
+    executed: set[str],
+    failed: set[str],
+) -> dict[str, Any] | None:
+    if config.mode == "synthetic" or not _linux_led_case(survey):
+        return None
+    for tool in LINUX_BASELINE_TOOLS:
+        if _tool_succeeded(results, tool):
+            continue
+        args = _coverage_tool_args(tool, survey, config, results)
+        if args is None:
+            continue
+        key = _action_key(tool, args)
+        if key in executed or key in failed:
+            continue
+        return {
+            "action": "tool",
+            "tool": tool,
+            "arguments": args,
+            "reason": f"linux baseline ({tool})",
+        }
+    return None
+
+
 def _baseline_disk_action(
     *,
     results: dict[str, list[dict[str, Any]]],
@@ -288,6 +403,33 @@ def _policy_floor_action(
     executed: set[str],
     failed: set[str],
 ) -> dict[str, Any] | None:
+    forced = _pcap_baseline_action(
+        results=results,
+        survey=survey,
+        config=config,
+        executed=executed,
+        failed=failed,
+    )
+    if forced:
+        return forced
+    forced = _email_exfil_baseline_action(
+        results=results,
+        survey=survey,
+        config=config,
+        executed=executed,
+        failed=failed,
+    )
+    if forced:
+        return forced
+    forced = _linux_baseline_action(
+        results=results,
+        survey=survey,
+        config=config,
+        executed=executed,
+        failed=failed,
+    )
+    if forced:
+        return forced
     forced = _coverage_action(verifier, results, survey, config, executed, failed)
     if forced:
         return forced
@@ -369,12 +511,14 @@ def _coverage_action(
             continue
         if rule_id == "R14" and (_android_case(config, survey) or _macos_case(config, survey)):
             continue
+        if rule_id == "R34" and not _windows_disk_led_case(survey):
+            continue
         if rule_id not in skipped:
             continue
         if _coverage_tool_done(rule_id, tools, results, config):
             continue
         for tool in tools:
-            args = _coverage_tool_args(tool, survey, config)
+            args = _coverage_tool_args(tool, survey, config, results)
             if args is None:
                 continue
             key = _action_key(tool, args)
@@ -403,10 +547,46 @@ def _first_prefetch_relpath(survey: dict[str, Any]) -> str | None:
     return files[0].get("relpath")
 
 
+def _pst_relpath_from_survey(survey: dict[str, Any]) -> str | None:
+    candidates = [
+        entry
+        for entry in (survey.get("files") or [])
+        if str(entry.get("relpath") or "").lower().endswith(".pst")
+    ]
+    for entry in candidates:
+        rel = str(entry.get("relpath") or "")
+        if "/jean/" in rel.lower() or "\\jean\\" in rel.lower():
+            return rel
+    if candidates:
+        return max(candidates, key=lambda e: int(e.get("size") or 0)).get("relpath")
+    return None
+
+
+def _pst_relpath_from_user_docs(
+    results: dict[str, list[dict[str, Any]]] | None,
+    survey: dict[str, Any],
+) -> str | None:
+    if not results:
+        return None
+    for run in results.get("disk_mft_user_docs") or []:
+        if not run.get("ok"):
+            continue
+        pst_paths = (run.get("data") or {}).get("pst_paths") or []
+        if not pst_paths:
+            continue
+        target_name = str(pst_paths[0].get("filename") or "outlook.pst").lower()
+        for entry in survey.get("files") or []:
+            rel = str(entry.get("relpath") or "")
+            if rel.lower().endswith(target_name) and "outlook" in rel.lower():
+                return rel
+    return None
+
+
 def _coverage_tool_args(
     tool: str,
     survey: dict[str, Any],
     config: AgentConfig,
+    results: dict[str, list[dict[str, Any]]] | None = None,
 ) -> dict[str, Any] | None:
     if tool in {"mem_netscan", "mem_malfind", "mem_cmdline", "mem_svcscan", "mem_pslist"}:
         mem = _memory_relpath(config, survey)
@@ -446,6 +626,14 @@ def _coverage_tool_args(
     if tool == "disk_parse_prefetch":
         rel = _first_prefetch_relpath(survey)
         return {"artifact_relpath": rel} if rel else None
+    if tool == "disk_mft_user_docs":
+        rel = _first_relpath(survey, "mft")
+        return {"artifact_relpath": rel, "max_records": 50000, "max_hits": 30} if rel else None
+    if tool == "disk_parse_pst":
+        rel = _pst_relpath_from_survey(survey) or _first_relpath(survey, "pst")
+        if not rel and results is not None:
+            rel = _pst_relpath_from_user_docs(results, survey)
+        return {"artifact_relpath": rel, "max_bytes": 8_000_000} if rel else None
     if tool == "disk_parse_scheduled_tasks":
         rel = _first_relpath(survey, "scheduled_task")
         return {"artifact_relpath": rel} if rel else None
@@ -491,6 +679,15 @@ def _coverage_tool_args(
         if tool == "macos_scan_artifacts":
             args["max_records"] = 80
         return args
+    if tool in {"net_dns_extract", "net_http_extract", "net_conversations"}:
+        rel = _first_relpath(survey, "pcap")
+        return {"artifact_relpath": rel} if rel else None
+    if tool in {"linux_bash_history", "linux_cron", "linux_auth_log", "linux_syslog"}:
+        rel = _first_relpath(survey, "linux_log")
+        return {"artifact_relpath": rel} if rel else None
+    if tool == "linux_persistence":
+        root = config.evidence_case or _first_relpath(survey, "case_directory") or "."
+        return {"search_root_relpath": root}
     return None
 
 
@@ -620,7 +817,7 @@ def _build_candidates(
         ):
             if tool == "disk_scan_exfil" and not _exfil_case(config, survey):
                 continue
-            args = _coverage_tool_args(tool, survey, config)
+            args = _coverage_tool_args(tool, survey, config, results)
             if args is None:
                 continue
             key = _action_key(tool, args)
@@ -635,7 +832,7 @@ def _build_candidates(
         ):
             if tool == "disk_scan_exfil" and not _exfil_case(config, survey):
                 continue
-            args = _coverage_tool_args(tool, survey, config)
+            args = _coverage_tool_args(tool, survey, config, results)
             if args is None:
                 continue
             key = _action_key(tool, args)
@@ -909,7 +1106,14 @@ class PolicyReasoner:
             }
 
         if self.config.mode != "synthetic":
-            forced = _coverage_action(verifier, results, survey, self.config, self.executed, self.failed)
+            forced = _policy_floor_action(
+                verifier=verifier,
+                results=results,
+                survey=survey,
+                config=self.config,
+                executed=self.executed,
+                failed=self.failed,
+            )
             if forced:
                 return forced
 
@@ -917,7 +1121,14 @@ class PolicyReasoner:
         report = coverage_report(survey, self.config, self.executed, self.failed)
 
         if not candidates:
-            forced = _coverage_action(verifier, results, survey, self.config, self.executed, self.failed)
+            forced = _policy_floor_action(
+                verifier=verifier,
+                results=results,
+                survey=survey,
+                config=self.config,
+                executed=self.executed,
+                failed=self.failed,
+            )
             if forced:
                 return forced
             frontier = next_frontier_action(report)

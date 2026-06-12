@@ -32,7 +32,8 @@ from postmortem_mcp.config import (
     scratch_dir,
 )
 from postmortem_mcp.ez_tools import parse_amcache, parse_evtx, parse_mft, parse_mft_csv
-from postmortem_mcp.timestomp import detect_timestomp_rows
+from postmortem_mcp.pst_parse import parse_pst_file
+from postmortem_mcp.user_docs import scan_mft_records
 from postmortem_mcp.paths import (
     resolve_amcache_path,
     resolve_case_directory,
@@ -616,6 +617,77 @@ def disk_inspect_capture(
     return run_audited_tool(
         case_id=case_id,
         tool="disk_inspect_capture",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def disk_parse_pst(
+    case_id: str,
+    artifact_relpath: str,
+    *,
+    iteration: int = 0,
+    max_bytes: int = 8_000_000,
+) -> dict:
+    """Extract external recipients and attachment names from an Outlook PST."""
+    args = {
+        "case_id": case_id,
+        "artifact_relpath": artifact_relpath,
+        "max_bytes": max_bytes,
+    }
+
+    def execute() -> dict[str, Any]:
+        path = resolve_readonly_file(artifact_relpath)
+        args["artifact_path"] = str(path)
+        return parse_pst_file(path, max_bytes=max_bytes)
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="disk_parse_pst",
+        args=args,
+        iteration=iteration,
+        execute=execute,
+    )
+
+
+def disk_mft_user_docs(
+    case_id: str,
+    artifact_relpath: str,
+    *,
+    iteration: int = 0,
+    max_records: int = 50000,
+    max_hits: int = 30,
+) -> dict:
+    """Find sensitive user documents and Outlook PST paths from parsed MFT."""
+    args = {
+        "case_id": case_id,
+        "artifact_relpath": artifact_relpath,
+        "max_records": max_records,
+        "max_hits": max_hits,
+    }
+
+    def execute() -> dict[str, Any]:
+        path = resolve_mft_path(artifact_relpath)
+        args["artifact_path"] = str(path)
+        if path.suffix.lower() == ".csv":
+            parsed = parse_mft_csv(path, max_records=max_records)
+        else:
+            parsed = parse_mft(
+                path,
+                binary=mftecmd_binary(),
+                scratch_dir=scratch_dir(case_id),
+                max_records=max_records,
+            )
+        records = parsed.get("records") or []
+        payload = scan_mft_records(records, max_hits=max_hits)
+        payload["source"] = str(path)
+        payload["mft_records_scanned"] = len(records)
+        return payload
+
+    return run_audited_tool(
+        case_id=case_id,
+        tool="disk_mft_user_docs",
         args=args,
         iteration=iteration,
         execute=execute,

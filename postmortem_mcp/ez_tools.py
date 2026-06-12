@@ -32,7 +32,28 @@ def cap_records(records: list[dict[str, Any]], max_records: int) -> dict[str, An
 def _load_json_records(output_dir: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for json_path in sorted(output_dir.glob("*.json")):
-        payload = json.loads(json_path.read_text(encoding="utf-8"))
+        text = json_path.read_text(encoding="utf-8")
+        loaded_any = False
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line[0] not in "{[":
+                continue
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            loaded_any = True
+            if isinstance(payload, list):
+                records.extend(item for item in payload if isinstance(item, dict))
+            elif isinstance(payload, dict):
+                nested = payload.get("Records") or payload.get("records")
+                if isinstance(nested, list):
+                    records.extend(item for item in nested if isinstance(item, dict))
+                else:
+                    records.append(payload)
+        if loaded_any:
+            continue
+        payload = json.loads(text)
         if isinstance(payload, list):
             records.extend(item for item in payload if isinstance(item, dict))
         elif isinstance(payload, dict):

@@ -50,6 +50,8 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         structured_log_data=_data(state, "logs_parse_structured"),
         usb_data=_best_usb_data(state),
         exfil_data=_data(state, "disk_scan_exfil"),
+        pst_data=_best_pst_data(state),
+        user_docs_data=_best_user_docs_data(state),
         yara_data=_data(state, "yara_scan_evidence"),
         linux_memory_data=_data(state, "mem_linux_probe"),
         android_probe_data=_data(state, "android_probe"),
@@ -82,6 +84,8 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         structured_log_audit_id=state.audit_id("logs_parse_structured"),
         usb_audit_id=state.audit_id("disk_parse_usb"),
         exfil_audit_id=state.audit_id("disk_scan_exfil"),
+        pst_audit_id=state.audit_id("disk_parse_pst"),
+        user_docs_audit_id=state.audit_id("disk_mft_user_docs"),
         yara_audit_id=state.audit_id("yara_scan_evidence"),
         linux_memory_audit_id=state.audit_id("mem_linux_probe"),
         android_audit_id=state.audit_id("android_scan_artifacts") or state.audit_id("android_probe"),
@@ -149,6 +153,37 @@ def _best_usb_data(state: InvestigationState) -> dict | None:
             best_count = count
             best = data
     return best
+
+
+def _best_pst_data(state: InvestigationState) -> dict | None:
+    """Prefer the PST parse with the richest external-recipient/attachment signal."""
+    best: dict | None = None
+    best_score = -1
+    for run in state.tool_results.get("disk_parse_pst") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        score = int(data.get("external_recipient_count") or 0) * 10 + int(
+            data.get("attachment_count") or 0
+        )
+        if score > best_score:
+            best_score = score
+            best = data
+    return best or _data(state, "disk_parse_pst")
+
+
+def _best_user_docs_data(state: InvestigationState) -> dict | None:
+    best: dict | None = None
+    best_count = -1
+    for run in state.tool_results.get("disk_mft_user_docs") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        count = int(data.get("document_count") or 0) + int(data.get("pst_count") or 0)
+        if count > best_count:
+            best_count = count
+            best = data
+    return best or _data(state, "disk_mft_user_docs")
 
 
 def _best_services_data(state: InvestigationState) -> dict | None:

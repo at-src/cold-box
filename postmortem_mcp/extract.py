@@ -167,6 +167,35 @@ WINDOWS_TARGETS: tuple[ArtifactTarget, ...] = (
         "capture_file",
         cap=5,
     ),
+    # Outlook PST + user documents (email-exfil / phishing cases)
+    ArtifactTarget(
+        _ci(
+            r"^documents and settings/[^/]+/local settings/application data/"
+            r"microsoft/outlook/.+\.pst$"
+        ),
+        "pst",
+        cap=10,
+    ),
+    ArtifactTarget(
+        _ci(r"^users/[^/]+/appdata/local/microsoft/outlook/.+\.pst$"),
+        "pst",
+        cap=10,
+    ),
+    ArtifactTarget(
+        _ci(r"^documents and settings/[^/]+/desktop/.+\.(xls|xlsx|doc|docx|pdf)$"),
+        "user_document",
+        cap=30,
+    ),
+    ArtifactTarget(
+        _ci(r"^users/[^/]+/desktop/.+\.(xls|xlsx|doc|docx|pdf)$"),
+        "user_document",
+        cap=30,
+    ),
+    ArtifactTarget(
+        _ci(r"^documents and settings/[^/]+/my documents/.+\.(xls|xlsx|doc|docx|pdf)$"),
+        "user_document",
+        cap=30,
+    ),
 )
 
 LINUX_TARGETS: tuple[ArtifactTarget, ...] = (

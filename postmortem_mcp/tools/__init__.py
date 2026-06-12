@@ -25,6 +25,8 @@ from postmortem_mcp.tools.disk import (
     disk_parse_ie_index_dat,
     disk_parse_ie_cache,
     disk_inspect_capture,
+    disk_parse_pst,
+    disk_mft_user_docs,
 )
 from postmortem_mcp.catalog import tool_catalog
 from postmortem_mcp.survey import evidence_survey
@@ -134,6 +136,8 @@ WAVE5_TOOLS = [
     disk_parse_ie_index_dat,
     disk_parse_ie_cache,
     disk_inspect_capture,
+    disk_parse_pst,
+    disk_mft_user_docs,
     reg_run_keys,
     reg_services,
     reg_userassist,

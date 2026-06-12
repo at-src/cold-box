@@ -106,6 +106,7 @@ KNOWN_GOOD_BINARIES: frozenset[str] = frozenset(
         "excel.exe",
         "powerpnt.exe",
         "outlook.exe",
+        "alsetup.exe",
         "onenote.exe",
         "msaccess.exe",
         # Visual C++ / .NET redistributables (Windows Installer burn cache)

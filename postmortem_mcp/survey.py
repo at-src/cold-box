@@ -121,6 +121,12 @@ def classify_file(relpath: str, path: Path) -> str:
         return "ie_cache"
     if suffix in {".pcap", ".pcapng"}:
         return "pcap"
+    if suffix == ".pst" and "outlook" in parts_lower:
+        return "pst"
+    if suffix in {".xls", ".xlsx", ".doc", ".docx"} and any(
+        p in parts_lower for p in ("desktop", "documents", "my documents", "recent")
+    ):
+        return "user_document"
     if name in {"$mft", "mft"} or suffix in {".mft"}:
         return "mft"
     if name == "amcache.hve" or (name.endswith(".hve") and "amcache" in name):

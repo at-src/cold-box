@@ -26,7 +26,7 @@ CASE_WINDOWS = REPO_ROOT / "examples" / "case-windows"
 
 
 def test_catalog_drift_phase2() -> None:
-    assert len(TOOL_REGISTRY) == len(CATALOG) == 67
+    assert len(TOOL_REGISTRY) == len(CATALOG) == 69
 
 
 def test_survey_windows_kinds() -> None:

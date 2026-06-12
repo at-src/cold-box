@@ -73,6 +73,7 @@ RULE_PROFILE: dict[str, RuleProfile] = {
     "R27": RuleProfile("Email / webmail exfiltration indicators", "medium", "Exfiltration", ("T1048", "T1567")),
     "R28": RuleProfile("Cloud storage exfiltration indicators", "medium", "Exfiltration", ("T1567.002",)),
     "R29": RuleProfile("Optical media / CD-R burn indicators", "medium", "Exfiltration", ("T1052",)),
+    "R34": RuleProfile("Outlook PST email exfiltration / phishing indicators", "high", "Exfiltration", ("T1566", "T1048")),
     "R30": RuleProfile("YARA / suspicious malware patterns", "high", "Execution", ("T1204", "T1059")),
     "R31": RuleProfile("Linux memory Volatility ISF requirement", "info", "Discovery", ("T1082",)),
     "R32": RuleProfile("Android mobile acquisition / artifact signals", "medium", "Collection", ("T1430", "T1404")),
@@ -128,14 +129,22 @@ COMPROMISE_SEVERITIES = frozenset({"critical", "high"})
 STRONG_COMPROMISE_RULES = frozenset({"R1", "R3", "R6", "R7", "R11", "R13", "R19"})
 CORROBORATING_HIGH_RULES = frozenset({"R4", "R5", "R16"})
 FACT_DOCUMENTATION_RULES = frozenset(
-    {"R10", "R14", "R21", "R22", "R27", "R28", "R29", "R30", "R32", "R33"}
+    {"R10", "R14", "R21", "R22", "R27", "R28", "R29", "R30", "R32", "R33", "R34"}
 )
 REMOVABLE_EXFIL_RULES = frozenset({"R21", "R12"})
 NETWORK_EXFIL_RULES = frozenset({"R27", "R28", "R29"})
 EXFIL_SUPPORT_RULES = frozenset({"R14", "R16", "R18", "R22", "R24", "R5", "R30"})
+LINUX_INSIDER_RULES = frozenset({"R10"})
+LINUX_INSIDER_SUPPORT = frozenset({"R14", "R15", "R18", "R22", "R24", "R27", "R28", "R29"})
+PCAP_ATTRIBUTION_RULES = frozenset({"R8", "R9", "R22"})
+EMAIL_PHISHING_RULES = frozenset({"R34"})
+EMAIL_PHISHING_SUPPORT = frozenset({"R14", "R15", "R23", "R24", "R27"})
 SCENARIO_HEADINGS = {
     "insider_removable_exfil": "Attack Chain Assessment (insider / physical-access hypothesis)",
     "network_exfil": "Attack Chain Assessment (network exfiltration hypothesis)",
+    "linux_insider_access": "Attack Chain Assessment (Linux insider / data-access hypothesis)",
+    "pcap_attribution": "Attack Chain Assessment (network attribution hypothesis)",
+    "email_phishing_exfil": "Attack Chain Assessment (email spear-phishing exfiltration hypothesis)",
     "generic_restraint": "Documented Anomalies (no external breach bar met)",
 }
 
@@ -164,8 +173,14 @@ def classify_scenario(signals: list[dict[str, Any]]) -> str:
     if compromise_verdict_met(signals):
         return "external_compromise"
     rules = {s["rule"] for s in signals}
+    if "R34" in rules:
+        return "email_phishing_exfil"
     if rules & REMOVABLE_EXFIL_RULES and rules & EXFIL_SUPPORT_RULES:
         return "insider_removable_exfil"
+    if "R10" in rules:
+        return "linux_insider_access"
+    if rules & PCAP_ATTRIBUTION_RULES and not rules & STRONG_COMPROMISE_RULES:
+        return "pcap_attribution"
     if len(rules & NETWORK_EXFIL_RULES) >= 2:
         return "network_exfil"
     if rules & NETWORK_EXFIL_RULES and rules & EXFIL_SUPPORT_RULES:
@@ -179,6 +194,14 @@ def scenario_confidence(signals: list[dict[str, Any]], scenario: str) -> float:
     if scenario == "insider_removable_exfil":
         support = len({s["rule"] for s in signals} & EXFIL_SUPPORT_RULES)
         return min(0.74, 0.58 + 0.04 * support)
+    if scenario == "linux_insider_access":
+        support = len({s["rule"] for s in signals} & (LINUX_INSIDER_RULES | LINUX_INSIDER_SUPPORT))
+        return min(0.72, 0.60 + 0.04 * support)
+    if scenario == "email_phishing_exfil":
+        support = len({s["rule"] for s in signals} & (EMAIL_PHISHING_RULES | EMAIL_PHISHING_SUPPORT))
+        return min(0.78, 0.64 + 0.04 * support)
+    if scenario == "pcap_attribution":
+        return 0.68
     if scenario == "network_exfil":
         return 0.62
     if not signals:
@@ -243,6 +266,65 @@ def synthesize_assessment(
             "confirmed by the verifier. "
             f"Conclusion grounded in {audit_count} audited tool execution(s); every claim traces to signals above."
         ).replace("  ", " ").strip()
+        return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
+
+    if scenario == "linux_insider_access":
+        evidence_lines = _grounded_signal_lines(
+            signals,
+            LINUX_INSIDER_RULES | LINUX_INSIDER_SUPPORT,
+            limit=5,
+        )
+        chain_parts = ["Linux user/session activity"]
+        if {s["rule"] for s in signals} & {"R15", "R14"}:
+            chain_parts.append("cross-source timeline correlation")
+        if {s["rule"] for s in signals} & {"R27", "R28", "R29", "R24"}:
+            chain_parts.append("removable-media or offline staging")
+        if {s["rule"] for s in signals} & {"R22", "R9", "R8"}:
+            chain_parts.append("network identity attribution")
+        chain = " \u2192 ".join(chain_parts)
+        host_line = f"Host context (audited): {host_profile}." if host_profile else ""
+        hypothesis = (
+            "Primary assessment: verified Linux insider data-access / staging activity "
+            "(not external network intrusion). "
+            f"Audited evidence: {' | '.join(evidence_lines)}. "
+            f"{host_line} "
+            f"Kill-chain read from confirmed signals: {chain}. "
+            "External breach bar not met — no webshell, memory injection, or C2 bar confirmed "
+            "on the evidence available. "
+            f"Conclusion grounded in {audit_count} audited tool execution(s); every claim traces to signals above."
+        ).replace("  ", " ").strip()
+        return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
+
+    if scenario == "email_phishing_exfil":
+        evidence_lines = _grounded_signal_lines(
+            signals,
+            EMAIL_PHISHING_RULES | EMAIL_PHISHING_SUPPORT,
+            limit=5,
+        )
+        host_line = f"Host context (audited): {host_profile}." if host_profile else ""
+        hypothesis = (
+            "Primary assessment: verified email spear-phishing data exfiltration "
+            "(user deceived into sending sensitive data — not external malware breach). "
+            f"Audited evidence: {' | '.join(evidence_lines)}. "
+            f"{host_line} "
+            "Kill-chain read from confirmed signals: spoofed or deceptive email request "
+            "→ sensitive document creation/access → outbound email to external recipient. "
+            "Treat as social-engineering victim activity unless independent compromise bar is met. "
+            "External breach bar not met — no C2, webshell, or memory injection confirmed. "
+            f"Conclusion grounded in {audit_count} audited tool execution(s); every claim traces to signals above."
+        ).replace("  ", " ").strip()
+        return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
+
+    if scenario == "pcap_attribution":
+        evidence_lines = _grounded_signal_lines(signals, PCAP_ATTRIBUTION_RULES, limit=5)
+        hypothesis = (
+            "Primary assessment: network-capture attribution — cleartext identity and/or "
+            "anonymous-relay activity tied to a host (not a disk-compromise bar). "
+            f"Audited PCAP signals: {' | '.join(evidence_lines)}. "
+            "Correlate DNS/HTTP/conversation artifacts with case narrative; treat as sender attribution "
+            "when R22 identity hits are present. "
+            f"Conclusion grounded in {audit_count} audited tool execution(s); every claim traces to signals above."
+        )
         return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
 
     if scenario == "network_exfil":

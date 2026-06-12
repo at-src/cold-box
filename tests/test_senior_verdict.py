@@ -74,6 +74,39 @@ def test_weak_signals_use_template_report_not_llm() -> None:
     assert "senior review" in report["primary_hypothesis"].lower()
 
 
+def test_linux_insider_scenario_from_r10() -> None:
+    from postmortem_agent.synthesis import classify_scenario, synthesize_assessment
+
+    signals = [
+        {
+            "rule": "R10",
+            "severity": "high",
+            "title": "Linux persistence (cron/bashrc/systemd)",
+            "detail": "bash history: /mnt/hgfs/Admin_share retrieved_files",
+        }
+    ]
+    assert classify_scenario(signals) == "linux_insider_access"
+    assessment = synthesize_assessment(signals, audit_count=8)
+    assert "linux insider" in assessment["hypothesis"].lower()
+    assert "assessed as compromised" not in assessment["hypothesis"].lower()
+
+
+def test_pcap_attribution_scenario() -> None:
+    from postmortem_agent.synthesis import classify_scenario, synthesize_assessment
+
+    signals = [
+        {
+            "rule": "R22",
+            "severity": "medium",
+            "title": "Cleartext identity / sender attribution",
+            "detail": "jcoachj@gmail.com via HTTP",
+        }
+    ]
+    assert classify_scenario(signals) == "pcap_attribution"
+    hyp = synthesize_assessment(signals, audit_count=4)["hypothesis"]
+    assert "network-capture attribution" in hyp.lower()
+
+
 def test_weak_signal_combo_findings_and_restraint() -> None:
     state = InvestigationState(hypothesis="Triaging")
     state.verifier_results = [
@@ -90,3 +123,51 @@ def test_weak_signal_combo_findings_and_restraint() -> None:
     hyp = synthesize_hypothesis(confirmed_signals(state), audit_count=3)
     assert "assessed as compromised" not in hyp.lower()
     assert "insider" in hyp.lower() or "physical-access" in hyp.lower()
+
+
+def test_alsetup_prefetch_not_ghost_binary() -> None:
+    ctx = VerifyContext(
+        prefetch_entries=[{"executable": "ALSETUP.EXE"}],
+        evidence_basenames={"explorer.exe"},
+        prefetch_audit_id="a1",
+    )
+    assert rule_r5_ghost_binary(ctx).status == "pass"
+
+
+def test_email_phishing_scenario_from_r34() -> None:
+    from postmortem_agent.synthesis import classify_scenario, synthesize_assessment
+
+    signals = [
+        {
+            "rule": "R34",
+            "severity": "high",
+            "title": "Outlook PST email exfiltration / phishing indicators",
+            "detail": "external recipient(s): tuckgorge@gmail.com; user document(s): m57biz.xls",
+        },
+        {
+            "rule": "R21",
+            "severity": "medium",
+            "title": "Removable USB mass-storage attribution",
+            "detail": "2 USB devices",
+        },
+    ]
+    assert classify_scenario(signals) == "email_phishing_exfil"
+    hyp = synthesize_assessment(signals, audit_count=6)["hypothesis"]
+    assert "spear-phishing" in hyp.lower()
+    assert "not external malware breach" in hyp.lower()
+    assert "tuckgorge@gmail.com" in hyp or "external recipient" in hyp.lower()
+
+
+def test_r34_rule_requires_external_and_document() -> None:
+    from postmortem_verify.rules import rule_r34_email_phishing_exfil
+
+    ctx = VerifyContext(
+        pst_external_recipients=["tuckgorge@gmail.com"],
+        pst_attachment_names=["m57biz.xls"],
+        user_documents=[{"filename": "m57biz.xls", "relpath": "Desktop/m57biz.xls"}],
+        pst_audit_id="p1",
+        user_docs_audit_id="u1",
+    )
+    result = rule_r34_email_phishing_exfil(ctx)
+    assert result.status == "contradiction"
+    assert "tuckgorge@gmail.com" in result.detail

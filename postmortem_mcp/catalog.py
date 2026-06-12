@@ -542,6 +542,33 @@ CATALOG: dict[str, ToolSpec] = {
         mitre=("T1040",),
         feeds_rules=("R26",),
     ),
+    "disk_parse_pst": ToolSpec(
+        name="disk_parse_pst",
+        summary="Extract external recipients and attachment names from Outlook PST",
+        consumes=("pst",),
+        produces=("pst_metadata",),
+        when_to_use="Email-exfil / spear-phishing cases with Outlook mail stores",
+        params=(
+            _p("artifact_relpath", "string", True, "PST relative path under EVIDENCE_ROOT"),
+            _p("max_bytes", "integer", False, "Max PST bytes to scan"),
+        ),
+        feeds_rules=("R34",),
+        mitre=("T1566", "T1048"),
+    ),
+    "disk_mft_user_docs": ToolSpec(
+        name="disk_mft_user_docs",
+        summary="Find sensitive user documents and Outlook PST paths from MFT",
+        consumes=("mft",),
+        produces=("user_documents",),
+        when_to_use="Before PST parse — locate desktop spreadsheets and outlook.pst paths",
+        params=(
+            _p("artifact_relpath", "string", True, "MFT relative path"),
+            _p("max_records", "integer", False, "Max MFT rows to scan"),
+            _p("max_hits", "integer", False, "Cap document hits returned"),
+        ),
+        feeds_rules=("R34",),
+        mitre=("T1005", "T1567"),
+    ),
     "reg_run_keys": ToolSpec(
         name="reg_run_keys",
         summary="Parse Run/RunOnce registry CSV export",

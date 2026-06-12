@@ -143,6 +143,33 @@ def test_policy_floor_runs_reg_system_profile_on_disk_case(tmp_path) -> None:
     assert action["tool"] == "reg_system_profile"
 
 
+def test_pcap_baseline_runs_net_http_on_nitroba_like_survey() -> None:
+    from postmortem_agent.reasoner_policy import _pcap_baseline_action, _pcap_led_case
+
+    survey = {
+        "kinds_present": ["case_directory", "pcap"],
+        "files": [{"kind": "pcap", "relpath": "nitroba/nitroba.pcap"}],
+    }
+    assert _pcap_led_case(survey) is True
+    action = _pcap_baseline_action(
+        results={},
+        survey=survey,
+        config=AgentConfig(case_id="t", evidence_case="nitroba"),
+        executed=set(),
+        failed=set(),
+    )
+    assert action is not None
+    assert action["tool"] == "net_http_extract"
+    assert action["arguments"]["artifact_relpath"] == "nitroba/nitroba.pcap"
+
+
+def test_pcap_led_false_when_registry_present() -> None:
+    from postmortem_agent.reasoner_policy import _pcap_led_case
+
+    survey = {"kinds_present": ["pcap", "registry_hive"], "files": []}
+    assert _pcap_led_case(survey) is False
+
+
 def test_first_prefetch_prefers_wasp_name() -> None:
     from postmortem_agent.reasoner_policy import _first_prefetch_relpath
 

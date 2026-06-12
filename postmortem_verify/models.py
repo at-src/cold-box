@@ -54,6 +54,11 @@ class VerifyContext:
     structured_log_events: list[dict[str, Any]] | None = None
     usb_devices: list[dict[str, Any]] | None = None
     exfil_hits: list[dict[str, Any]] | None = None
+    pst_external_recipients: list[str] | None = None
+    pst_attachment_names: list[str] | None = None
+    user_documents: list[dict[str, Any]] | None = None
+    pst_paths: list[dict[str, Any]] | None = None
+    pst_spoof_hints: list[str] | None = None
     yara_matches: list[dict[str, Any]] | None = None
     linux_memory_probe: dict[str, Any] | None = None
     android_probe: dict[str, Any] | None = None
@@ -84,6 +89,8 @@ class VerifyContext:
     structured_log_audit_id: str | None = None
     usb_audit_id: str | None = None
     exfil_audit_id: str | None = None
+    pst_audit_id: str | None = None
+    user_docs_audit_id: str | None = None
     yara_audit_id: str | None = None
     linux_memory_audit_id: str | None = None
     android_audit_id: str | None = None
@@ -101,6 +108,8 @@ class VerifyContext:
     linux_source: str | None = None
     usb_source: str | None = None
     exfil_source: str | None = None
+    pst_source: str | None = None
+    user_docs_source: str | None = None
     yara_source: str | None = None
     linux_memory_source: str | None = None
     android_source: str | None = None
@@ -139,6 +148,8 @@ class VerifyContext:
         structured_log_data: dict[str, Any] | None = None,
         usb_data: dict[str, Any] | None = None,
         exfil_data: dict[str, Any] | None = None,
+        pst_data: dict[str, Any] | None = None,
+        user_docs_data: dict[str, Any] | None = None,
         yara_data: dict[str, Any] | None = None,
         linux_memory_data: dict[str, Any] | None = None,
         android_probe_data: dict[str, Any] | None = None,
@@ -169,6 +180,8 @@ class VerifyContext:
         structured_log_audit_id: str | None = None,
         usb_audit_id: str | None = None,
         exfil_audit_id: str | None = None,
+        pst_audit_id: str | None = None,
+        user_docs_audit_id: str | None = None,
         yara_audit_id: str | None = None,
         linux_memory_audit_id: str | None = None,
         android_audit_id: str | None = None,
@@ -213,6 +226,11 @@ class VerifyContext:
             structured_log_events=_extract_structured_flagged(structured_log_data),
             usb_devices=_extract_usb(usb_data),
             exfil_hits=_extract_exfil_hits(exfil_data),
+            pst_external_recipients=_extract_pst_external(pst_data),
+            pst_attachment_names=_extract_pst_attachments(pst_data),
+            user_documents=_extract_user_documents(user_docs_data),
+            pst_paths=_extract_pst_paths(user_docs_data),
+            pst_spoof_hints=_extract_pst_spoof_hints(pst_data),
             yara_matches=_extract_yara_matches(yara_data),
             linux_memory_probe=_extract_linux_memory_probe(linux_memory_data),
             android_probe=_extract_android_probe(android_probe_data),
@@ -246,6 +264,8 @@ class VerifyContext:
             or (structured_log_data or {}).get("audit_id"),
             usb_audit_id=usb_audit_id or (usb_data or {}).get("audit_id"),
             exfil_audit_id=exfil_audit_id or (exfil_data or {}).get("audit_id"),
+            pst_audit_id=pst_audit_id or (pst_data or {}).get("audit_id"),
+            user_docs_audit_id=user_docs_audit_id or (user_docs_data or {}).get("audit_id"),
             yara_audit_id=yara_audit_id or (yara_data or {}).get("audit_id"),
             linux_memory_audit_id=linux_memory_audit_id
             or (linux_memory_data or {}).get("audit_id"),
@@ -265,6 +285,8 @@ class VerifyContext:
             linux_source=(linux_persistence_data or linux_history_data or {}).get("source"),
             usb_source=(usb_data or {}).get("source"),
             exfil_source=(exfil_data or {}).get("source"),
+            pst_source=(pst_data or {}).get("source"),
+            user_docs_source=(user_docs_data or {}).get("source"),
             yara_source=(yara_data or {}).get("source"),
             linux_memory_source=(linux_memory_data or {}).get("source"),
             android_source=(android_scan_data or android_probe_data or {}).get("source"),
@@ -502,6 +524,51 @@ def _extract_exfil_hits(payload: dict[str, Any] | None) -> list[dict[str, Any]] 
     hits = payload.get("hits")
     if isinstance(hits, list) and hits:
         return list(hits)
+    return None
+
+
+def _extract_pst_external(payload: dict[str, Any] | None) -> list[str] | None:
+    if payload is None:
+        return None
+    items = payload.get("external_recipients")
+    if isinstance(items, list) and items:
+        return [str(x) for x in items]
+    return None
+
+
+def _extract_pst_attachments(payload: dict[str, Any] | None) -> list[str] | None:
+    if payload is None:
+        return None
+    items = payload.get("attachment_names")
+    if isinstance(items, list) and items:
+        return [str(x) for x in items]
+    return None
+
+
+def _extract_user_documents(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    docs = payload.get("documents")
+    if isinstance(docs, list) and docs:
+        return list(docs)
+    return None
+
+
+def _extract_pst_paths(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    if payload is None:
+        return None
+    paths = payload.get("pst_paths")
+    if isinstance(paths, list) and paths:
+        return list(paths)
+    return None
+
+
+def _extract_pst_spoof_hints(payload: dict[str, Any] | None) -> list[str] | None:
+    if payload is None:
+        return None
+    hints = payload.get("spoof_hints")
+    if isinstance(hints, list) and hints:
+        return [str(x) for x in hints]
     return None
 
 

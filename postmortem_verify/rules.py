@@ -1197,6 +1197,74 @@ def rule_r29_optical_exfil(ctx: VerifyContext) -> RuleResult:
     return RuleResult("R29", "optical_exfil", "contradiction", detail, sources)
 
 
+def rule_r34_email_phishing_exfil(ctx: VerifyContext) -> RuleResult:
+    """R34: Outlook PST shows external recipient + sensitive attachment/document (phishing exfil)."""
+    external = ctx.pst_external_recipients or []
+    attachments = ctx.pst_attachment_names or []
+    documents = ctx.user_documents or []
+
+    if not external and ctx.pst_external_recipients is None and ctx.user_documents is None:
+        return RuleResult("R34", "email_phishing_exfil", "skipped", "PST / user-document input missing", [])
+
+    sensitive_docs = [
+        d for d in documents if str(d.get("filename") or "").lower().endswith((".xls", ".xlsx", ".doc", ".docx", ".pdf"))
+    ]
+
+    has_external = bool(external)
+    has_attachment = bool(attachments)
+    has_sensitive_doc = bool(sensitive_docs)
+
+    if not has_external and ctx.pst_spoof_hints and (has_attachment or has_sensitive_doc):
+        has_external = True
+
+    if not has_external:
+        return RuleResult(
+            "R34",
+            "email_phishing_exfil",
+            "pass",
+            "No external PST recipients identified",
+            [],
+        )
+
+    if not (has_attachment or has_sensitive_doc):
+        return RuleResult(
+            "R34",
+            "email_phishing_exfil",
+            "pass",
+            "External PST recipients present but no linked sensitive document/attachment",
+            [],
+        )
+
+    sources: list[dict[str, Any]] = []
+    audit = _audit_ref(ctx.pst_audit_id, "disk_parse_pst", ctx.pst_source)
+    if audit:
+        sources.append(audit)
+    docs_audit = _audit_ref(ctx.user_docs_audit_id, "disk_mft_user_docs", ctx.user_docs_source)
+    if docs_audit:
+        sources.append(docs_audit)
+
+    for email in external[:5]:
+        sources.append({"type": "pst_recipient", "email": email})
+    for name in attachments[:5]:
+        sources.append({"type": "pst_attachment", "filename": name})
+    for doc in sensitive_docs[:5]:
+        sources.append({"type": "user_document", **{k: doc.get(k) for k in ("filename", "relpath", "user", "category")}})
+
+    parts: list[str] = []
+    if external:
+        parts.append(f"external recipient(s): {', '.join(external[:3])}")
+    elif ctx.pst_spoof_hints:
+        parts.append(f"spoof indicators: {', '.join(ctx.pst_spoof_hints[:2])}")
+    if attachments:
+        parts.append(f"attachment(s): {', '.join(attachments[:3])}")
+    if sensitive_docs:
+        names = ", ".join(str(d.get("filename") or "?") for d in sensitive_docs[:3])
+        parts.append(f"user document(s): {names}")
+
+    detail = "PST email exfil indicators — " + "; ".join(parts)
+    return RuleResult("R34", "email_phishing_exfil", "contradiction", detail, sources)
+
+
 def rule_r30_yara_malware(ctx: VerifyContext) -> RuleResult:
     """R30: YARA or bundled pattern matches for suspicious malware strings."""
     matches = ctx.yara_matches

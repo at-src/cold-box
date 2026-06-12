@@ -27,7 +27,7 @@ PID\tPPID\tImageFileName\tOffset(V)\tThreads\tHandles\tSessionId\tWow64\tCreateT
 
 def test_wave3_tool_count() -> None:
     assert len(WAVE3_TOOLS) == 7
-    assert len(ALL_TOOLS) == 67
+    assert len(ALL_TOOLS) == 69
     assert {fn.__name__ for fn in WAVE3_TOOLS} == {
         "mem_pstree",
         "mem_dlllist",
@@ -43,7 +43,7 @@ def test_mcp_server_registers_wave3() -> None:
     mcp = create_server()
     tools = asyncio.run(mcp.list_tools())
     names = {tool.name for tool in tools}
-    assert len(names) == 67
+    assert len(names) == 69
     assert "disk_correlate_timeline" in names
 
 
