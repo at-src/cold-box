@@ -49,7 +49,7 @@ def build_verify_context(state: InvestigationState, config: AgentConfig) -> Veri
         web_inspect_data=_data(state, "web_inspect_artifact"),
         structured_log_data=_data(state, "logs_parse_structured"),
         usb_data=_best_usb_data(state),
-        exfil_data=_data(state, "disk_scan_exfil"),
+        exfil_data=_best_exfil_data(state),
         pst_data=_best_pst_data(state),
         user_docs_data=_best_user_docs_data(state),
         yara_data=_data(state, "yara_scan_evidence"),
@@ -138,6 +138,21 @@ def _best_prefetch_data(state: InvestigationState) -> dict | None:
 
 def _data(state: InvestigationState, tool: str) -> dict | None:
     return state._tool_data(tool)
+
+
+def _best_exfil_data(state: InvestigationState) -> dict | None:
+    """Prefer the richest exfil scan (extracted tree), not a later empty raw-case rescan."""
+    best: dict | None = None
+    best_hits = -1
+    for run in state.tool_results.get("disk_scan_exfil") or []:
+        if not run.get("ok"):
+            continue
+        data = run.get("data") or {}
+        hits = int(data.get("hit_count") or data.get("record_count") or len(data.get("hits") or []))
+        if hits > best_hits:
+            best_hits = hits
+            best = data
+    return best or _data(state, "disk_scan_exfil")
 
 
 def _best_usb_data(state: InvestigationState) -> dict | None:

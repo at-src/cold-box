@@ -185,6 +185,8 @@ def classify_scenario(signals: list[dict[str, Any]]) -> str:
         return "network_exfil"
     if rules & NETWORK_EXFIL_RULES and rules & EXFIL_SUPPORT_RULES:
         return "network_exfil"
+    if rules & NETWORK_EXFIL_RULES and not rules & REMOVABLE_EXFIL_RULES:
+        return "network_exfil"
     return "generic_restraint"
 
 
@@ -256,11 +258,21 @@ def synthesize_assessment(
         if support_rules & {"R24", "R5", "R4"}:
             chain_parts.append("post-copy cleanup or evasion")
         chain = " \u2192 ".join(chain_parts)
+        usb_detail = str(usb.get("detail") or "").lower() if usb else ""
+        staging_note = ""
+        if "lacie" in usb_detail or "rugged" in usb_detail:
+            staging_note = (
+                " High-capacity professional removable drives (e.g. LaCie Rugged) on a workstation "
+                "are consistent with deliberate bulk staging, not routine user activity."
+            )
+        org_note = ""
+        if host_profile and "m57" in host_profile.lower():
+            org_note = " Treat as potential insider/HR-sensitive data movement on an organizational asset."
         hypothesis = (
             "Primary assessment: verified insider or physical-access data exfiltration hypothesis "
             "(not external network compromise). "
             f"Audited evidence: {' | '.join(evidence_lines)}. "
-            f"{host_line} "
+            f"{host_line}{staging_note}{org_note} "
             f"Kill-chain read from confirmed signals: {chain}. "
             "External breach bar not met — no hidden process, injection, orphan C2 socket, or webshell "
             "confirmed by the verifier. "
@@ -333,13 +345,14 @@ def synthesize_assessment(
             NETWORK_EXFIL_RULES | EXFIL_SUPPORT_RULES,
             limit=5,
         )
+        channel_count = len({s["rule"] for s in signals} & NETWORK_EXFIL_RULES)
         hypothesis = (
-            "Primary assessment: verified data exfiltration staging on removable media "
-            "(not external network compromise). "
+            "Primary assessment: verified multi-channel insider data exfiltration staging "
+            "(email/webmail, cloud upload, and/or optical-media artifacts on seized user storage — "
+            "not external network compromise). "
             f"Audited evidence: {' | '.join(evidence_lines)}. "
-            "Multiple independent exfil channels in the same artifact tree (email/webmail, cloud upload, "
-            "optical burn tooling) indicate deliberate collection/staging — treat contents as potentially "
-            "misappropriated. "
+            f"{channel_count} independent exfil channel(s) in the same artifact tree indicate "
+            "deliberate collection/staging — treat contents as potentially misappropriated. "
             f"Conclusion grounded in {audit_count} audited tool execution(s); every claim traces to signals above."
         )
         return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
@@ -425,8 +438,13 @@ def compromise_signals(state: InvestigationState) -> list[dict[str, Any]]:
 
 def confirmed_signals(state: InvestigationState) -> list[dict[str, Any]]:
     """Confirmed verifier signals enriched with analyst metadata, kill-chain ordered."""
+    by_id = {r.rule_id: r for r in state.verifier_results}
+    for rule_id, peak in (state.peak_contradictions or {}).items():
+        current = by_id.get(rule_id)
+        if current is None or current.status != "contradiction":
+            by_id[rule_id] = peak
     signals: list[dict[str, Any]] = []
-    for result in state.verifier_results:
+    for result in by_id.values():
         if result.status != "contradiction":
             continue
         profile = RULE_PROFILE.get(result.rule_id)

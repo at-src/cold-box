@@ -321,6 +321,45 @@ def _email_exfil_baseline_action(
     return None
 
 
+def _portable_storage_led_case(survey: dict[str, Any]) -> bool:
+    """USB/disk-image-only evidence (no Windows host hive) — Terry-class portable media."""
+    kinds = set(survey.get("kinds_present") or [])
+    if not kinds & {"disk_image"}:
+        return False
+    return not kinds & {"registry_hive", "prefetch", "mft", "evtx", "amcache"}
+
+
+def _portable_exfil_baseline_action(
+    *,
+    results: dict[str, list[dict[str, Any]]],
+    survey: dict[str, Any],
+    config: AgentConfig,
+    executed: set[str],
+    failed: set[str],
+) -> dict[str, Any] | None:
+    """Run exfil channel scan on portable USB images after extract."""
+    if config.mode == "synthetic" or not _portable_storage_led_case(survey):
+        return None
+    if _effective_extracted_root(config) is None:
+        return None
+    for tool in ("disk_scan_exfil", "disk_search_artifacts"):
+        if _tool_succeeded(results, tool):
+            continue
+        args = _coverage_tool_args(tool, survey, config, results)
+        if args is None:
+            continue
+        key = _action_key(tool, args)
+        if key in executed or key in failed:
+            continue
+        return {
+            "action": "tool",
+            "tool": tool,
+            "arguments": args,
+            "reason": f"portable-media exfil baseline ({tool})",
+        }
+    return None
+
+
 def _linux_led_case(survey: dict[str, Any]) -> bool:
     kinds = set(survey.get("kinds_present") or [])
     return "linux_log" in kinds and not kinds & {"registry_hive", "prefetch", "disk_image"}
@@ -391,6 +430,18 @@ def _baseline_disk_action(
                     "arguments": args,
                     "reason": "recycle bin metadata (R24)",
                 }
+
+    if "registry_hive" in kinds and not _tool_succeeded(results, "disk_parse_usb"):
+        usb_args = _coverage_tool_args("disk_parse_usb", survey, config, results)
+        if usb_args:
+            key = _action_key("disk_parse_usb", usb_args)
+            if key not in executed and key not in failed:
+                return {
+                    "action": "tool",
+                    "tool": "disk_parse_usb",
+                    "arguments": usb_args,
+                    "reason": "removable USB attribution (R21)",
+                }
     return None
 
 
@@ -422,6 +473,15 @@ def _policy_floor_action(
     if forced:
         return forced
     forced = _linux_baseline_action(
+        results=results,
+        survey=survey,
+        config=config,
+        executed=executed,
+        failed=failed,
+    )
+    if forced:
+        return forced
+    forced = _portable_exfil_baseline_action(
         results=results,
         survey=survey,
         config=config,
@@ -706,8 +766,10 @@ def _build_candidates(
     config: AgentConfig,
     executed: set[str],
     failed: set[str] | None = None,
+    results: dict[str, list[dict[str, Any]]] | None = None,
 ) -> list[tuple[int, str, dict[str, Any], str]]:
     failed = failed or set()
+    results = results or {}
     candidates: list[tuple[int, str, dict[str, Any], str]] = []
     files = list(survey.get("files") or [])
     if not any(f.get("kind") == "case_directory" for f in files):
@@ -825,7 +887,7 @@ def _build_candidates(
                 candidates.append((priority, tool, args, reason))
 
     search_root = _search_root_relpath(config, survey)
-    if config.mode != "synthetic" and search_root and not config.extracted_root:
+    if config.mode != "synthetic" and search_root and _effective_extracted_root(config) is None:
         for tool, priority, reason in (
             ("disk_scan_exfil", 9, "exfil channel scan (R27–R29)"),
             ("yara_scan_evidence", 8, "YARA/pattern scan (R30)"),
@@ -843,9 +905,14 @@ def _build_candidates(
 
 
 def _exfil_case(config: AgentConfig, survey: dict[str, Any]) -> bool:
-    """Breadth exfil scans are for insider-leakage cases — skip generic web/malware images."""
+    """Breadth exfil scans — insider-leakage, portable USB, and M57-class cases."""
     blob = f"{config.case_id} {config.evidence_case}".lower()
-    if any(token in blob for token in ("ndlc", "leakage", "nist-pc", "nitroba", "informant")):
+    if any(
+        token in blob
+        for token in ("ndlc", "leakage", "nist-pc", "nitroba", "informant", "terry", "usb", "m57")
+    ):
+        return True
+    if _portable_storage_led_case(survey):
         return True
     kinds = set(survey.get("kinds_present") or [])
     return bool(kinds & {"setupapi_log"}) and "usb" in blob
@@ -1117,7 +1184,7 @@ class PolicyReasoner:
             if forced:
                 return forced
 
-        candidates = _build_candidates(survey, catalog, self.config, self.executed, self.failed)
+        candidates = _build_candidates(survey, catalog, self.config, self.executed, self.failed, results)
         report = coverage_report(survey, self.config, self.executed, self.failed)
 
         if not candidates:

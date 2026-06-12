@@ -25,7 +25,9 @@ from postmortem_agent.synthesis import (
 )
 from postmortem_agent.invoke import call_agent_tool
 from postmortem_agent.progress import append_progress, progress_log_path
+from postmortem_agent.llm import LLMError
 from postmortem_agent.reasoner import load_skill_index, make_reasoner
+from postmortem_agent.reasoner_policy import PolicyReasoner
 from postmortem_agent.state import AgentConfig, InvestigationState
 from postmortem_agent.verifier_bridge import build_verify_context
 from postmortem_mcp.catalog import catalog_as_dict
@@ -64,6 +66,7 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
     out_dir = case_dir(config.case_id)
     progress_path = progress_log_path(out_dir)
     reasoner = make_reasoner(config)
+    policy_fallback = PolicyReasoner(config) if config.mode in {"llm", "hybrid"} else None
     skills = load_skill_index()
 
     if config.extracted_root:
@@ -109,11 +112,35 @@ def run_investigation(config: AgentConfig) -> InvestigationState:
                     failed_calls=sorted(failed_keys),
                 )
             except Exception as exc:
-                lesson = f"reasoner error: {exc}"
-                state.lessons.append(lesson)
-                state.unresolved.append(str(exc))
-                _write_progress(state, progress_path, lesson)
-                continue
+                if policy_fallback is not None and (
+                    isinstance(exc, LLMError) or "ANTHROPIC_API_KEY" in str(exc)
+                ):
+                    try:
+                        action = policy_fallback.decide(
+                            goal=GOAL,
+                            survey=survey,
+                            catalog={"tools": catalog_payload},
+                            skills=skills,
+                            results=state.tool_results,
+                            verifier=state.verifier_results,
+                            hypothesis=state.hypothesis,
+                            lessons=state.lessons,
+                            pattern_hints=pattern_hints,
+                            budget={"iteration": state.iteration, "max": config.max_iterations},
+                            failed_calls=sorted(failed_keys),
+                        )
+                    except Exception as fallback_exc:
+                        lesson = f"reasoner error: {fallback_exc}"
+                        state.lessons.append(lesson)
+                        _write_progress(state, progress_path, lesson)
+                        continue
+                else:
+                    lesson = f"reasoner error: {exc}"
+                    state.lessons.append(lesson)
+                    if "ANTHROPIC_API_KEY" not in str(exc):
+                        state.unresolved.append(str(exc))
+                    _write_progress(state, progress_path, lesson)
+                    continue
 
         if action.get("action") == "done":
             candidate = str(action.get("hypothesis", state.hypothesis)).strip()
