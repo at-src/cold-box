@@ -130,4 +130,4 @@ def test_mcp_server_registers_mem_pslist() -> None:
     assert "disk_extract_image" in names
     assert "disk_parse_usb" in names
     assert "reg_system_profile" in names
-    assert len(names) == 66
+    assert len(names) == 67

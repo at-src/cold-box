@@ -124,6 +124,13 @@ def _audit_ids_from_sources(sources: list[dict[str, Any]]) -> list[str]:
 
 COMPROMISE_SEVERITIES = frozenset({"critical", "high"})
 
+# Senior-analyst compromise bar — one weak high signal (e.g. R5 prefetch gap alone) is NOT a breach.
+STRONG_COMPROMISE_RULES = frozenset({"R1", "R3", "R6", "R7", "R11", "R13", "R19"})
+CORROBORATING_HIGH_RULES = frozenset({"R4", "R5", "R16"})
+FACT_DOCUMENTATION_RULES = frozenset(
+    {"R10", "R14", "R21", "R22", "R27", "R28", "R29", "R30", "R32", "R33"}
+)
+
 
 def _signal_from_result(result: RuleResult, state: InvestigationState) -> dict[str, Any]:
     profile = RULE_PROFILE.get(result.rule_id)
@@ -141,14 +148,32 @@ def _signal_from_result(result: RuleResult, state: InvestigationState) -> dict[s
     }
 
 
+def compromise_verdict_met(signals: list[dict[str, Any]]) -> bool:
+    """True only when a senior analyst would declare compromise — not a single weak R5/R4."""
+    if not signals:
+        return False
+    rules = {s["rule"] for s in signals}
+    if rules & STRONG_COMPROMISE_RULES:
+        return True
+    high_rules = {
+        s["rule"]
+        for s in signals
+        if s["severity"] in COMPROMISE_SEVERITIES and s["rule"] in CORROBORATING_HIGH_RULES
+    }
+    return len(high_rules) >= 2
+
+
 def compromise_signals(state: InvestigationState) -> list[dict[str, Any]]:
-    """High/critical contradiction signals only — the bar for a compromise verdict."""
+    """High/critical contradiction signals that meet the senior compromise bar."""
     signals = [
         _signal_from_result(r, state)
         for r in state.verifier_results
         if r.status == "contradiction"
-        and RULE_PROFILE.get(r.rule_id, RuleProfile("", "medium", "", ())).severity in COMPROMISE_SEVERITIES
+        and RULE_PROFILE.get(r.rule_id, RuleProfile("", "medium", "", ())).severity
+        in COMPROMISE_SEVERITIES
     ]
+    if not compromise_verdict_met(signals):
+        return []
     signals.sort(
         key=lambda s: (
             TACTIC_ORDER.get(s["tactic"], 99),
@@ -219,49 +244,57 @@ def synthesize_hypothesis(signals: list[dict[str, Any]], *, audit_count: int) ->
     if not signals:
         return "No confirmed indicators of compromise were produced by the verifier on the available evidence."
 
-    high_critical = [s for s in signals if s["severity"] in COMPROMISE_SEVERITIES]
-    if not high_critical:
-        fact_signals = [
-            s
-            for s in signals
-            if s["rule"] in {"R10", "R21", "R22", "R27", "R28", "R29", "R30", "R32", "R33"}
-        ]
-        if fact_signals:
-            phrases = []
-            seen: set[str] = set()
-            for sig in fact_signals[:4]:
-                title = sig["title"]
-                if title in seen:
-                    continue
-                seen.add(title)
-                phrases.append(f"{title.lower()} ({sig['rule']})")
-            return (
-                f"Forensic case documented from audited mobile/platform artifacts: {', '.join(phrases)}. "
-                f"Conclusion grounded in {audit_count} audited tool execution(s); every finding carries an audit_id."
-            )
+    if compromise_verdict_met(signals):
+        high_critical = [s for s in signals if s["severity"] in COMPROMISE_SEVERITIES]
+        ranked = sorted(high_critical, key=lambda s: -SEVERITY_RANK.get(s["severity"], 0))
+        lead = ranked[0]
+        phrases = []
+        seen_titles: set[str] = set()
+        for sig in ranked[:4]:
+            title = sig["title"]
+            if title in seen_titles:
+                continue
+            seen_titles.add(title)
+            phrases.append(f"{title.lower()} ({sig['rule']})")
+
+        tactics = sorted(
+            {s.get("tactic", "Correlation") for s in signals if s.get("tactic") != "Correlation"},
+            key=lambda t: TACTIC_ORDER.get(t, 99),
+        )
+        chain = " \u2192 ".join(tactics) if tactics else "compromise indicators"
+
+        verdict = "compromised" if lead["severity"] in {"critical", "high"} else "likely compromised"
         return (
-            "No confirmed indicators of compromise were produced by the verifier on the available evidence."
+            f"Host assessed as {verdict}: {', '.join(phrases)}. "
+            f"Observed ATT&CK progression: {chain}. "
+            f"Conclusion grounded in {audit_count} audited tool execution(s); every finding carries an audit_id."
         )
 
-    # Highest-severity signals lead the sentence.
-    ranked = sorted(high_critical, key=lambda s: -SEVERITY_RANK.get(s["severity"], 0))
-    lead = ranked[0]
+    # Senior restraint — document audited facts without declaring a breach.
+    notable = [
+        s
+        for s in signals
+        if s["rule"] in FACT_DOCUMENTATION_RULES
+        or s["severity"] in COMPROMISE_SEVERITIES
+        or s["rule"] in {"R15", "R18", "R20"}
+    ]
+    if not notable:
+        notable = signals[:6]
     phrases = []
-    seen_titles: set[str] = set()
-    for sig in ranked[:4]:
+    seen: set[str] = set()
+    for sig in notable[:5]:
         title = sig["title"]
-        if title in seen_titles:
+        if title in seen:
             continue
-        seen_titles.add(title)
+        seen.add(title)
         phrases.append(f"{title.lower()} ({sig['rule']})")
 
-    tactics = sorted({s["tactic"] for s in signals if s["tactic"] != "Correlation"}, key=lambda t: TACTIC_ORDER.get(t, 99))
-    chain = " \u2192 ".join(tactics) if tactics else "compromise indicators"
-
-    verdict = "compromised" if lead["severity"] in {"critical", "high"} else "likely compromised"
+    detail = ", ".join(phrases) if phrases else "low-severity forensic anomalies"
     return (
-        f"Host assessed as {verdict}: {', '.join(phrases)}. "
-        f"Observed ATT&CK progression: {chain}. "
+        f"Senior review: audited anomalies documented ({detail}). "
+        f"No strong compromise bar met — requires hidden process, injection, orphan C2 socket, "
+        f"webshell, or multiple independent high-severity execution/evasion signals. "
+        f"Do not treat partial-disk prefetch gaps or USB attribution alone as external breach. "
         f"Conclusion grounded in {audit_count} audited tool execution(s); every finding carries an audit_id."
     )
 
@@ -329,15 +362,15 @@ def _alternative_hypothesis(signals: list[dict[str, Any]]) -> str:
 
 def build_template_report(state: InvestigationState) -> dict[str, Any]:
     """Deterministic structured incident report (no LLM)."""
+    all_signals = confirmed_signals(state)
     compromise = compromise_signals(state)
-    signals = compromise if compromise else []
     audit_ids = state.all_audit_ids()
-    chain = _build_attack_chain(signals)
-    mitre = mitre_for_rules([s["rule"] for s in signals])
+    chain = _build_attack_chain(compromise if compromise else all_signals)
+    mitre = mitre_for_rules([s["rule"] for s in (compromise or all_signals)])
 
     hypothesis = state.hypothesis
-    if _is_placeholder(hypothesis) or not compromise:
-        hypothesis = synthesize_hypothesis(signals, audit_count=len(audit_ids))
+    if _is_placeholder(hypothesis) or not compromise_verdict_met(all_signals):
+        hypothesis = synthesize_hypothesis(all_signals, audit_count=len(audit_ids))
 
     summary_bits = [step["description"] for step in chain]
     summary = hypothesis
@@ -348,14 +381,15 @@ def build_template_report(state: InvestigationState) -> dict[str, Any]:
         "summary": summary,
         "attack_chain": chain,
         "primary_hypothesis": hypothesis,
-        "alternative_hypothesis": _alternative_hypothesis(signals),
-        "recommended_actions": _recommended_actions(signals),
+        "alternative_hypothesis": _alternative_hypothesis(all_signals),
+        "recommended_actions": _recommended_actions(compromise if compromise else all_signals),
         "mitre": mitre,
         "gaps": list(state.gaps),
         "confidence": state.confidence,
         "audit_ids": audit_ids[:20],
         "source": "template",
-        "signals": signals,
+        "signals": compromise if compromise else all_signals,
+        "compromise_declared": bool(compromise),
     }
 
 
@@ -365,7 +399,8 @@ def build_llm_report(state: InvestigationState, config: AgentConfig) -> dict[str
 
     signals = confirmed_signals(state)
     allowed_audit = set(state.all_audit_ids())
-    if not signals:
+    if not signals or not compromise_verdict_met(signals):
+        # Weak-signal / senior-restraint cases: never free-form LLM prose (training-data leak risk).
         return build_template_report(state)
 
     context = {
@@ -462,7 +497,12 @@ def render_report_markdown(report: dict[str, Any]) -> str:
 
     chain = report.get("attack_chain") or []
     if chain:
-        lines += ["## Attack Chain (ATT&CK kill-chain order)", ""]
+        heading = (
+            "## Attack Chain (ATT&CK kill-chain order)"
+            if report.get("compromise_declared")
+            else "## Documented Anomalies (no breach bar met)"
+        )
+        lines += [heading, ""]
         for step in chain:
             techniques = ", ".join(step.get("techniques") or []) or "—"
             audits = ", ".join(f"`{a}`" for a in step.get("audit_ids") or []) or "—"

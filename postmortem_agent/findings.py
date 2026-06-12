@@ -6,7 +6,7 @@ from collections import Counter
 from typing import Any
 
 from postmortem_agent.state import AgentConfig, InvestigationState
-from postmortem_agent.synthesis import RULE_PROFILE, COMPROMISE_SEVERITIES
+from postmortem_agent.synthesis import RULE_PROFILE, COMPROMISE_SEVERITIES, compromise_verdict_met
 from postmortem_report.gate import validate_findings
 from postmortem_verify.models import RuleResult
 
@@ -489,13 +489,15 @@ def _web_attack_finding(
 
 
 def _compromise_contradictions(verifier_results: list[RuleResult]) -> bool:
+    signals = []
     for result in verifier_results:
         if result.status != "contradiction":
             continue
         profile = RULE_PROFILE.get(result.rule_id)
-        if profile and profile.severity in COMPROMISE_SEVERITIES:
-            return True
-    return False
+        if profile is None:
+            continue
+        signals.append({"rule": result.rule_id, "severity": profile.severity, "title": profile.title})
+    return compromise_verdict_met(signals)
 
 
 def _is_restraint_case(config: AgentConfig | None) -> bool:
@@ -515,12 +517,12 @@ def _contradiction_finding_status(
         return "context"
     if result.rule_id in FACT_CONFIRMED_RULES:
         return "confirmed"
+    if result.rule_id in {"R14", "R15", "R23", "R24", "R25", "R26", "R31"}:
+        return "context"
     profile = RULE_PROFILE.get(result.rule_id)
     severity = profile.severity if profile else "medium"
     if severity in COMPROMISE_SEVERITIES:
         return "confirmed"
-    if result.rule_id in {"R15", "R23", "R31"} or severity == "info":
-        return "context"
     if not compromise_present:
         return "context"
     return "confirmed"

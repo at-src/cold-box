@@ -65,6 +65,26 @@ CATALOG: dict[str, ToolSpec] = {
         when_to_use="When you need full tool descriptions, parameters, and rule mappings",
         params=(),
     ),
+    "investigation_run": ToolSpec(
+        name="investigation_run",
+        summary="Run full cold-box agent loop (verifier + findings + report)",
+        consumes=("case_directory",),
+        produces=("findings", "report", "audit_chain"),
+        when_to_use=(
+            "One-shot demo or after manual triage — runs survey→tools→verifier→findings→report "
+            "under CASE_OUTPUT/<case_id>/; prefer mode=hybrid for Claude Code demos"
+        ),
+        params=(
+            _p("case_id", "string", True, "Output case id under CASE_OUTPUT"),
+            _p("evidence_case", "string", True, "Evidence directory relative to EVIDENCE_ROOT"),
+            _p("mode", "string", False, "hybrid (default), policy, or llm"),
+            _p("max_iterations", "integer", False, "Iteration cap (default 25)"),
+            _p("memory_relpath", "string", False, "Optional memory image relpath"),
+            _p("from_cache", "string", False, "Optional Volatility cache directory"),
+            _p("extracted_root", "string", False, "Optional pre-extracted disk tree"),
+        ),
+        feeds_rules=(),
+    ),
     "evidence_manifest": ToolSpec(
         name="evidence_manifest",
         summary="SHA-256 manifest of all files under a case directory",

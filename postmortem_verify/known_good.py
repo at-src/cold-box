@@ -167,6 +167,44 @@ def is_known_good_binary(basename: str) -> bool:
     return basename.strip().lower() in KNOWN_GOOD_BINARIES
 
 
+# AV uninstall / installer prefetch basenames — R5 "ghost" is often partial-tree noise.
+_BENIGN_UNINSTALL_EXACT: frozenset[str] = frozenset(
+    {
+        "setup.exe",
+        "install.exe",
+        "uninstall.exe",
+        "uninst.exe",
+        "vcredist_x64.exe",
+        "vcredist_x86.exe",
+        "vc_redist.x64.exe",
+        "vc_redist.x86.exe",
+    }
+)
+_BENIGN_VENDOR_PREFIXES: tuple[str, ...] = (
+    "avg",
+    "avast",
+    "avp",
+    "kaspersky",
+    "mcafee",
+    "norton",
+    "symantec",
+    "mbam",
+    "mbsetup",
+    "avgui",
+    "avgemc",
+)
+
+
+def is_benign_uninstall_binary(basename: str) -> bool:
+    """Prefetch-only ghost signal from removed AV/installers — not a compromise bar."""
+    base = basename.strip().lower()
+    if base in _BENIGN_UNINSTALL_EXACT:
+        return True
+    if base.endswith(".exe") and any(base.startswith(prefix) for prefix in _BENIGN_VENDOR_PREFIXES):
+        return True
+    return False
+
+
 def is_known_good_path(path: str) -> bool:
     p = _norm_path(path)
     return any(hint in p for hint in KNOWN_GOOD_PATH_HINTS)

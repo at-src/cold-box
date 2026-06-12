@@ -170,10 +170,10 @@ bash examples/demo-ali-hadi.sh
 |------|----------|
 | *(default)* | **Policy** — evidence survey + verifier-driven tool scoring + optional coverage floor |
 | `--hybrid` | Policy coverage floor, then LLM ordering for the rest |
-| `--llm` | **LLM-only** — model picks tools from the catalog; no mandatory coverage checklist. Best for **genuinely unseen** cases where you want exploratory ordering rather than a fixed playbook |
+| `--llm` | **LLM-first** — mandatory coverage floor for skipped verifier rules, then LLM tool ordering |
 | `--synthetic` | Fixture-backed R1 self-correction (CI) |
 
-For benchmarked validation cases, policy/hybrid scores highest on required-recall; on novel corpora, try **`--llm`** first and compare against `--hybrid` if you need guaranteed artifact-class coverage (USB, setupapi, web logs, etc.).
+For benchmarked validation cases, policy/hybrid scores highest on required-recall; **`--hybrid`** combines LLM ordering with the same coverage guarantees as policy.
 
 ```bash
 source bin/load-agent-env   # loads ANTHROPIC_API_KEY from .env
@@ -182,6 +182,20 @@ cold-box-agent run --llm --case-id live-1 --evidence-case ali-hadi-1 \
 cold-box-agent run --hybrid --case-id live-1 --evidence-case ali-hadi-1 \
   --memory ali-hadi-1/memdump/memdump.mem --max-iterations 22
 ```
+
+## Claude Code (judge demo)
+
+Run investigations through **Claude Code** with the project MCP server — see
+[docs/CLAUDE-CODE.md](docs/CLAUDE-CODE.md) and [CLAUDE.md](CLAUDE.md).
+
+```bash
+bash scripts/setup-claude-code.sh
+export EVIDENCE_ROOT=/evidence CASE_OUTPUT=/cases
+claude   # approve cold-box via /mcp
+```
+
+One-shot demo: call MCP tool **`investigation_run`** with `mode=hybrid` (or use
+`cold-box-agent run --hybrid` from CLI).
 
 ## Verifier R1–R6
 
@@ -195,6 +209,7 @@ Deterministic cross-source rules — **not** the LLM. See `docs/ARCHITECTURE.md`
 | Datasets | `docs/DATASETS.md` |
 | Accuracy | `docs/ACCURACY-REPORT.md`, `docs/accuracy-latest.json` |
 | Skills | `skills/` |
+| Claude Code | `docs/CLAUDE-CODE.md`, `.mcp.json`, `CLAUDE.md` |
 | Bypass proof | `tests/test_mcp_bypass.py` |
 | License | `LICENSE` |
 

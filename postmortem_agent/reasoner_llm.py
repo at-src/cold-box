@@ -6,12 +6,17 @@ import json
 from typing import Any, Protocol
 
 from postmortem_agent.llm import LLMError, decide_next_action, static_system_block
+from postmortem_agent.reasoner_policy import policy_block_llm_done, policy_coverage_floor, sync_tool_attempts
 from postmortem_agent.state import AgentConfig
 
 
 SYSTEM_PROMPT = """You are a senior DFIR analyst investigating a dead host.
 You are given an evidence survey, tool catalog, and optional pattern hints from past cases.
 Choose ONE next action per turn as JSON. Decide order yourself from what the evidence shows.
+
+Match tools to kinds_present in the survey. Do NOT run linux_* tools unless linux_log is present
+or the case is clearly a Linux memory image. On Windows disk cases (registry_hive, prefetch, mft,
+recycle_bin), prefer disk_*, reg_*, yara_scan_evidence, and disk_parse_usb on the SYSTEM hive.
 
 A deterministic verifier runs after every tool. Each "confirmed_signal" it reports is REAL,
 audited evidence of compromise to INCORPORATE into your hypothesis — not a reason to doubt
@@ -66,6 +71,19 @@ class LLMReasoner:
         failed_calls: list[str] | None = None,
         **_ignored: Any,
     ) -> dict[str, Any]:
+        executed, failed = sync_tool_attempts(results)
+
+        floor = policy_coverage_floor(
+            verifier=verifier,
+            results=results,
+            survey=survey,
+            config=self.config,
+            executed=executed,
+            failed=failed,
+        )
+        if floor is not None:
+            return floor
+
         if self._survey_snapshot is None:
             self._survey_snapshot = {
                 "kinds_present": survey.get("kinds_present"),
@@ -110,6 +128,19 @@ class LLMReasoner:
             model=self.config.llm_model,
         )
         self.messages.append({"role": "assistant", "content": json.dumps(action, sort_keys=True)})
+
+        if action.get("action") == "done":
+            block = policy_block_llm_done(
+                verifier=verifier,
+                results=results,
+                survey=survey,
+                config=self.config,
+                executed=executed,
+                failed=failed,
+            )
+            if block is not None:
+                return block
+
         return action
 
 

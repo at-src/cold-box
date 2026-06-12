@@ -38,11 +38,11 @@ def test_hybrid_delegates_to_llm_when_floor_clear(monkeypatch) -> None:
     hybrid = HybridReasoner(config)
 
     monkeypatch.setattr(
-        "postmortem_agent.reasoner_hybrid.policy_coverage_floor",
+        "postmortem_agent.reasoner_llm.policy_coverage_floor",
         lambda **kwargs: None,
     )
     monkeypatch.setattr(
-        "postmortem_agent.reasoner_hybrid.LLMReasoner.decide",
+        "postmortem_agent.reasoner_llm.LLMReasoner.decide",
         lambda self, **kwargs: {
             "action": "tool",
             "tool": "mem_pslist",
@@ -116,6 +116,31 @@ def test_policy_floor_runs_setupapi_when_r12_skipped() -> None:
     assert action is not None
     assert action["tool"] == "disk_parse_setupapi"
     assert action["arguments"]["artifact_relpath"] == "disk/Windows/INF/setupapi.dev.log"
+
+
+def test_policy_floor_runs_reg_system_profile_on_disk_case(tmp_path) -> None:
+    from postmortem_agent.reasoner_policy import policy_coverage_floor
+
+    extract = tmp_path / "extracted"
+    extract.mkdir()
+    config = AgentConfig(case_id="t", evidence_case="nist-pc-only", extracted_root=extract)
+    survey = {
+        "kinds_present": ["registry_hive"],
+        "files": [
+            {"kind": "registry_hive", "relpath": "extracted/part0/Windows/System32/config/SOFTWARE"},
+            {"kind": "registry_hive", "relpath": "extracted/part0/Windows/System32/config/SYSTEM"},
+        ],
+    }
+    action = policy_coverage_floor(
+        verifier=[],
+        results={},
+        survey=survey,
+        config=config,
+        executed=set(),
+        failed=set(),
+    )
+    assert action is not None
+    assert action["tool"] == "reg_system_profile"
 
 
 def test_first_prefetch_prefers_wasp_name() -> None:

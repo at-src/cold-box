@@ -239,6 +239,67 @@ def _tag_hybrid_reason(action: dict[str, Any], detail: str) -> dict[str, Any]:
     return tagged
 
 
+def _baseline_disk_action(
+    *,
+    results: dict[str, list[dict[str, Any]]],
+    survey: dict[str, Any],
+    config: AgentConfig,
+    executed: set[str],
+    failed: set[str],
+) -> dict[str, Any] | None:
+    """One-shot Windows disk essentials — host profile and recycle bin before LLM ordering."""
+    if config.mode == "synthetic" or _effective_extracted_root(config) is None:
+        return None
+    kinds = set(survey.get("kinds_present") or [])
+
+    if "registry_hive" in kinds and not _tool_succeeded(results, "reg_system_profile"):
+        profile_args = _system_profile_args(survey)
+        if profile_args:
+            key = _action_key("reg_system_profile", profile_args)
+            if key not in executed and key not in failed:
+                return {
+                    "action": "tool",
+                    "tool": "reg_system_profile",
+                    "arguments": profile_args,
+                    "reason": "host attribution / system profile",
+                }
+
+    if "recycle_bin" in kinds and not _tool_succeeded(results, "disk_recycle_bin"):
+        rel = _first_relpath(survey, "recycle_bin")
+        if rel:
+            args = {"artifact_relpath": rel}
+            key = _action_key("disk_recycle_bin", args)
+            if key not in executed and key not in failed:
+                return {
+                    "action": "tool",
+                    "tool": "disk_recycle_bin",
+                    "arguments": args,
+                    "reason": "recycle bin metadata (R24)",
+                }
+    return None
+
+
+def _policy_floor_action(
+    *,
+    verifier: list[Any],
+    results: dict[str, list[dict[str, Any]]],
+    survey: dict[str, Any],
+    config: AgentConfig,
+    executed: set[str],
+    failed: set[str],
+) -> dict[str, Any] | None:
+    forced = _coverage_action(verifier, results, survey, config, executed, failed)
+    if forced:
+        return forced
+    return _baseline_disk_action(
+        results=results,
+        survey=survey,
+        config=config,
+        executed=executed,
+        failed=failed,
+    )
+
+
 def policy_coverage_floor(
     *,
     verifier: list[Any],
@@ -249,7 +310,14 @@ def policy_coverage_floor(
     failed: set[str],
 ) -> dict[str, Any] | None:
     """Mandatory tool action before the LLM chooses — one attempt per coverage rule."""
-    forced = _coverage_action(verifier, results, survey, config, executed, failed)
+    forced = _policy_floor_action(
+        verifier=verifier,
+        results=results,
+        survey=survey,
+        config=config,
+        executed=executed,
+        failed=failed,
+    )
     if forced:
         return _tag_hybrid_reason(forced, str(forced.get("reason", "coverage")))
     return None
@@ -265,7 +333,14 @@ def policy_block_llm_done(
     failed: set[str],
 ) -> dict[str, Any] | None:
     """Override an LLM 'done' when a coverage-rule tool has not been attempted yet."""
-    forced = _coverage_action(verifier, results, survey, config, executed, failed)
+    forced = _policy_floor_action(
+        verifier=verifier,
+        results=results,
+        survey=survey,
+        config=config,
+        executed=executed,
+        failed=failed,
+    )
     if forced:
         return _tag_hybrid_reason(forced, f"LLM done blocked — {forced.get('reason', 'coverage')}")
     return None

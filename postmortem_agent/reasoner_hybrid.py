@@ -5,11 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 from postmortem_agent.reasoner_llm import LLMReasoner
-from postmortem_agent.reasoner_policy import (
-    policy_block_llm_done,
-    policy_coverage_floor,
-    sync_tool_attempts,
-)
 from postmortem_agent.state import AgentConfig
 
 
@@ -34,19 +29,6 @@ class HybridReasoner:
         pattern_hints: list[str],
         **kwargs: Any,
     ) -> dict[str, Any]:
-        executed, failed = sync_tool_attempts(results)
-
-        floor = policy_coverage_floor(
-            verifier=verifier,
-            results=results,
-            survey=survey,
-            config=self.config,
-            executed=executed,
-            failed=failed,
-        )
-        if floor is not None:
-            return floor
-
         action = self._llm.decide(
             goal=goal,
             survey=survey,
@@ -59,17 +41,4 @@ class HybridReasoner:
             pattern_hints=pattern_hints,
             **kwargs,
         )
-
-        if action.get("action") == "done":
-            block = policy_block_llm_done(
-                verifier=verifier,
-                results=results,
-                survey=survey,
-                config=self.config,
-                executed=executed,
-                failed=failed,
-            )
-            if block is not None:
-                return block
-
         return action

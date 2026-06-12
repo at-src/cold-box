@@ -14,7 +14,13 @@ from postmortem_agent.diagnostic_memory import (
 )
 from postmortem_agent.findings import build_findings
 from postmortem_agent.narrative import append_narrative_finding
-from postmortem_agent.synthesis import _is_placeholder, compromise_signals, synthesize_hypothesis
+from postmortem_agent.synthesis import (
+    _is_placeholder,
+    compromise_signals,
+    compromise_verdict_met,
+    confirmed_signals,
+    synthesize_hypothesis,
+)
 from postmortem_agent.invoke import call_agent_tool
 from postmortem_agent.progress import append_progress, progress_log_path
 from postmortem_agent.reasoner import load_skill_index, make_reasoner
@@ -382,7 +388,7 @@ def _signal_lesson(new_results: list[RuleResult]) -> str:
 
 
 def _interim_hypothesis(state: InvestigationState) -> str:
-    signals = compromise_signals(state)
+    signals = confirmed_signals(state)
     return synthesize_hypothesis(signals, audit_count=len(state.all_audit_ids()))
 
 
@@ -426,13 +432,25 @@ def _finalize(
     # synthesize one from the COMPLETE set of confirmed signals so the executive summary matches
     # the full narrative.
     compromise = compromise_signals(state)
-    if compromise:
-        if not state.hypothesis_authored or _is_placeholder(state.hypothesis):
-            state.hypothesis = synthesize_hypothesis(compromise, audit_count=len(state.all_audit_ids()))
-            state.confidence = max(state.confidence, 0.6)
+    all_signals = confirmed_signals(state)
+    if all_signals:
+        bar_met = compromise_verdict_met(all_signals)
+        if not state.hypothesis_authored or _is_placeholder(state.hypothesis) or not bar_met:
+            state.hypothesis = synthesize_hypothesis(all_signals, audit_count=len(state.all_audit_ids()))
+            if bar_met:
+                state.confidence = max(state.confidence, 0.6)
+            else:
+                state.confidence = min(max(state.confidence, 0.45), 0.55)
     else:
         state.hypothesis = synthesize_hypothesis([], audit_count=len(state.all_audit_ids()))
         state.confidence = min(state.confidence, 0.5)
+
+    note = "investigation finalized"
+    if partial:
+        note = "partial closeout at max-iterations"
+    if state.self_corrected:
+        note = "self-correction: investigation finalized after verifier-driven follow-up"
+    _write_progress(state, progress_path, note)
 
     try:
         state.findings = build_findings(state, partial=partial, config=config)
@@ -467,10 +485,3 @@ def _finalize(
         iterations=state.iteration,
         self_corrected=state.self_corrected,
     )
-
-    note = "investigation finalized"
-    if partial:
-        note = "partial closeout at max-iterations"
-    if state.self_corrected:
-        note = "self-correction: investigation finalized after verifier-driven follow-up"
-    _write_progress(state, progress_path, note)

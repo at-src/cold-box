@@ -59,6 +59,7 @@ from postmortem_mcp.tools.memory import (
     mem_pstree,
     mem_svcscan,
 )
+from postmortem_mcp.tools.agent_runner import investigation_run
 from postmortem_mcp.tools.android import android_probe, android_scan_artifacts
 from postmortem_mcp.tools.macos import macos_probe, macos_scan_artifacts
 from postmortem_mcp.tools.tier3 import disk_scan_exfil, yara_scan_evidence
@@ -105,6 +106,7 @@ WAVE3_TOOLS = [
 META_TOOLS = [
     evidence_survey,
     tool_catalog,
+    investigation_run,
 ]
 
 WAVE4_TOOLS = [

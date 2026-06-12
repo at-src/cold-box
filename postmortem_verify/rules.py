@@ -7,6 +7,7 @@ from typing import Any
 
 from postmortem_mcp.timestomp import detect_timestomp_rows
 from postmortem_verify.known_good import (
+    is_benign_uninstall_binary,
     is_known_good_binary,
     is_known_good_path,
     is_suspicious_location,
@@ -352,6 +353,8 @@ def rule_r5_ghost_binary(ctx: VerifyContext) -> RuleResult:
         # standard OS / first-party Microsoft binaries to avoid declaring
         # benign hosts compromised; surface only genuinely non-standard ones.
         if is_known_good_binary(normalized):
+            continue
+        if is_benign_uninstall_binary(normalized):
             continue
         lower = normalized.lower()
         if any(
