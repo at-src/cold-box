@@ -28,15 +28,26 @@ def test_avg_prefetch_not_ghost_binary() -> None:
 
 def test_r5_alone_does_not_meet_compromise_bar() -> None:
     signals = [
-        {"rule": "R5", "severity": "high", "title": "Ghost binary"},
-        {"rule": "R14", "severity": "medium", "title": "IOC hits"},
-        {"rule": "R21", "severity": "medium", "title": "USB attribution"},
+        {"rule": "R5", "severity": "high", "title": "Ghost binary", "detail": "prefetch gap"},
+        {"rule": "R14", "severity": "medium", "title": "IOC hits", "detail": "27 hits"},
+        {"rule": "R21", "severity": "medium", "title": "USB attribution", "detail": "4 USB devices"},
     ]
     assert compromise_verdict_met(signals) is False
     hyp = synthesize_hypothesis(signals, audit_count=12)
-    assert "compromised" not in hyp.lower()
+    assert "assessed as compromised" not in hyp.lower()
+    assert "insider" in hyp.lower() or "physical-access" in hyp.lower()
+    assert "not external" in hyp.lower()
+
+
+def test_usb_alone_stays_generic_restraint() -> None:
+    from postmortem_agent.synthesis import classify_scenario
+
+    signals = [
+        {"rule": "R21", "severity": "medium", "title": "USB attribution", "detail": "1 device"},
+    ]
+    assert classify_scenario(signals) == "generic_restraint"
+    hyp = synthesize_hypothesis(signals, audit_count=3)
     assert "senior review" in hyp.lower()
-    assert "no strong compromise bar" in hyp.lower()
 
 
 def test_r7_meets_compromise_bar() -> None:
@@ -77,4 +88,5 @@ def test_weak_signal_combo_findings_and_restraint() -> None:
     r21 = [f for f in findings if "R21" in (f.get("tags") or [])]
     assert r21 and r21[0]["status"] == "confirmed"
     hyp = synthesize_hypothesis(confirmed_signals(state), audit_count=3)
-    assert "compromised" not in hyp.lower()
+    assert "assessed as compromised" not in hyp.lower()
+    assert "insider" in hyp.lower() or "physical-access" in hyp.lower()

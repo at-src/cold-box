@@ -72,7 +72,14 @@ def append_narrative_finding(
     tags = ["narrative", "incident_summary", *mitre]
     restraint = any(
         phrase in str(state.hypothesis or "").lower()
-        for phrase in ("no confirmed indicators", "no strong compromise bar", "senior review")
+        for phrase in (
+            "no confirmed indicators",
+            "no strong compromise bar",
+            "senior review",
+            "primary assessment",
+            "not external network compromise",
+            "not external breach bar",
+        )
     )
     if restraint:
         claim = str(state.hypothesis or report.get("primary_hypothesis", "")).strip()

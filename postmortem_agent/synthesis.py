@@ -130,6 +130,160 @@ CORROBORATING_HIGH_RULES = frozenset({"R4", "R5", "R16"})
 FACT_DOCUMENTATION_RULES = frozenset(
     {"R10", "R14", "R21", "R22", "R27", "R28", "R29", "R30", "R32", "R33"}
 )
+REMOVABLE_EXFIL_RULES = frozenset({"R21", "R12"})
+NETWORK_EXFIL_RULES = frozenset({"R27", "R28", "R29"})
+EXFIL_SUPPORT_RULES = frozenset({"R14", "R16", "R18", "R22", "R24", "R5", "R30"})
+SCENARIO_HEADINGS = {
+    "insider_removable_exfil": "Attack Chain Assessment (insider / physical-access hypothesis)",
+    "network_exfil": "Attack Chain Assessment (network exfiltration hypothesis)",
+    "generic_restraint": "Documented Anomalies (no external breach bar met)",
+}
+
+
+def host_profile_from_state(state: InvestigationState) -> str | None:
+    for run in reversed(state.tool_results.get("reg_system_profile") or []):
+        if not run.get("ok"):
+            continue
+        facts = (run.get("data") or {}).get("facts") or []
+        if not facts:
+            continue
+        return "; ".join(f"{fact['label']}: {fact['value']}" for fact in facts[:8])
+    return None
+
+
+def _signal_by_rule(signals: list[dict[str, Any]], rule_id: str) -> dict[str, Any] | None:
+    for signal in signals:
+        if signal.get("rule") == rule_id:
+            return signal
+    return None
+
+
+def classify_scenario(signals: list[dict[str, Any]]) -> str:
+    if not signals:
+        return "none"
+    if compromise_verdict_met(signals):
+        return "external_compromise"
+    rules = {s["rule"] for s in signals}
+    if rules & REMOVABLE_EXFIL_RULES and rules & EXFIL_SUPPORT_RULES:
+        return "insider_removable_exfil"
+    if rules & NETWORK_EXFIL_RULES and rules & EXFIL_SUPPORT_RULES:
+        return "network_exfil"
+    return "generic_restraint"
+
+
+def scenario_confidence(signals: list[dict[str, Any]], scenario: str) -> float:
+    if scenario == "external_compromise":
+        return 0.72
+    if scenario == "insider_removable_exfil":
+        support = len({s["rule"] for s in signals} & EXFIL_SUPPORT_RULES)
+        return min(0.74, 0.58 + 0.04 * support)
+    if scenario == "network_exfil":
+        return 0.62
+    if not signals:
+        return 0.35
+    return 0.52
+
+
+def _grounded_signal_lines(signals: list[dict[str, Any]], rule_ids: set[str], *, limit: int = 4) -> list[str]:
+    lines: list[str] = []
+    for signal in signals:
+        if signal["rule"] not in rule_ids:
+            continue
+        detail = str(signal.get("detail") or signal.get("title") or signal["rule"]).strip()
+        lines.append(f"{signal['title']} ({signal['rule']}): {detail}")
+        if len(lines) >= limit:
+            break
+    return lines
+
+
+def synthesize_assessment(
+    signals: list[dict[str, Any]],
+    *,
+    audit_count: int,
+    host_profile: str | None = None,
+) -> dict[str, Any]:
+    """Grounded senior assessment — scenario templates only, no LLM invention."""
+    if not signals:
+        text = "No confirmed indicators of compromise were produced by the verifier on the available evidence."
+        return {"hypothesis": text, "scenario": "none", "confidence": 0.35}
+
+    scenario = classify_scenario(signals)
+    confidence = scenario_confidence(signals, scenario)
+
+    if scenario == "external_compromise":
+        hypothesis = _compromise_hypothesis_text(signals, audit_count=audit_count)
+        return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
+
+    if scenario == "insider_removable_exfil":
+        usb = _signal_by_rule(signals, "R21") or _signal_by_rule(signals, "R12")
+        support_rules = {s["rule"] for s in signals} & EXFIL_SUPPORT_RULES
+        evidence_lines = _grounded_signal_lines(signals, support_rules, limit=5)
+        if usb:
+            evidence_lines.insert(
+                0,
+                f"{usb['title']} ({usb['rule']}): {usb['detail']}",
+            )
+        host_line = f"Host context (audited): {host_profile}." if host_profile else ""
+        chain_parts = []
+        if support_rules & {"R14", "R16", "R18", "R30"}:
+            chain_parts.append("execution/collection activity")
+        chain_parts.append("removable-media staging or exfiltration")
+        if support_rules & {"R24", "R5", "R4"}:
+            chain_parts.append("post-copy cleanup or evasion")
+        chain = " \u2192 ".join(chain_parts)
+        hypothesis = (
+            "Primary assessment: verified insider or physical-access data exfiltration hypothesis "
+            "(not external network compromise). "
+            f"Audited evidence: {' | '.join(evidence_lines)}. "
+            f"{host_line} "
+            f"Kill-chain read from confirmed signals: {chain}. "
+            "External breach bar not met — no hidden process, injection, orphan C2 socket, or webshell "
+            "confirmed by the verifier. "
+            f"Conclusion grounded in {audit_count} audited tool execution(s); every claim traces to signals above."
+        ).replace("  ", " ").strip()
+        return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
+
+    if scenario == "network_exfil":
+        evidence_lines = _grounded_signal_lines(
+            signals,
+            NETWORK_EXFIL_RULES | EXFIL_SUPPORT_RULES,
+            limit=5,
+        )
+        hypothesis = (
+            "Primary assessment: network-based data exfiltration indicators documented "
+            "(not a confirmed external intrusion bar). "
+            f"Audited evidence: {' | '.join(evidence_lines)}. "
+            "Corroborate with mail/cloud logs and egress monitoring before attribution. "
+            f"Conclusion grounded in {audit_count} audited tool execution(s); every claim traces to signals above."
+        )
+        return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
+
+    notable = [
+        s
+        for s in signals
+        if s["rule"] in FACT_DOCUMENTATION_RULES
+        or s["severity"] in COMPROMISE_SEVERITIES
+        or s["rule"] in {"R15", "R18", "R20"}
+    ]
+    if not notable:
+        notable = signals[:6]
+    phrases = []
+    seen: set[str] = set()
+    for sig in notable[:5]:
+        title = sig["title"]
+        if title in seen:
+            continue
+        seen.add(title)
+        phrases.append(f"{title.lower()} ({sig['rule']})")
+    detail = ", ".join(phrases) if phrases else "low-severity forensic anomalies"
+    hypothesis = (
+        f"Senior review: audited anomalies documented ({detail}). "
+        f"No strong compromise bar met — requires hidden process, injection, orphan C2 socket, "
+        f"webshell, or multiple independent high-severity execution/evasion signals. "
+        f"Do not treat partial-disk prefetch gaps or USB attribution alone as external breach. "
+        f"Conclusion grounded in {audit_count} audited tool execution(s); every finding carries an audit_id."
+    )
+    return {"hypothesis": hypothesis, "scenario": scenario, "confidence": confidence}
 
 
 def _signal_from_result(result: RuleResult, state: InvestigationState) -> dict[str, Any]:
@@ -235,66 +389,43 @@ def confirmed_signals(state: InvestigationState) -> list[dict[str, Any]]:
     return signals
 
 
-def synthesize_hypothesis(signals: list[dict[str, Any]], *, audit_count: int) -> str:
-    """A grounded, concise final hypothesis built from confirmed signals.
+def synthesize_hypothesis(
+    signals: list[dict[str, Any]],
+    *,
+    audit_count: int,
+    host_profile: str | None = None,
+) -> str:
+    """A grounded, concise final hypothesis built from confirmed signals."""
+    return synthesize_assessment(
+        signals,
+        audit_count=audit_count,
+        host_profile=host_profile,
+    )["hypothesis"]
 
-    Used whenever the agent did not author its own conclusion (e.g. iteration cap),
-    so the report never falls back to a placeholder lesson string.
-    """
-    if not signals:
-        return "No confirmed indicators of compromise were produced by the verifier on the available evidence."
 
-    if compromise_verdict_met(signals):
-        high_critical = [s for s in signals if s["severity"] in COMPROMISE_SEVERITIES]
-        ranked = sorted(high_critical, key=lambda s: -SEVERITY_RANK.get(s["severity"], 0))
-        lead = ranked[0]
-        phrases = []
-        seen_titles: set[str] = set()
-        for sig in ranked[:4]:
-            title = sig["title"]
-            if title in seen_titles:
-                continue
-            seen_titles.add(title)
-            phrases.append(f"{title.lower()} ({sig['rule']})")
-
-        tactics = sorted(
-            {s.get("tactic", "Correlation") for s in signals if s.get("tactic") != "Correlation"},
-            key=lambda t: TACTIC_ORDER.get(t, 99),
-        )
-        chain = " \u2192 ".join(tactics) if tactics else "compromise indicators"
-
-        verdict = "compromised" if lead["severity"] in {"critical", "high"} else "likely compromised"
-        return (
-            f"Host assessed as {verdict}: {', '.join(phrases)}. "
-            f"Observed ATT&CK progression: {chain}. "
-            f"Conclusion grounded in {audit_count} audited tool execution(s); every finding carries an audit_id."
-        )
-
-    # Senior restraint — document audited facts without declaring a breach.
-    notable = [
-        s
-        for s in signals
-        if s["rule"] in FACT_DOCUMENTATION_RULES
-        or s["severity"] in COMPROMISE_SEVERITIES
-        or s["rule"] in {"R15", "R18", "R20"}
-    ]
-    if not notable:
-        notable = signals[:6]
+def _compromise_hypothesis_text(signals: list[dict[str, Any]], *, audit_count: int) -> str:
+    high_critical = [s for s in signals if s["severity"] in COMPROMISE_SEVERITIES]
+    ranked = sorted(high_critical, key=lambda s: -SEVERITY_RANK.get(s["severity"], 0))
+    lead = ranked[0]
     phrases = []
-    seen: set[str] = set()
-    for sig in notable[:5]:
+    seen_titles: set[str] = set()
+    for sig in ranked[:4]:
         title = sig["title"]
-        if title in seen:
+        if title in seen_titles:
             continue
-        seen.add(title)
+        seen_titles.add(title)
         phrases.append(f"{title.lower()} ({sig['rule']})")
 
-    detail = ", ".join(phrases) if phrases else "low-severity forensic anomalies"
+    tactics = sorted(
+        {s.get("tactic", "Correlation") for s in signals if s.get("tactic") != "Correlation"},
+        key=lambda t: TACTIC_ORDER.get(t, 99),
+    )
+    chain = " \u2192 ".join(tactics) if tactics else "compromise indicators"
+
+    verdict = "compromised" if lead["severity"] in {"critical", "high"} else "likely compromised"
     return (
-        f"Senior review: audited anomalies documented ({detail}). "
-        f"No strong compromise bar met — requires hidden process, injection, orphan C2 socket, "
-        f"webshell, or multiple independent high-severity execution/evasion signals. "
-        f"Do not treat partial-disk prefetch gaps or USB attribution alone as external breach. "
+        f"Host assessed as {verdict}: {', '.join(phrases)}. "
+        f"Observed ATT&CK progression: {chain}. "
         f"Conclusion grounded in {audit_count} audited tool execution(s); every finding carries an audit_id."
     )
 
@@ -367,10 +498,16 @@ def build_template_report(state: InvestigationState) -> dict[str, Any]:
     audit_ids = state.all_audit_ids()
     chain = _build_attack_chain(compromise if compromise else all_signals)
     mitre = mitre_for_rules([s["rule"] for s in (compromise or all_signals)])
+    profile = host_profile_from_state(state)
+    assessment = synthesize_assessment(
+        all_signals,
+        audit_count=len(audit_ids),
+        host_profile=profile,
+    )
 
     hypothesis = state.hypothesis
     if _is_placeholder(hypothesis) or not compromise_verdict_met(all_signals):
-        hypothesis = synthesize_hypothesis(all_signals, audit_count=len(audit_ids))
+        hypothesis = assessment["hypothesis"]
 
     summary_bits = [step["description"] for step in chain]
     summary = hypothesis
@@ -385,11 +522,12 @@ def build_template_report(state: InvestigationState) -> dict[str, Any]:
         "recommended_actions": _recommended_actions(compromise if compromise else all_signals),
         "mitre": mitre,
         "gaps": list(state.gaps),
-        "confidence": state.confidence,
+        "confidence": assessment.get("confidence", state.confidence),
         "audit_ids": audit_ids[:20],
         "source": "template",
         "signals": compromise if compromise else all_signals,
         "compromise_declared": bool(compromise),
+        "scenario": assessment.get("scenario", "generic_restraint"),
     }
 
 
@@ -500,7 +638,7 @@ def render_report_markdown(report: dict[str, Any]) -> str:
         heading = (
             "## Attack Chain (ATT&CK kill-chain order)"
             if report.get("compromise_declared")
-            else "## Documented Anomalies (no breach bar met)"
+            else f"## {SCENARIO_HEADINGS.get(report.get('scenario', ''), SCENARIO_HEADINGS['generic_restraint'])}"
         )
         lines += [heading, ""]
         for step in chain:

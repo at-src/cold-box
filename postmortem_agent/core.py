@@ -19,6 +19,8 @@ from postmortem_agent.synthesis import (
     compromise_signals,
     compromise_verdict_met,
     confirmed_signals,
+    host_profile_from_state,
+    synthesize_assessment,
     synthesize_hypothesis,
 )
 from postmortem_agent.invoke import call_agent_tool
@@ -435,12 +437,19 @@ def _finalize(
     all_signals = confirmed_signals(state)
     if all_signals:
         bar_met = compromise_verdict_met(all_signals)
+        profile = host_profile_from_state(state)
+        assessment = synthesize_assessment(
+            all_signals,
+            audit_count=len(state.all_audit_ids()),
+            host_profile=profile,
+        )
         if not state.hypothesis_authored or _is_placeholder(state.hypothesis) or not bar_met:
-            state.hypothesis = synthesize_hypothesis(all_signals, audit_count=len(state.all_audit_ids()))
+            state.hypothesis = assessment["hypothesis"]
+            suggested = float(assessment.get("confidence", state.confidence))
             if bar_met:
-                state.confidence = max(state.confidence, 0.6)
+                state.confidence = max(state.confidence, suggested, 0.6)
             else:
-                state.confidence = min(max(state.confidence, 0.45), 0.55)
+                state.confidence = min(max(state.confidence, suggested), 0.75)
     else:
         state.hypothesis = synthesize_hypothesis([], audit_count=len(state.all_audit_ids()))
         state.confidence = min(state.confidence, 0.5)
