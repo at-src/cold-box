@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cold-box-room/tools/manifest.schema.json",
+  "title": "cold-box-room SIFT tool catalog",
+  "type": "object",
+  "required": ["schema", "count", "tools"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "cold_box_room.tools_manifest_v1"
+    },
+    "host_os": {
+      "type": "string",
+      "description": "OS where the harness was built / verified (e.g. linux)."
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Must equal tools.length."
+    },
+    "tools": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/tool" }
+    }
+  },
+  "$defs": {
+    "tool": {
+      "type": "object",
+      "required": [
+        "tool_id",
+        "name",
+        "binary",
+        "category",
+        "description",
+        "host_platforms",
+        "artifact_platforms",
+        "input",
+        "output",
+        "timeout_seconds",
+        "verification"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "tool_id": {
+          "type": "string",
+          "pattern": "^SIFT-[0-9]{3}$",
+          "description": "Stable catalog id passed to run_sift_tool."
+        },
+        "name": {
+          "type": "string",
+          "description": "Short name (usually same as binary)."
+        },
+        "binary": {
+          "type": "string",
+          "description": "Executable on PATH (harness resolves full path)."
+        },
+        "category": {
+          "type": "string",
+          "description": "Group for list_sift_tools filter (sleuthkit, common, zimmerman, …)."
+        },
+        "description": {
+          "type": "string",
+          "description": "What the tool does (shown to agent via describe_sift_tool)."
+        },
+        "host_platforms": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["linux", "darwin", "windows"] },
+          "description": "Where the binary can run."
+        },
+        "artifact_platforms": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "Evidence types this tool applies to (any, windows, …)."
+        },
+        "input": {
+          "type": "object",
+          "required": ["style"],
+          "additionalProperties": false,
+          "properties": {
+            "style": {
+              "type": "string",
+              "enum": ["positional", "flag", "stdin", "none"],
+              "description": "How evidence path / args are passed."
+            },
+            "flag": {
+              "type": "string",
+              "description": "Primary flag when style=flag (e.g. -f)."
+            },
+            "common_flags": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["flag", "description"],
+                "properties": {
+                  "flag": { "type": "string" },
+                  "description": { "type": "string" },
+                  "required": { "type": "boolean" }
+                }
+              }
+            },
+            "harness_usage": {
+              "type": "string",
+              "description": "How run_sift_tool maps extra_args to the real command."
+            }
+          }
+        },
+        "output": {
+          "type": "object",
+          "required": ["format", "style"],
+          "additionalProperties": false,
+          "properties": {
+            "format": {
+              "type": "string",
+              "enum": ["text", "json", "csv", "binary"],
+              "description": "Logical output type returned to agent."
+            },
+            "style": {
+              "type": "string",
+              "enum": ["stdout", "stderr", "scratch_file", "inode_stream"],
+              "description": "Where harness captures output (preview + scratch path)."
+            }
+          }
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "interactive": {
+          "type": "boolean",
+          "default": false
+        },
+        "verification": {
+          "type": "object",
+          "required": ["status", "runnable"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["ok", "not_tested", "bad", "unavailable"],
+              "description": "ok=lab tested; not_tested=fine but not lab-tested; bad=blocked; unavailable=not installed."
+            },
+            "detail": {
+              "type": "string",
+              "description": "Human note for agent (why not_tested, unavailable, etc.)."
+            },
+            "runnable": {
+              "type": "boolean",
+              "description": "Harness may invoke when true and status is not bad/unavailable."
+            }
+          }
+        }
+      }
+    }
+  }
+}

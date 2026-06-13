@@ -1,0 +1,1530 @@
+{
+  "schema": "cold_box_room.tools_manifest_v1",
+  "host_os": "linux",
+  "count": 50,
+  "tools": [
+    {
+      "tool_id": "SIFT-001",
+      "name": "objdump",
+      "binary": "objdump",
+      "category": "analysis",
+      "description": "Disassemble and inspect object files and executables",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-002",
+      "name": "readelf",
+      "binary": "readelf",
+      "category": "analysis",
+      "description": "Display ELF binary headers, sections, and symbols",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 120,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-003",
+      "name": "tar",
+      "binary": "tar",
+      "category": "analysis",
+      "description": "Archive extraction and listing (tar, tar.gz, tar.bz2, tar.xz)",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 1800,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-004",
+      "name": "unzip",
+      "binary": "unzip",
+      "category": "analysis",
+      "description": "Extract ZIP archives",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-005",
+      "name": "awk",
+      "binary": "awk",
+      "category": "common",
+      "description": "Pattern scanning and text processing language.",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-006",
+      "name": "cut",
+      "binary": "cut",
+      "category": "common",
+      "description": "Extract columns or fields from delimited text",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 120,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-007",
+      "name": "diff",
+      "binary": "diff",
+      "category": "common",
+      "description": "Compare files line by line",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-008",
+      "name": "file",
+      "binary": "file",
+      "category": "common",
+      "description": "Identify file type by magic bytes and headers",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 60,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-009",
+      "name": "find",
+      "binary": "find",
+      "category": "common",
+      "description": "Search for files by name, type, size, timestamp, or other attributes",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-010",
+      "name": "grep",
+      "binary": "grep",
+      "category": "common",
+      "description": "Search files for text patterns (regex supported)",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-011",
+      "name": "head",
+      "binary": "head",
+      "category": "common",
+      "description": "Output the first lines of files",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 60,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-012",
+      "name": "hexdump",
+      "binary": "hexdump",
+      "category": "common",
+      "description": "Display file contents in hex, decimal, octal, or ASCII",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-013",
+      "name": "jq",
+      "binary": "jq",
+      "category": "common",
+      "description": "Command-line JSON processor \u2014 filter, transform, query JSON data",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "json",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-014",
+      "name": "ls",
+      "binary": "ls",
+      "category": "common",
+      "description": "List directory contents with permissions and timestamps",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 60,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-015",
+      "name": "md5sum",
+      "binary": "md5sum",
+      "category": "common",
+      "description": "Compute MD5 checksums",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-016",
+      "name": "sed",
+      "binary": "sed",
+      "category": "common",
+      "description": "Stream editor for filtering and transforming text",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-017",
+      "name": "sha1sum",
+      "binary": "sha1sum",
+      "category": "common",
+      "description": "Compute SHA-1 checksums",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-018",
+      "name": "sha256sum",
+      "binary": "sha256sum",
+      "category": "common",
+      "description": "Compute SHA-256 checksums",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-019",
+      "name": "shasum",
+      "binary": "shasum",
+      "category": "common",
+      "description": "Print or check SHA checksums.",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-020",
+      "name": "sort",
+      "binary": "sort",
+      "category": "common",
+      "description": "Sort lines of text files",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-021",
+      "name": "sqlite3",
+      "binary": "sqlite3",
+      "category": "common",
+      "description": "Query and inspect SQLite database files from the command line.",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-022",
+      "name": "stat",
+      "binary": "stat",
+      "category": "common",
+      "description": "Display detailed file status (size, timestamps, permissions, inode)",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 60,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-023",
+      "name": "tail",
+      "binary": "tail",
+      "category": "common",
+      "description": "Output the last lines of files",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 60,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-024",
+      "name": "tr",
+      "binary": "tr",
+      "category": "common",
+      "description": "Translate or delete characters",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 120,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-025",
+      "name": "uniq",
+      "binary": "uniq",
+      "category": "common",
+      "description": "Report or filter repeated lines",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 120,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-026",
+      "name": "wc",
+      "binary": "wc",
+      "category": "common",
+      "description": "Count lines, words, and bytes in files",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 60,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-027",
+      "name": "xxd",
+      "binary": "xxd",
+      "category": "common",
+      "description": "Hex dump of binary files",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-028",
+      "name": "zcat",
+      "binary": "zcat",
+      "category": "common",
+      "description": "Decompress and output gzip files to stdout",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-029",
+      "name": "zgrep",
+      "binary": "zgrep",
+      "category": "common",
+      "description": "Search inside compressed files without extracting",
+      "host_platforms": [
+        "linux",
+        "windows"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-030",
+      "name": "7za",
+      "binary": "7za",
+      "category": "file_analysis",
+      "description": "7-Zip archiver \u2014 extract and list 7z and related archive formats.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-031",
+      "name": "7zr",
+      "binary": "7zr",
+      "category": "file_analysis",
+      "description": "7-Zip standalone binary \u2014 extract and list archives.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-032",
+      "name": "bulk_extractor",
+      "binary": "bulk_extractor",
+      "category": "file_analysis",
+      "description": "Record carving from disk images and unallocated space",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 7200,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-033",
+      "name": "dcfldd",
+      "binary": "dcfldd",
+      "category": "file_analysis",
+      "description": "Enhanced dd variant for forensic imaging with hashing and progress.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-034",
+      "name": "dd",
+      "binary": "dd",
+      "category": "file_analysis",
+      "description": "Copy and convert raw data blocks (use with care on evidence images).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-035",
+      "name": "nm",
+      "binary": "nm",
+      "category": "file_analysis",
+      "description": "List symbols from object files and binaries.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-036",
+      "name": "zip",
+      "binary": "zip",
+      "category": "file_analysis",
+      "description": "Create and modify ZIP archives.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-037",
+      "name": "binwalk",
+      "binary": "binwalk",
+      "category": "malware",
+      "description": "Analyze and extract firmware images and embedded files",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "unavailable",
+        "detail": "not installed",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-038",
+      "name": "clamscan",
+      "binary": "clamscan",
+      "category": "malware",
+      "description": "ClamAV antivirus scanner for files and directories.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-039",
+      "name": "densityscout",
+      "binary": "densityscout",
+      "category": "malware",
+      "description": "Detect compressed or encrypted regions in files (density analysis).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-040",
+      "name": "foremost",
+      "binary": "foremost",
+      "category": "malware",
+      "description": "Carve files from disk images and byte streams by header/footer signatures.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-041",
+      "name": "photorec",
+      "binary": "photorec",
+      "category": "malware",
+      "description": "Recover lost files and partitions interactively from disk images.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-042",
+      "name": "scalpel",
+      "binary": "scalpel",
+      "category": "malware",
+      "description": "Carve files from disk images using configurable header/footer rules.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-043",
+      "name": "ssdeep",
+      "binary": "ssdeep",
+      "category": "malware",
+      "description": "Compute fuzzy hashes for file similarity comparison",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ran",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-044",
+      "name": "strings",
+      "binary": "strings",
+      "category": "malware",
+      "description": "Extract strings from binary files",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-045",
+      "name": "yara",
+      "binary": "yara",
+      "category": "malware",
+      "description": "YARA rule-based pattern matching",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "unavailable",
+        "detail": "not installed",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-046",
+      "name": "7z",
+      "binary": "7z",
+      "category": "misc",
+      "description": "Extract and list files from 7z, zip, gzip, bzip2, xz, tar, and related archives.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 3600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-047",
+      "name": "autopsy",
+      "binary": "autopsy",
+      "category": "misc",
+      "description": "Autopsy digital forensics platform (GUI; often needs manual invocation).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-048",
+      "name": "dc3dd",
+      "binary": "dc3dd",
+      "category": "misc",
+      "description": "Enhanced dd variant for forensic disk imaging.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 7200,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-049",
+      "name": "docx_font_extractor_pl",
+      "binary": "docx-font-extractor.pl",
+      "category": "misc",
+      "description": "Extract font metadata from Microsoft Word documents (RegRipper plugin).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-050",
+      "name": "evtparse_pl",
+      "binary": "evtparse.pl",
+      "category": "misc",
+      "description": "Parse Windows EVT event logs (legacy Perl parser).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    }
+  ]
+}
