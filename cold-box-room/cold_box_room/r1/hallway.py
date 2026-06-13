@@ -61,10 +61,19 @@ def promote_to_room2(case_id: str) -> dict[str, Any]:
     require_r1_checkpoint(case_id)
     check = record_r1_check(case_id)
 
+    from cold_box_room.r2.sandbox import materialize_sandbox
+
+    sandbox_record = materialize_sandbox(case_id)
+
     data = _load(case_id)
     data["room"] = 2
     data["promoted_at"] = datetime.now(timezone.utc).isoformat()
     data["r1_checkpoint"] = check
+    data["r2_sandbox"] = {
+        "sandbox_dir": sandbox_record["sandbox_dir"],
+        "file_count": sandbox_record["file_count"],
+        "materialized_at": sandbox_record["materialized_at"],
+    }
     data["updated_at"] = data["promoted_at"]
     _save(case_id, data)
     return data

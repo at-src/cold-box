@@ -65,6 +65,14 @@ def test_promote_to_room2_solid_wall():
     promoted = promote_to_room2("lab-4")
     assert promoted["room"] == 2
     assert current_room("lab-4") == 2
+    assert promoted["r2_sandbox"]["file_count"] == 1
+
+    from cold_box_room.r2.sandbox import load_sandbox_record, r2_status
+
+    record = load_sandbox_record("lab-4")
+    assert record["file_count"] == 1
+    status = r2_status("lab-4")
+    assert status["non_empty_files"] == ["evidence.E01"]
 
 
 def test_promote_blocked_when_checkpoint_fails():

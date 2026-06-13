@@ -1,4 +1,4 @@
-"""CLI — Room 1 staging area."""
+"""CLI — cold-box hallway rooms."""
 
 from __future__ import annotations
 
@@ -13,11 +13,13 @@ from cold_box_room.r1.intake import intake_case, list_staging_cases
 from cold_box_room.r1.paths import get_records_root, get_staging_root, hallway_state_path
 from cold_box_room.r1.seal import is_sealed, seal_record_path
 from cold_box_room.r1.staging_read import open_staging_read
+from cold_box_room.r2.paths import case_sandbox_dir, get_sandbox_root
+from cold_box_room.r2.sandbox import list_sandbox_files, r2_status
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="cold-box-room R1 — raw evidence staging, sealed read-only",
+        description="cold-box-room — deterministic hallway rooms",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -44,6 +46,12 @@ def main(argv: list[str] | None = None) -> int:
     p_ls.add_argument("--case-id", required=True)
     p_ls.add_argument("--path", default=".")
 
+    p_r2 = sub.add_parser("r2-status")
+    p_r2.add_argument("--case-id", required=True)
+
+    p_sandbox_ls = sub.add_parser("sandbox-ls")
+    p_sandbox_ls.add_argument("--case-id", required=True)
+
     args = parser.parse_args(argv)
 
     if args.command == "paths":
@@ -51,6 +59,7 @@ def main(argv: list[str] | None = None) -> int:
             json.dumps(
                 {
                     "r1_staging_root": str(get_staging_root()),
+                    "r2_sandbox_root": str(get_sandbox_root()),
                     "records_root": str(get_records_root()),
                     "read_channel": "cold_box_room.r1.staging_read.open_staging_read",
                 },
@@ -98,6 +107,24 @@ def main(argv: list[str] | None = None) -> int:
             for e in reader.list_dir(args.path)
         ]
         print(json.dumps({"channel": reader.CHANNEL, "entries": entries}, indent=2))
+        return 0
+
+    if args.command == "r2-status":
+        print(json.dumps(r2_status(args.case_id), indent=2))
+        return 0
+
+    if args.command == "sandbox-ls":
+        files = list_sandbox_files(args.case_id)
+        print(
+            json.dumps(
+                {
+                    "case_id": args.case_id,
+                    "sandbox_dir": str(case_sandbox_dir(args.case_id)),
+                    "files": files,
+                },
+                indent=2,
+            )
+        )
         return 0
 
     return 1

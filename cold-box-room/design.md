@@ -45,6 +45,7 @@ Both must be true. If either fails, stay in R1.
 
 ```
 if staging_has_file AND file_not_empty:
+    → materialize R2 sandbox (copy from sealed R1)
     → Room 2
 else:
     → remain in R1
@@ -54,7 +55,26 @@ Nothing else is required in R1.
 
 ---
 
-## Room 2 (R2) — Layer 1 evidence extraction
+## Room 2 (R2) — sandbox (implemented)
+
+**What this room is**
+
+When R1 checkpoint passes, evidence is **copied into the R2 sandbox** (`r2-sandbox/{case_id}/`). R1 staging stays sealed and unchanged. The sandbox is an isolated workspace where harmful or suspect files can be examined later — tools and logbook come in a follow-up step.
+
+**Layout**
+
+- Sandbox root: `COLD_BOX_R2_SANDBOX` (default `r2-sandbox/`).
+- On promotion, harness copies every file from R1 staging read channel into the case sandbox.
+- Record: `records/{case_id}/r2_sandbox.json`.
+
+**Not in this step**
+
+- SIFT tools and strict harness tool calls
+- Tool log / analyst log (logbook)
+
+---
+
+## Room 2 (R2) — Layer 1 evidence extraction (full spec)
 
 **What this room is**
 
