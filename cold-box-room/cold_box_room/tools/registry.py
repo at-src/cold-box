@@ -74,5 +74,17 @@ def list_tools(
     return sorted(rows, key=lambda r: r.tool_id)
 
 
+def list_categories() -> list[str]:
+    return sorted({r.category for r in _records_by_id().values()})
+
+
+def list_tools_dict(
+    *,
+    category: str | None = None,
+    runnable_only: bool = False,
+) -> list[dict]:
+    return [t.to_list_dict() for t in list_tools(category=category, runnable_only=runnable_only)]
+
+
 def describe_tool(tool_id: str) -> dict:
     return get_tool(tool_id).to_describe_dict()

@@ -12,10 +12,12 @@ license = { text = "MIT" }
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+mcp = ["mcp>=1.0"]
+dev = ["pytest>=8.0", "mcp>=1.0"]
 
 [project.scripts]
 cold-box-room = "cold_box_room.r1.cli:main"
+cold-box-room-mcp = "cold_box_room.mcp.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
