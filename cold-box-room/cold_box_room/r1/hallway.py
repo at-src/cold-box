@@ -7,13 +7,13 @@ from datetime import datetime, timezone
 from typing import Any
 
 from cold_box_room.r1.checkpoint import r1_checkpoint, require_r1_checkpoint
-from cold_box_room.r1.paths import TableError, case_records_dir, hallway_state_path
+from cold_box_room.r1.paths import StagingError, hallway_state_path
 
 
 def _load(case_id: str) -> dict[str, Any]:
     path = hallway_state_path(case_id)
     if not path.is_file():
-        raise TableError(f"No hallway state for {case_id!r} — run intake first.")
+        raise StagingError(f"No hallway state for {case_id!r} — run intake first.")
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -42,7 +42,7 @@ def current_room(case_id: str) -> int:
 def require_room(case_id: str, room: int) -> None:
     actual = current_room(case_id)
     if actual != room:
-        raise TableError(
+        raise StagingError(
             f"Case {case_id!r} is in room {actual}, required room {room}"
         )
 
@@ -57,7 +57,6 @@ def record_r1_check(case_id: str) -> dict[str, Any]:
 
 
 def promote_to_room2(case_id: str) -> dict[str, Any]:
-    """Solid wall: R1 checkpoint must pass before room 2."""
     require_room(case_id, 1)
     require_r1_checkpoint(case_id)
     check = record_r1_check(case_id)

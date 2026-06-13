@@ -1,4 +1,4 @@
-"""Glass seal — read-only chmod on the staging table."""
+"""R1 seal — read-only chmod on staging evidence."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from cold_box_room.r1.paths import TableError, case_records_dir, case_slot
+from cold_box_room.r1.paths import StagingError, case_records_dir, case_staging_dir
 
 IMMUTABLE_FLAG = "+i"
 
@@ -27,23 +27,23 @@ def is_sealed(case_id: str) -> bool:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return False
-    return data.get("glass") == "locked"
+    return data.get("sealed") is True
 
 
 def require_sealed(case_id: str) -> None:
     if not is_sealed(case_id):
-        raise TableError(
-            f"Case {case_id!r} is not sealed. Run intake — glass must be locked before R1 checkpoint."
+        raise StagingError(
+            f"Case {case_id!r} is not sealed. Run intake before R1 checkpoint."
         )
 
 
 def require_unsealed(case_id: str) -> None:
     if is_sealed(case_id):
-        raise TableError(f"Case {case_id!r} is sealed. No writes to the table are permitted.")
+        raise StagingError(f"Case {case_id!r} is sealed. No writes to R1 staging.")
 
 
-def _apply_readonly_chmod(slot: Path) -> None:
-    for root, dirnames, filenames in os.walk(slot, topdown=False):
+def _apply_readonly_chmod(staging: Path) -> None:
+    for root, dirnames, filenames in os.walk(staging, topdown=False):
         root_path = Path(root)
         for name in filenames:
             path = root_path / name
@@ -60,19 +60,19 @@ def _apply_readonly_chmod(slot: Path) -> None:
                 | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
                 | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
             )
-    slot_mode = slot.stat().st_mode
-    slot.chmod(
-        slot_mode & ~stat.S_IWUSR & ~stat.S_IWGRP & ~stat.S_IWOTH
+    staging_mode = staging.stat().st_mode
+    staging.chmod(
+        staging_mode & ~stat.S_IWUSR & ~stat.S_IWGRP & ~stat.S_IWOTH
         | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
     )
 
 
-def _apply_immutable(slot: Path) -> dict[str, Any]:
+def _apply_immutable(staging: Path) -> dict[str, Any]:
     result: dict[str, Any] = {"requested": True, "applied": False, "paths": []}
     try:
         proc = subprocess.run(
-            ["chattr", "-R", IMMUTABLE_FLAG, str(slot)],
+            ["chattr", "-R", IMMUTABLE_FLAG, str(staging)],
             capture_output=True,
             text=True,
             timeout=120,
@@ -87,7 +87,7 @@ def _apply_immutable(slot: Path) -> dict[str, Any]:
         return result
 
     result["applied"] = True
-    result["paths"] = [str(slot.resolve())]
+    result["paths"] = [str(staging.resolve())]
     return result
 
 
@@ -98,12 +98,12 @@ def strict_mode_enabled() -> bool:
 
 def seal_case(case_id: str, *, manifest_digest: str) -> dict[str, Any]:
     require_unsealed(case_id)
-    slot = case_slot(case_id)
-    if not slot.is_dir() or not any(slot.iterdir()):
-        raise TableError(f"Nothing on table to seal for {case_id!r}")
+    staging = case_staging_dir(case_id)
+    if not staging.is_dir() or not any(staging.iterdir()):
+        raise StagingError(f"Nothing in R1 staging to seal for {case_id!r}")
 
-    _apply_readonly_chmod(slot)
-    immutable = _apply_immutable(slot)
+    _apply_readonly_chmod(staging)
+    immutable = _apply_immutable(staging)
 
     layers = ["chmod_readonly"]
     if immutable.get("applied"):
@@ -112,13 +112,13 @@ def seal_case(case_id: str, *, manifest_digest: str) -> dict[str, Any]:
     record = {
         "case_id": case_id,
         "sealed_at": datetime.now(timezone.utc).isoformat(),
-        "glass": "locked",
+        "sealed": True,
         "room": 1,
-        "table_slot": str(slot.resolve()),
+        "staging_dir": str(staging.resolve()),
         "manifest_digest": manifest_digest,
         "layers": layers,
         "immutable": immutable,
-        "machine_channel": "cold_box_room.r1.viewport.TableViewport",
+        "read_channel": "cold_box_room.r1.staging_read.StagingReader",
     }
     seal_record_path(case_id).write_text(json.dumps(record, indent=2), encoding="utf-8")
     return record

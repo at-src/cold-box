@@ -1,4 +1,4 @@
-"""SHA-256 manifest before seal; viewport after seal."""
+"""SHA-256 manifest before seal; staging read after seal."""
 
 from __future__ import annotations
 
@@ -8,9 +8,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from cold_box_room.r1.paths import case_slot, resolve_on_table
+from cold_box_room.r1.paths import case_staging_dir, resolve_in_staging
 from cold_box_room.r1.seal import is_sealed
-from cold_box_room.r1.viewport import TableViewport
+from cold_box_room.r1.staging_read import StagingReader
 
 
 def sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
@@ -22,33 +22,33 @@ def sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
 
 
 def build_manifest(case_id: str, *, relpath: str = ".") -> dict[str, Any]:
-    slot = case_slot(case_id)
+    staging = case_staging_dir(case_id)
 
     if is_sealed(case_id):
-        viewport = TableViewport(case_id)
+        reader = StagingReader(case_id)
         entries: list[dict[str, Any]] = []
-        for rel, size in viewport.iter_files():
+        for rel, size in reader.iter_files():
             entries.append(
                 {
                     "path": rel,
                     "size": size,
-                    "sha256": viewport.sha256(rel),
-                    "via": TableViewport.CHANNEL,
+                    "sha256": reader.sha256(rel),
+                    "via": StagingReader.CHANNEL,
                 }
             )
         entries.sort(key=lambda item: item["path"])
         return {
             "case_id": case_id,
-            "table_root": str(slot.resolve()),
+            "staging_dir": str(staging.resolve()),
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "algorithm": "sha256",
             "file_count": len(entries),
             "sealed": True,
-            "read_channel": TableViewport.CHANNEL,
+            "read_channel": StagingReader.CHANNEL,
             "files": entries,
         }
 
-    root = resolve_on_table(case_id, relpath)
+    root = resolve_in_staging(case_id, relpath)
     if not root.is_dir():
         raise ValueError(f"Case material must be a directory: {root}")
 
@@ -57,7 +57,7 @@ def build_manifest(case_id: str, *, relpath: str = ".") -> dict[str, Any]:
         dirnames.sort()
         for name in sorted(filenames):
             file_path = Path(dirpath) / name
-            rel = file_path.relative_to(slot.resolve()).as_posix()
+            rel = file_path.relative_to(staging.resolve()).as_posix()
             stat = file_path.stat()
             entries.append(
                 {"path": rel, "size": stat.st_size, "sha256": sha256_file(file_path)}
@@ -66,7 +66,7 @@ def build_manifest(case_id: str, *, relpath: str = ".") -> dict[str, Any]:
     entries.sort(key=lambda item: item["path"])
     return {
         "case_id": case_id,
-        "table_root": str(slot.resolve()),
+        "staging_dir": str(staging.resolve()),
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "algorithm": "sha256",
         "file_count": len(entries),

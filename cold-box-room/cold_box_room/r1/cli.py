@@ -1,4 +1,4 @@
-"""CLI — Room 1 staging table."""
+"""CLI — Room 1 staging area."""
 
 from __future__ import annotations
 
@@ -9,15 +9,15 @@ from pathlib import Path
 
 from cold_box_room.r1.checkpoint import r1_checkpoint
 from cold_box_room.r1.hallway import current_room, promote_to_room2, record_r1_check
-from cold_box_room.r1.intake import intake_case, list_table_cases
-from cold_box_room.r1.paths import get_records_root, get_table_root, hallway_state_path
+from cold_box_room.r1.intake import intake_case, list_staging_cases
+from cold_box_room.r1.paths import get_records_root, get_staging_root, hallway_state_path
 from cold_box_room.r1.seal import is_sealed, seal_record_path
-from cold_box_room.r1.viewport import open_viewport
+from cold_box_room.r1.staging_read import open_staging_read
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="cold-box-room R1 — raw evidence on table, glass sealed",
+        description="cold-box-room R1 — raw evidence staging, sealed read-only",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -40,9 +40,9 @@ def main(argv: list[str] | None = None) -> int:
     p_intake.add_argument("--source", default="")
     p_intake.add_argument("--link", action="store_true")
 
-    p_peek = sub.add_parser("viewport-ls")
-    p_peek.add_argument("--case-id", required=True)
-    p_peek.add_argument("--path", default=".")
+    p_ls = sub.add_parser("staging-ls")
+    p_ls.add_argument("--case-id", required=True)
+    p_ls.add_argument("--path", default=".")
 
     args = parser.parse_args(argv)
 
@@ -50,9 +50,9 @@ def main(argv: list[str] | None = None) -> int:
         print(
             json.dumps(
                 {
-                    "operation_table": str(get_table_root()),
-                    "records": str(get_records_root()),
-                    "machine_channel": "cold_box_room.r1.viewport.open_viewport",
+                    "r1_staging_root": str(get_staging_root()),
+                    "records_root": str(get_records_root()),
+                    "read_channel": "cold_box_room.r1.staging_read.open_staging_read",
                 },
                 indent=2,
             )
@@ -60,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "list":
-        print(json.dumps({"cases_on_table": list_table_cases()}, indent=2))
+        print(json.dumps({"cases_in_r1_staging": list_staging_cases()}, indent=2))
         return 0
 
     if args.command == "r1-status":
@@ -69,7 +69,6 @@ def main(argv: list[str] | None = None) -> int:
             "case_id": args.case_id,
             "room": current_room(args.case_id) if hallway_state_path(args.case_id).is_file() else None,
             "sealed": sealed,
-            "glass": "locked" if sealed else "open",
         }
         if sealed:
             out["r1_checkpoint"] = r1_checkpoint(args.case_id)
@@ -92,13 +91,13 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(intake_case(args.case_id, source=src, link_only=args.link), indent=2))
         return 0
 
-    if args.command == "viewport-ls":
-        vp = open_viewport(args.case_id)
+    if args.command == "staging-ls":
+        reader = open_staging_read(args.case_id)
         entries = [
             {"relpath": e.relpath, "is_dir": e.is_dir, "size": e.size}
-            for e in vp.list_dir(args.path)
+            for e in reader.list_dir(args.path)
         ]
-        print(json.dumps({"channel": vp.CHANNEL, "entries": entries}, indent=2))
+        print(json.dumps({"channel": reader.CHANNEL, "entries": entries}, indent=2))
         return 0
 
     return 1

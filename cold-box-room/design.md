@@ -14,36 +14,37 @@ Agent writes **findings**, **why**, and **self-score** in analyst logs. Harness 
 
 ---
 
-## Room 1 (R1) — Staging table
+## Room 1 (R1) — Staging area
 
 **What this room is**
 
-Raw uploads only. Whatever the user drops in (via UI or CLI) lands here first — full original files as received (E01, AFF, RAM, zip, etc.). Not extracted artifacts, not parsed output, not scratch.
+Raw uploads only. Whatever the user drops in (via UI or CLI) lands in the **R1 staging area** first — full original files as received (E01, AFF, RAM, zip, etc.). Not extracted artifacts, not parsed output, not scratch.
 
 Any case (Jo, Charlie, etc.) starts here. R2 and later rooms never receive direct user uploads.
 
-**Physical model**
+**Layout**
 
-- One table, center of the room.
-- Files sit on the table under a sealed glass panel: visible, read-only, no tampering.
+- One case directory under the R1 staging root (`r1-staging/{case_id}/`).
+- After intake, evidence is **sealed read-only** (chmod; optional immutable flag).
 
 **Checkpoint (must pass to enter Room 2)**
 
-1. **File present** — at least one evidence file is on the table for this case.
+1. **File present** — at least one evidence file in R1 staging for this case.
 2. **File not empty** — that file has non-zero size.
 
 Both must be true. If either fails, stay in R1.
 
 **Sealing (hardcoded, not agent choice)**
 
-- Evidence is read-only.
-- No writes, deletes, or in-place changes on table files.
+- Evidence is read-only after seal.
+- No writes, deletes, or in-place changes on staged files.
 - Harness enforces seal; agent does not unseal.
+- Reads after seal go through the staging read channel only.
 
 **Promotion**
 
 ```
-if table_has_file AND file_not_empty:
+if staging_has_file AND file_not_empty:
     → Room 2
 else:
     → remain in R1
@@ -57,7 +58,7 @@ Nothing else is required in R1.
 
 **What this room is**
 
-Evidence is extracted here from the R1 table using SIFT tools (Layer 1). Raw files stay on R1; R2 works against them on a second table (clean glass pane). Output goes to scratch — extracted material, not new user uploads.
+Evidence is extracted here from the R1 staging area using SIFT tools (Layer 2). Raw files stay sealed in R1; R2 reads through the staging read channel and writes output to scratch — extracted material, not new user uploads.
 
 **Tools**
 
