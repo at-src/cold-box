@@ -1,3 +1,0 @@
-cold-box-lab-01 memory placeholder.
-Use examples/sample-verifier/*.json for deterministic mem_pslist/psscan/netscan in CI.
-Live memory: point --memory at images under /evidence (Ali Hadi, NIST).

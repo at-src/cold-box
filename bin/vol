@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# Vol3 with cold-box sparse-PAE DTB stacker + user symbol cache.
-set -euo pipefail
-PLUGIN_DIR="/opt/postmortem/tools/vol_plugins"
-SYMBOL_DIR="${HOME}/.cache/volatility3/symbols"
-export PYTHONPATH="${PLUGIN_DIR}:${PYTHONPATH:-}"
-exec /usr/local/bin/vol -p "${PLUGIN_DIR}" -s "${SYMBOL_DIR}" "$@"

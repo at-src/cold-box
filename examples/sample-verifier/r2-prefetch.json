@@ -1,8 +1,0 @@
-{
-  "source": "synthetic",
-  "prefetch": {
-    "executable": "NOTEPAD.EXE",
-    "run_count": 1,
-    "source": "synthetic"
-  }
-}

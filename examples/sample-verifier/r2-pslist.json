@@ -1,9 +1,0 @@
-{
-  "source": "synthetic",
-  "process_count": 3,
-  "processes": [
-    {"pid": 4, "name": "System", "ppid": 0, "offset": "0x1"},
-    {"pid": 620, "name": "lsass.exe", "ppid": 532, "offset": "0x2"},
-    {"pid": 9001, "name": "ghostrunner.exe", "ppid": 1100, "offset": "0x9"}
-  ]
-}

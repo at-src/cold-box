@@ -1,3 +1,8 @@
+# Local runtime data (never commit)
+r1-staging/
+r2-sandbox/
+records/
+
 # Python
 .venv/
 __pycache__/
