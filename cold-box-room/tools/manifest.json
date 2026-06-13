@@ -1,7 +1,7 @@
 {
   "schema": "cold_box_room.tools_manifest_v1",
   "host_os": "linux",
-  "count": 200,
+  "count": 234,
   "tools": [
     {
       "tool_id": "SIFT-001",
@@ -5177,7 +5177,7 @@
       "name": "tsk_recover",
       "binary": "tsk_recover",
       "category": "sleuthkit",
-      "description": "Recover deleted files from a disk image to a directory (The Sleuth Kit tsk_recover).",
+      "description": "Bulk recover files from a disk image into an output directory (The Sleuth Kit tsk_recover). Harness appends scratch output dir as final arg.",
       "host_platforms": [
         "linux"
       ],
@@ -5203,11 +5203,12 @@
             "description": "Filesystem type",
             "required": false
           }
-        ]
+        ],
+        "harness_usage": "Bulk recover: pass image flags only; harness appends scratch output directory as final arg."
       },
       "output": {
         "format": "text",
-        "style": "stdout"
+        "style": "scratch_dir_trailing"
       },
       "timeout_seconds": 600,
       "interactive": false,
@@ -6414,6 +6415,1341 @@
       "binary": "evtx_info.py",
       "category": "zimmerman",
       "description": "Display metadata about an EVTX file (evtx_info).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-201",
+      "name": "evtx_record_structure",
+      "binary": "evtx_record_structure.py",
+      "category": "zimmerman",
+      "description": "Pretty-print the binary structure of an EVTX record (evtx_record_structure).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-202",
+      "name": "evtx_structure",
+      "binary": "evtx_structure.py",
+      "category": "zimmerman",
+      "description": "Dump the internal structure of a Windows EVTX file (evtx_structure).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-203",
+      "name": "evtx_templates",
+      "binary": "evtx_templates.py",
+      "category": "zimmerman",
+      "description": "Extract and dump templates from a binary EVTX file (evtx_templates).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-204",
+      "name": "EvtxECmd",
+      "binary": "EvtxECmd",
+      "category": "zimmerman",
+      "description": "Parse Windows Event Log (.evtx) files with Eric Zimmerman EvtxECmd.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          },
+          {
+            "flag": "--maps",
+            "description": "Path to EvtxECmd Maps directory",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-205",
+      "name": "evtxexport",
+      "binary": "evtxexport",
+      "category": "zimmerman",
+      "description": "Export Windows EVTX event logs (libevtx evtxexport).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-206",
+      "name": "evtxinfo",
+      "binary": "evtxinfo",
+      "category": "zimmerman",
+      "description": "Display metadata about a Windows EVTX file (libevtx evtxinfo).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-207",
+      "name": "evtxparse_pl",
+      "binary": "evtxparse.pl",
+      "category": "zimmerman",
+      "description": "Parse Windows EVTX event logs (RegRipper evtxparse.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-208",
+      "name": "extract_mft_record_slack",
+      "binary": "extract_mft_record_slack.py",
+      "category": "zimmerman",
+      "description": "Extract slack space from individual MFT records (extract_mft_record_slack).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-209",
+      "name": "fuse_mft",
+      "binary": "fuse-mft.py",
+      "category": "zimmerman",
+      "description": "Mount NTFS $MFT as a FUSE filesystem for browsing (fuse_mft).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-210",
+      "name": "idx_parser",
+      "binary": "idx-parser",
+      "category": "zimmerman",
+      "description": "Parse Java web browser IDX cache files (idx_parser).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-211",
+      "name": "jcmd",
+      "binary": "jcmd",
+      "category": "zimmerman",
+      "description": "Send diagnostic commands to a running JVM (jcmd).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-212",
+      "name": "JLECmd",
+      "binary": "JLECmd",
+      "category": "zimmerman",
+      "description": "Parse Windows Jump List files with Eric Zimmerman JLECmd.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-213",
+      "name": "LECmd",
+      "binary": "LECmd",
+      "category": "zimmerman",
+      "description": "Parse Windows LNK shortcut files with Eric Zimmerman LECmd.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-214",
+      "name": "list_mft",
+      "binary": "list_mft.py",
+      "category": "zimmerman",
+      "description": "List and export NTFS $MFT entries (list_mft).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "json",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-215",
+      "name": "lnk_pl",
+      "binary": "lnk.pl",
+      "category": "zimmerman",
+      "description": "Parse Windows LNK shortcut files (RegRipper lnk.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-216",
+      "name": "mft_pl",
+      "binary": "mft.pl",
+      "category": "zimmerman",
+      "description": "Parse NTFS $MFT records (RegRipper mft.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-217",
+      "name": "MFTECmd",
+      "binary": "MFTECmd",
+      "category": "zimmerman",
+      "description": "Parse $MFT and $UsnJrnl with Eric Zimmerman MFTECmd.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 1200,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-218",
+      "name": "MFTINDX",
+      "binary": "MFTINDX.py",
+      "category": "zimmerman",
+      "description": "Parse NTFS $MFT and $I30 index structures (MFTINDX).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-219",
+      "name": "MFTView",
+      "binary": "MFTView.py",
+      "category": "zimmerman",
+      "description": "GUI viewer for NTFS $MFT records (MFTView; may need display).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-220",
+      "name": "pacmd",
+      "binary": "pacmd",
+      "category": "zimmerman",
+      "description": "Query PulseAudio modules, sinks, and sources (pacmd).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-221",
+      "name": "PECmd",
+      "binary": "PECmd",
+      "category": "zimmerman",
+      "description": "Parse Windows Prefetch files with Eric Zimmerman PECmd (not installed on this host).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "unavailable",
+        "detail": "not installed",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-222",
+      "name": "RBCmd",
+      "binary": "RBCmd",
+      "category": "zimmerman",
+      "description": "Parse Recycle Bin $I metadata files with Eric Zimmerman RBCmd.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-223",
+      "name": "RecentFileCacheParser",
+      "binary": "RecentFileCacheParser",
+      "category": "zimmerman",
+      "description": "Parse Windows RecentFileCache.bcf with Eric Zimmerman RecentFileCacheParser.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "json",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-224",
+      "name": "RECmd",
+      "binary": "RECmd",
+      "category": "zimmerman",
+      "description": "Batch-process Windows Registry hives with Eric Zimmerman RECmd.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--bn",
+            "description": "Batch file for targeted registry extraction",
+            "required": false
+          },
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-225",
+      "name": "samba_log_parser",
+      "binary": "samba-log-parser",
+      "category": "zimmerman",
+      "description": "Parse and analyze Samba log files (samba_log_parser).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-226",
+      "name": "SBECmd",
+      "binary": "SBECmd",
+      "category": "zimmerman",
+      "description": "Parse ShellBags from Registry hives with Eric Zimmerman SBECmd.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-d",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-227",
+      "name": "SQLECmd",
+      "binary": "SQLECmd",
+      "category": "zimmerman",
+      "description": "Parse SQLite databases (browser history, etc.) with Eric Zimmerman SQLECmd.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-228",
+      "name": "sqlite_parser_pl",
+      "binary": "sqlite-parser.pl",
+      "category": "zimmerman",
+      "description": "Parse SQLite database structures (RegRipper sqlite-parser.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-229",
+      "name": "SrumECmd",
+      "binary": "SrumECmd",
+      "category": "zimmerman",
+      "description": "Parse Windows SRUM database with Eric Zimmerman SrumECmd (not installed on this host).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "unavailable",
+        "detail": "not installed",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-230",
+      "name": "tree_mft",
+      "binary": "tree_mft.py",
+      "category": "zimmerman",
+      "description": "Display NTFS $MFT directory tree (tree_mft).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-231",
+      "name": "usnj_pl",
+      "binary": "usnj.pl",
+      "category": "zimmerman",
+      "description": "Parse NTFS $UsnJrnl change journal (RegRipper usnj.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-232",
+      "name": "usnjls",
+      "binary": "usnjls",
+      "category": "zimmerman",
+      "description": "List entries in NTFS $UsnJrnl (usnjls).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-233",
+      "name": "usnparser",
+      "binary": "usnparser",
+      "category": "zimmerman",
+      "description": "Parse NTFS USN change journal records (usnparser).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-234",
+      "name": "WxTCmd",
+      "binary": "WxTCmd",
+      "category": "zimmerman",
+      "description": "Parse Windows Timeline database with Eric Zimmerman WxTCmd.",
       "host_platforms": [
         "linux"
       ],

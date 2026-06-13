@@ -144,7 +144,7 @@ DESCRIPTION_OVERRIDES: dict[str, str] = {
     "SIFT-161": "Display metadata about a partition in a disk image (The Sleuth Kit mmstat).",
     "SIFT-162": "Search a disk image for binary signatures (The Sleuth Kit sigfind).",
     "SIFT-163": "Sort and categorize files in a disk image (The Sleuth Kit sorter).",
-    "SIFT-164": "Recover deleted files from a disk image to a directory (The Sleuth Kit tsk_recover).",
+    "SIFT-164": "Bulk recover files from a disk image into an output directory (The Sleuth Kit tsk_recover). Harness appends scratch output dir as final arg.",
     "SIFT-165": "Mount disk images via FUSE (xmount; may need case-specific options).",
     "SIFT-166": "Hayabusa Windows event log and Sigma rule scanner (not installed on this host).",
     "SIFT-167": "Build super timelines from plaso/log2timeline (may need case-specific arguments).",
@@ -181,6 +181,41 @@ DESCRIPTION_OVERRIDES: dict[str, str] = {
     "SIFT-198": "Extract a single EVTX record by id (evtx_extract_record).",
     "SIFT-199": "Filter EVTX records by XPath-like criteria (evtx_filter_records).",
     "SIFT-200": "Display metadata about an EVTX file (evtx_info).",
+    # Batch 5 (SIFT-201 … SIFT-234)
+    "SIFT-201": "Pretty-print the binary structure of an EVTX record (evtx_record_structure).",
+    "SIFT-202": "Dump the internal structure of a Windows EVTX file (evtx_structure).",
+    "SIFT-203": "Extract and dump templates from a binary EVTX file (evtx_templates).",
+    "SIFT-204": "Parse Windows Event Log (.evtx) files with Eric Zimmerman EvtxECmd.",
+    "SIFT-205": "Export Windows EVTX event logs (libevtx evtxexport).",
+    "SIFT-206": "Display metadata about a Windows EVTX file (libevtx evtxinfo).",
+    "SIFT-207": "Parse Windows EVTX event logs (RegRipper evtxparse.pl).",
+    "SIFT-208": "Extract slack space from individual MFT records (extract_mft_record_slack).",
+    "SIFT-209": "Mount NTFS $MFT as a FUSE filesystem for browsing (fuse_mft).",
+    "SIFT-210": "Parse Java web browser IDX cache files (idx_parser).",
+    "SIFT-211": "Send diagnostic commands to a running JVM (jcmd).",
+    "SIFT-212": "Parse Windows Jump List files with Eric Zimmerman JLECmd.",
+    "SIFT-213": "Parse Windows LNK shortcut files with Eric Zimmerman LECmd.",
+    "SIFT-214": "List and export NTFS $MFT entries (list_mft).",
+    "SIFT-215": "Parse Windows LNK shortcut files (RegRipper lnk.pl).",
+    "SIFT-216": "Parse NTFS $MFT records (RegRipper mft.pl).",
+    "SIFT-217": "Parse $MFT and $UsnJrnl with Eric Zimmerman MFTECmd.",
+    "SIFT-218": "Parse NTFS $MFT and $I30 index structures (MFTINDX).",
+    "SIFT-219": "GUI viewer for NTFS $MFT records (MFTView; may need display).",
+    "SIFT-220": "Query PulseAudio modules, sinks, and sources (pacmd).",
+    "SIFT-221": "Parse Windows Prefetch files with Eric Zimmerman PECmd (not installed on this host).",
+    "SIFT-222": "Parse Recycle Bin $I metadata files with Eric Zimmerman RBCmd.",
+    "SIFT-223": "Parse Windows RecentFileCache.bcf with Eric Zimmerman RecentFileCacheParser.",
+    "SIFT-224": "Batch-process Windows Registry hives with Eric Zimmerman RECmd.",
+    "SIFT-225": "Parse and analyze Samba log files (samba_log_parser).",
+    "SIFT-226": "Parse ShellBags from Registry hives with Eric Zimmerman SBECmd.",
+    "SIFT-227": "Parse SQLite databases (browser history, etc.) with Eric Zimmerman SQLECmd.",
+    "SIFT-228": "Parse SQLite database structures (RegRipper sqlite-parser.pl).",
+    "SIFT-229": "Parse Windows SRUM database with Eric Zimmerman SrumECmd (not installed on this host).",
+    "SIFT-230": "Display NTFS $MFT directory tree (tree_mft).",
+    "SIFT-231": "Parse NTFS $UsnJrnl change journal (RegRipper usnj.pl).",
+    "SIFT-232": "List entries in NTFS $UsnJrnl (usnjls).",
+    "SIFT-233": "Parse NTFS USN change journal records (usnparser).",
+    "SIFT-234": "Parse Windows Timeline database with Eric Zimmerman WxTCmd.",
 }
 
 
@@ -254,7 +289,9 @@ def _map_verification(old: dict[str, Any]) -> dict[str, Any]:
 def _map_output_style(old_style: str, name: str) -> str:
     if old_style == "inode_stream" or name == "icat":
         return "inode_stream"
-    if old_style in {"stdout", "stderr", "scratch_file", "inode_stream"}:
+    if old_style == "scratch_dir_trailing":
+        return "scratch_dir_trailing"
+    if old_style in {"stdout", "stderr", "scratch_file", "inode_stream", "scratch_dir_trailing"}:
         return old_style
     return "stdout"
 
@@ -305,6 +342,10 @@ def convert_tool(old: dict[str, Any]) -> dict[str, Any]:
     harness = old.get("harness_usage")
     if harness:
         record["input"]["harness_usage"] = str(harness)
+    elif record["output"]["style"] == "scratch_dir_trailing":
+        record["input"]["harness_usage"] = (
+            "Bulk recover: pass image flags only; harness appends scratch output directory as final arg."
+        )
     return record
 
 

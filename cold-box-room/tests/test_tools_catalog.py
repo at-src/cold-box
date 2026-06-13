@@ -29,13 +29,14 @@ def test_manifest_path_exists():
 def test_load_manifest_batch1():
     data = load_manifest()
     assert data["schema"] == "cold_box_room.tools_manifest_v1"
-    assert data["count"] == 200
-    assert len(data["tools"]) == 200
+    assert data["count"] == 234
+    assert len(data["tools"]) == 234
     assert data["tools"][0]["tool_id"] == "SIFT-001"
     assert data["tools"][99]["tool_id"] == "SIFT-100"
     assert data["tools"][100]["tool_id"] == "SIFT-101"
     assert data["tools"][150]["tool_id"] == "SIFT-151"
-    assert data["tools"][-1]["tool_id"] == "SIFT-200"
+    assert data["tools"][200]["tool_id"] == "SIFT-201"
+    assert data["tools"][-1]["tool_id"] == "SIFT-234"
 
 
 def test_batch1_uniform_schema():
@@ -47,7 +48,13 @@ def test_batch1_uniform_schema():
         ids.add(rec["tool_id"])
         assert rec["input"]["style"] in {"positional", "flag", "stdin", "none"}
         assert rec["output"]["format"] in {"text", "json", "csv", "binary"}
-        assert rec["output"]["style"] in {"stdout", "stderr", "scratch_file", "inode_stream"}
+        assert rec["output"]["style"] in {
+            "stdout",
+            "stderr",
+            "scratch_file",
+            "inode_stream",
+            "scratch_dir_trailing",
+        }
         assert rec["verification"]["status"] in STATUS_AGENT_LABELS
         assert "label" not in rec["verification"]  # label computed at describe time
 
@@ -152,11 +159,44 @@ def test_batch4_evtx_dump():
     assert tool.verification.status == "ok"
 
 
+def test_batch4_tsk_recover_scratch_dir_trailing():
+    tool = get_tool("SIFT-164")
+    assert tool.name == "tsk_recover"
+    assert tool.output.style == "scratch_dir_trailing"
+    assert tool.input.harness_usage
+    assert "output directory" in tool.input.harness_usage.lower()
+    ported = next(r for r in port_batch(start=150, limit=50) if r["tool_id"] == "SIFT-164")
+    assert ported["output"]["style"] == "scratch_dir_trailing"
+
+
+def test_batch5_sqlecmd():
+    tool = get_tool("SIFT-227")
+    assert tool.name == "SQLECmd"
+    assert tool.category == "zimmerman"
+    assert tool.verification.status == "ok"
+    assert "[VERIFIED OK]" not in tool.description
+
+
+def test_batch5_pecmd_unavailable():
+    tool = get_tool("SIFT-221")
+    assert tool.name == "PECmd"
+    assert tool.verification.status == "unavailable"
+    assert tool.verification.agent_runnable is False
+
+
+def test_catalog_complete():
+    data = load_manifest()
+    ids = [t["tool_id"] for t in data["tools"]]
+    assert ids == [f"SIFT-{i:03d}" for i in range(1, 235)]
+
+
 def test_port_batch_matches_manifest_count():
     b1 = port_batch(start=0, limit=50)
     b2 = port_batch(start=50, limit=50)
     b3 = port_batch(start=100, limit=50)
     b4 = port_batch(start=150, limit=50)
+    b5 = port_batch(start=200, limit=50)
     assert len(b1) == len(b2) == len(b3) == len(b4) == 50
-    for rec in b1 + b2 + b3 + b4:
+    assert len(b5) == 34
+    for rec in b1 + b2 + b3 + b4 + b5:
         assert not validate_tool_record(rec)

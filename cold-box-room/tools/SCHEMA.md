@@ -29,7 +29,7 @@ Machine validation: `tools/manifest.schema.json`.
 | **input.common_flags** | Documented flags (flag, description, required) |
 | **input.harness_usage** | How `extra_args` map to the real command |
 | **output.format** | `text` \| `json` \| `csv` \| `binary` |
-| **output.style** | `stdout` \| `stderr` \| `scratch_file` \| `inode_stream` |
+| **output.style** | `stdout` \| `stderr` \| `scratch_file` \| `inode_stream` \| `scratch_dir_trailing` |
 | **timeout_seconds** | Harness kill timeout |
 | **interactive** | Usually `false` |
 | **verification.status** | `ok` \| `not_tested` \| `bad` \| `unavailable` |
@@ -47,7 +47,7 @@ Machine validation: `tools/manifest.schema.json`.
 
 ## Example
 
-See `manifest.json` — batches 1–4: `SIFT-001` … `SIFT-200` (200 tools).
+See `manifest.json` — complete catalog: `SIFT-001` … `SIFT-234` (234 tools).
 
 ## Batches
 
@@ -57,7 +57,8 @@ See `manifest.json` — batches 1–4: `SIFT-001` … `SIFT-200` (200 tools).
 | 2 | SIFT-051 … SIFT-100 | 50 |
 | 3 | SIFT-101 … SIFT-150 | 50 |
 | 4 | SIFT-151 … SIFT-200 | 50 |
+| 5 | SIFT-201 … SIFT-234 | 34 |
 
-## Adding batch 5+ (SIFT-201 …)
+## Adding tools
 
 Append objects to `tools`, bump `count`, keep `tool_id` unique (`SIFT-###`).
