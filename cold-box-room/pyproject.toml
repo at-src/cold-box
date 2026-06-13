@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cold-box-room"
+version = "0.1.0"
+description = "Cold-box hallway rooms — deterministic DFIR pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+cold-box-room = "cold_box_room.r1.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cold_box_room*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
