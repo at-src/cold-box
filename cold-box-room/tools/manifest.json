@@ -1,7 +1,7 @@
 {
   "schema": "cold_box_room.tools_manifest_v1",
   "host_os": "linux",
-  "count": 50,
+  "count": 100,
   "tools": [
     {
       "tool_id": "SIFT-001",
@@ -1523,6 +1523,1632 @@
       "verification": {
         "status": "not_tested",
         "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-051",
+      "name": "evtrpt_pl",
+      "binary": "evtrpt.pl",
+      "category": "misc",
+      "description": "Generate reports from Windows EVT event logs (RegRipper evtrpt.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-052",
+      "name": "ewfacquire",
+      "binary": "ewfacquire",
+      "category": "misc",
+      "description": "Create forensic disk images in E01/EWF format.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 7200,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-053",
+      "name": "ewfmount",
+      "binary": "ewfmount",
+      "category": "misc",
+      "description": "Mount E01/EWF evidence images as a raw read-only device.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-054",
+      "name": "exif2map_pl",
+      "binary": "exif2map.pl",
+      "category": "misc",
+      "description": "Map EXIF geolocation metadata from images (RegRipper exif2map.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-055",
+      "name": "exiftool",
+      "binary": "exiftool",
+      "category": "misc",
+      "description": "Extract file metadata (EXIF, timestamps, author) from many file types.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "json",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-056",
+      "name": "fb_pl",
+      "binary": "fb.pl",
+      "category": "misc",
+      "description": "Parse Windows Facebook-related artifacts (RegRipper fb.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-057",
+      "name": "ff_pl",
+      "binary": "ff.pl",
+      "category": "misc",
+      "description": "Parse Firefox browser artifacts (RegRipper ff.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-058",
+      "name": "ff_signons_pl",
+      "binary": "ff_signons.pl",
+      "category": "misc",
+      "description": "Parse Firefox sign-on and session data (RegRipper ff_signons.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-059",
+      "name": "file2brl",
+      "binary": "file2brl",
+      "category": "misc",
+      "description": "Convert XML/HTML/text to braille embosser format (accessibility utility).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-060",
+      "name": "filefrag",
+      "binary": "filefrag",
+      "category": "misc",
+      "description": "Report file extent layout and fragmentation on a filesystem.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-061",
+      "name": "filesnarf",
+      "binary": "filesnarf",
+      "category": "misc",
+      "description": "Extract files from a mounted filesystem over the network (filesnarf).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-062",
+      "name": "freshclam",
+      "binary": "freshclam",
+      "category": "misc",
+      "description": "Update ClamAV virus definition databases.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-063",
+      "name": "ftkparse_pl",
+      "binary": "ftkparse.pl",
+      "category": "misc",
+      "description": "Parse FTK-generated reports (RegRipper ftkparse.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-064",
+      "name": "fuser",
+      "binary": "fuser",
+      "category": "misc",
+      "description": "Identify processes using specified files or sockets.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-065",
+      "name": "gis4cookie_pl",
+      "binary": "gis4cookie.pl",
+      "category": "misc",
+      "description": "Parse Google Analytics cookie data (RegRipper gis4cookie.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-066",
+      "name": "hashdeep",
+      "binary": "hashdeep",
+      "category": "misc",
+      "description": "Recursive file hashing with audit and match modes.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 1200,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-067",
+      "name": "idx_pl",
+      "binary": "idx.pl",
+      "category": "misc",
+      "description": "Parse Internet Explorer index.dat records (RegRipper idx.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-068",
+      "name": "idxparse_pl",
+      "binary": "idxparse.pl",
+      "category": "misc",
+      "description": "Parse and decode index.dat structures (RegRipper idxparse.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-069",
+      "name": "jl_pl",
+      "binary": "jl.pl",
+      "category": "misc",
+      "description": "Parse Windows Jump List DestList streams (RegRipper jl.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-070",
+      "name": "jobparse_pl",
+      "binary": "jobparse.pl",
+      "category": "misc",
+      "description": "Parse Windows job files (RegRipper jobparse.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-071",
+      "name": "json_printer_pl",
+      "binary": "json-printer.pl",
+      "category": "misc",
+      "description": "Pretty-print JSON forensic output (RegRipper json-printer.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-072",
+      "name": "lfle_pl",
+      "binary": "lfle.pl",
+      "category": "misc",
+      "description": "Parse LastFolderListExplorer MRU artifacts (RegRipper lfle.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-073",
+      "name": "losetup",
+      "binary": "losetup",
+      "category": "misc",
+      "description": "Set up and manage loopback block devices for mounted images.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "--json",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          },
+          {
+            "flag": "--output",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "json",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-074",
+      "name": "lsof",
+      "binary": "lsof",
+      "category": "misc",
+      "description": "List open files and the processes that opened them.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-075",
+      "name": "mount",
+      "binary": "mount",
+      "category": "misc",
+      "description": "Mount filesystems from disk images or devices (use with care on evidence).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-076",
+      "name": "parse_pl",
+      "binary": "parse.pl",
+      "category": "misc",
+      "description": "Generic RegRipper parse plugin (parse.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-077",
+      "name": "parsei30_pl",
+      "binary": "parsei30.pl",
+      "category": "misc",
+      "description": "Parse NTFS $I30 index slack artifacts (RegRipper parsei30.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-078",
+      "name": "parseie_pl",
+      "binary": "parseie.pl",
+      "category": "misc",
+      "description": "Parse Internet Explorer artifacts (RegRipper parseie.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-079",
+      "name": "pie_pl",
+      "binary": "pie.pl",
+      "category": "misc",
+      "description": "Parse IE Prefetch-related data (RegRipper pie.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-080",
+      "name": "pref_pl",
+      "binary": "pref.pl",
+      "category": "misc",
+      "description": "Parse IE Preferences records (RegRipper pref.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-081",
+      "name": "r2",
+      "binary": "r2",
+      "category": "misc",
+      "description": "Radare2 reverse-engineering framework (r2 CLI).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-082",
+      "name": "rabin2",
+      "binary": "rabin2",
+      "category": "misc",
+      "description": "Radare2 binary analysis utility (rabin2).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-083",
+      "name": "radare2",
+      "binary": "radare2",
+      "category": "misc",
+      "description": "Radare2 multi-purpose reverse-engineering shell.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-084",
+      "name": "rawie_pl",
+      "binary": "rawie.pl",
+      "category": "misc",
+      "description": "Parse raw Internet Explorer index structures (RegRipper rawie.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-085",
+      "name": "rax2",
+      "binary": "rax2",
+      "category": "misc",
+      "description": "Radare2 base converter and expression evaluator (rax2).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-086",
+      "name": "recbin_pl",
+      "binary": "recbin.pl",
+      "category": "misc",
+      "description": "Parse Windows Recycle Bin metadata (RegRipper recbin.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-087",
+      "name": "regedit",
+      "binary": "regedit",
+      "category": "misc",
+      "description": "Windows Registry Editor (Wine; Windows-only, often unavailable on Linux).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-088",
+      "name": "regedit_stable",
+      "binary": "regedit-stable",
+      "category": "misc",
+      "description": "Windows Registry Editor stable build (Wine; Windows-only).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-089",
+      "name": "regfexport",
+      "binary": "regfexport",
+      "category": "misc",
+      "description": "Export Windows Registry hive files to JSON (libregf regfexport).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-090",
+      "name": "regfinfo",
+      "binary": "regfinfo",
+      "category": "misc",
+      "description": "Display Windows Registry hive file information (libregf regfinfo).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-091",
+      "name": "regfmount",
+      "binary": "regfmount",
+      "category": "misc",
+      "description": "Mount Windows Registry hive as FUSE filesystem (libregf regfmount).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-092",
+      "name": "regipy_diff",
+      "binary": "regipy-diff",
+      "category": "misc",
+      "description": "Compare two Windows Registry hives with regipy.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-093",
+      "name": "regipy_dump",
+      "binary": "regipy-dump",
+      "category": "misc",
+      "description": "Dump Windows Registry hive contents with regipy.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-094",
+      "name": "regipy_parse_header",
+      "binary": "regipy-parse-header",
+      "category": "misc",
+      "description": "Parse Registry hive header metadata with regipy.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-095",
+      "name": "regipy_plugins_list",
+      "binary": "regipy-plugins-list",
+      "category": "misc",
+      "description": "List available regipy Registry analysis plugins.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-096",
+      "name": "regipy_plugins_run",
+      "binary": "regipy-plugins-run",
+      "category": "misc",
+      "description": "Run regipy plugins against a Registry hive.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-097",
+      "name": "regipy_process_transaction_logs",
+      "binary": "regipy-process-transaction-logs",
+      "category": "misc",
+      "description": "Process Registry transaction logs with regipy.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-098",
+      "name": "regripper",
+      "binary": "rip.pl",
+      "category": "misc",
+      "description": "Registry hive parser with plugin framework (RegRipper rip.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-099",
+      "name": "regslack_pl",
+      "binary": "regslack.pl",
+      "category": "misc",
+      "description": "Parse Registry slack space (RegRipper regslack.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-100",
+      "name": "regsvr32",
+      "binary": "regsvr32",
+      "category": "misc",
+      "description": "Windows regsvr32 DLL registration utility (Wine; Windows-only).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
         "runnable": true
       }
     }

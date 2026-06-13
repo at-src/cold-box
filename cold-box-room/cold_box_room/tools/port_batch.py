@@ -28,6 +28,57 @@ DESCRIPTION_OVERRIDES: dict[str, str] = {
     "SIFT-048": "Enhanced dd variant for forensic disk imaging.",
     "SIFT-049": "Extract font metadata from Microsoft Word documents (RegRipper plugin).",
     "SIFT-050": "Parse Windows EVT event logs (legacy Perl parser).",
+    # Batch 2 (SIFT-051 … SIFT-100)
+    "SIFT-051": "Generate reports from Windows EVT event logs (RegRipper evtrpt.pl).",
+    "SIFT-052": "Create forensic disk images in E01/EWF format.",
+    "SIFT-053": "Mount E01/EWF evidence images as a raw read-only device.",
+    "SIFT-054": "Map EXIF geolocation metadata from images (RegRipper exif2map.pl).",
+    "SIFT-055": "Extract file metadata (EXIF, timestamps, author) from many file types.",
+    "SIFT-056": "Parse Windows Facebook-related artifacts (RegRipper fb.pl).",
+    "SIFT-057": "Parse Firefox browser artifacts (RegRipper ff.pl).",
+    "SIFT-058": "Parse Firefox sign-on and session data (RegRipper ff_signons.pl).",
+    "SIFT-059": "Convert XML/HTML/text to braille embosser format (accessibility utility).",
+    "SIFT-060": "Report file extent layout and fragmentation on a filesystem.",
+    "SIFT-061": "Extract files from a mounted filesystem over the network (filesnarf).",
+    "SIFT-062": "Update ClamAV virus definition databases.",
+    "SIFT-063": "Parse FTK-generated reports (RegRipper ftkparse.pl).",
+    "SIFT-064": "Identify processes using specified files or sockets.",
+    "SIFT-065": "Parse Google Analytics cookie data (RegRipper gis4cookie.pl).",
+    "SIFT-066": "Recursive file hashing with audit and match modes.",
+    "SIFT-067": "Parse Internet Explorer index.dat records (RegRipper idx.pl).",
+    "SIFT-068": "Parse and decode index.dat structures (RegRipper idxparse.pl).",
+    "SIFT-069": "Parse Windows Jump List DestList streams (RegRipper jl.pl).",
+    "SIFT-070": "Parse Windows job files (RegRipper jobparse.pl).",
+    "SIFT-071": "Pretty-print JSON forensic output (RegRipper json-printer.pl).",
+    "SIFT-072": "Parse LastFolderListExplorer MRU artifacts (RegRipper lfle.pl).",
+    "SIFT-073": "Set up and manage loopback block devices for mounted images.",
+    "SIFT-074": "List open files and the processes that opened them.",
+    "SIFT-075": "Mount filesystems from disk images or devices (use with care on evidence).",
+    "SIFT-076": "Generic RegRipper parse plugin (parse.pl).",
+    "SIFT-077": "Parse NTFS $I30 index slack artifacts (RegRipper parsei30.pl).",
+    "SIFT-078": "Parse Internet Explorer artifacts (RegRipper parseie.pl).",
+    "SIFT-079": "Parse IE Prefetch-related data (RegRipper pie.pl).",
+    "SIFT-080": "Parse IE Preferences records (RegRipper pref.pl).",
+    "SIFT-081": "Radare2 reverse-engineering framework (r2 CLI).",
+    "SIFT-082": "Radare2 binary analysis utility (rabin2).",
+    "SIFT-083": "Radare2 multi-purpose reverse-engineering shell.",
+    "SIFT-084": "Parse raw Internet Explorer index structures (RegRipper rawie.pl).",
+    "SIFT-085": "Radare2 base converter and expression evaluator (rax2).",
+    "SIFT-086": "Parse Windows Recycle Bin metadata (RegRipper recbin.pl).",
+    "SIFT-087": "Windows Registry Editor (Wine; Windows-only, often unavailable on Linux).",
+    "SIFT-088": "Windows Registry Editor stable build (Wine; Windows-only).",
+    "SIFT-089": "Export Windows Registry hive files to JSON (libregf regfexport).",
+    "SIFT-090": "Display Windows Registry hive file information (libregf regfinfo).",
+    "SIFT-091": "Mount Windows Registry hive as FUSE filesystem (libregf regfmount).",
+    "SIFT-092": "Compare two Windows Registry hives with regipy.",
+    "SIFT-093": "Dump Windows Registry hive contents with regipy.",
+    "SIFT-094": "Parse Registry hive header metadata with regipy.",
+    "SIFT-095": "List available regipy Registry analysis plugins.",
+    "SIFT-096": "Run regipy plugins against a Registry hive.",
+    "SIFT-097": "Process Registry transaction logs with regipy.",
+    "SIFT-098": "Registry hive parser with plugin framework (RegRipper rip.pl).",
+    "SIFT-099": "Parse Registry slack space (RegRipper regslack.pl).",
+    "SIFT-100": "Windows regsvr32 DLL registration utility (Wine; Windows-only).",
 }
 
 
@@ -44,6 +95,12 @@ def _clean_description(tool_id: str, raw: str) -> str:
     cleaned = _strip_tags(raw)
     if not cleaned or "invalid option" in cleaned.lower() or "invalid flag" in cleaned.lower():
         return DESCRIPTION_OVERRIDES.get(tool_id, cleaned or tool_id)
+    if "traceback" in cleaned.lower():
+        return DESCRIPTION_OVERRIDES.get(tool_id, "Registry analysis tool (regipy).")
+    if "wine32 is missing" in cleaned.lower():
+        return DESCRIPTION_OVERRIDES.get(tool_id, "Windows-only tool (Wine required).")
+    if cleaned.startswith("Forensic CLI:"):
+        return DESCRIPTION_OVERRIDES.get(tool_id, cleaned.replace("Forensic CLI:", "RegRipper plugin:").strip())
     # Drop obvious --help noise (version banners kept only if no override)
     if cleaned.startswith("7-Zip (") or cleaned.startswith("Copyright (c)"):
         return DESCRIPTION_OVERRIDES.get(tool_id, cleaned)

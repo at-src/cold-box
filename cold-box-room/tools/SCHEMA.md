@@ -47,14 +47,15 @@ Machine validation: `tools/manifest.schema.json`.
 
 ## Example
 
-See `manifest.json` — batch 1: `SIFT-001` … `SIFT-050` (50 tools).
+See `manifest.json` — batches 1–2: `SIFT-001` … `SIFT-100` (100 tools).
 
 ## Batches
 
 | Batch | tool_id range | count |
 |-------|---------------|------:|
 | 1 | SIFT-001 … SIFT-050 | 50 |
+| 2 | SIFT-051 … SIFT-100 | 50 |
 
-## Adding batch 2+ (SIFT-051 …)
+## Adding batch 3+ (SIFT-101 …)
 
 Append objects to `tools`, bump `count`, keep `tool_id` unique (`SIFT-###`).
