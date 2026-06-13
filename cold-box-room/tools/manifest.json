@@ -1,7 +1,7 @@
 {
   "schema": "cold_box_room.tools_manifest_v1",
   "host_os": "linux",
-  "count": 100,
+  "count": 150,
   "tools": [
     {
       "tool_id": "SIFT-001",
@@ -3149,6 +3149,1598 @@
       "verification": {
         "status": "not_tested",
         "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-101",
+      "name": "regsvr32_stable",
+      "binary": "regsvr32-stable",
+      "category": "misc",
+      "description": "Windows regsvr32 stable build (Wine; Windows-only).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-102",
+      "name": "regtime_pl",
+      "binary": "regtime.pl",
+      "category": "misc",
+      "description": "Parse Registry time values (RegRipper regtime.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-103",
+      "name": "rfc_pl",
+      "binary": "rfc.pl",
+      "category": "misc",
+      "description": "Parse Registry File Contents artifacts (RegRipper rfc.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-104",
+      "name": "rlo_pl",
+      "binary": "rlo.pl",
+      "category": "misc",
+      "description": "Parse Registry LastOpened MRU data (RegRipper rlo.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-105",
+      "name": "shadowconfig",
+      "binary": "shadowconfig",
+      "category": "misc",
+      "description": "Configure shadow volume / VSS-related settings (RegRipper shadowconfig).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-106",
+      "name": "sms_grep_pl",
+      "binary": "sms-grep.pl",
+      "category": "misc",
+      "description": "Search SMS/text message patterns (RegRipper sms_grep.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-107",
+      "name": "squirrelgripper_pl",
+      "binary": "squirrelgripper.pl",
+      "category": "misc",
+      "description": "Parse SquirrelGripper malware artifacts (RegRipper squirrelgripper.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-108",
+      "name": "testdisk",
+      "binary": "testdisk",
+      "category": "misc",
+      "description": "Recover lost partitions and repair boot sectors (TestDisk).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-109",
+      "name": "timediff32_pl",
+      "binary": "timediff32.pl",
+      "category": "misc",
+      "description": "Calculate time differences from Registry timestamps (RegRipper timediff32.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-110",
+      "name": "umount",
+      "binary": "umount",
+      "category": "misc",
+      "description": "Unmount mounted filesystems (use with care on evidence mounts).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-111",
+      "name": "vmail_db_2_html_pl",
+      "binary": "vmail-db-2-html.pl",
+      "category": "misc",
+      "description": "Convert vmail database to HTML (RegRipper vmail-db-2-html.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-112",
+      "name": "vshadowdebug",
+      "binary": "vshadowdebug",
+      "category": "misc",
+      "description": "Debug Volume Shadow Copy structures (libvshadow vshadowdebug).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-113",
+      "name": "vshadowinfo",
+      "binary": "vshadowinfo",
+      "category": "misc",
+      "description": "List Volume Shadow Copy snapshot information (libvshadow vshadowinfo).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-114",
+      "name": "vshadowmount",
+      "binary": "vshadowmount",
+      "category": "misc",
+      "description": "Mount Volume Shadow Copy snapshots as raw devices (vshadowmount).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-115",
+      "name": "ngrep",
+      "binary": "ngrep",
+      "category": "network",
+      "description": "Network grep \u2014 search PCAP or live traffic for patterns (ngrep).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-T",
+            "description": "Output format",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "needs pcap fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-116",
+      "name": "tcpdump",
+      "binary": "tcpdump",
+      "category": "network",
+      "description": "Capture and analyze network packets from interfaces or PCAP files.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-T",
+            "description": "Output format",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "needs pcap fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-117",
+      "name": "tshark",
+      "binary": "tshark",
+      "category": "network",
+      "description": "Wireshark command-line PCAP analyzer (tshark).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "unavailable",
+        "detail": "not installed",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-118",
+      "name": "wireshark",
+      "binary": "wireshark",
+      "category": "network",
+      "description": "Wireshark network protocol analyzer (GUI; heavy; use tshark in headless runs).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-Y",
+            "description": "Display filter",
+            "required": false
+          },
+          {
+            "flag": "-T",
+            "description": "Output format (fields, json, pdml)",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "needs pcap fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-119",
+      "name": "zeek",
+      "binary": "zeek",
+      "category": "network",
+      "description": "Zeek network security monitor \u2014 structured protocol logs from PCAP.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 1200,
+      "interactive": false,
+      "verification": {
+        "status": "unavailable",
+        "detail": "not installed",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-120",
+      "name": "affcat",
+      "binary": "affcat",
+      "category": "sleuthkit",
+      "description": "Output contents of an AFF forensic disk image (affcat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-121",
+      "name": "affcompare",
+      "binary": "affcompare",
+      "category": "sleuthkit",
+      "description": "Compare two AFF image files for differences (affcompare).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-122",
+      "name": "affconvert",
+      "binary": "affconvert",
+      "category": "sleuthkit",
+      "description": "Convert AFF images between formats (affconvert).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-123",
+      "name": "affcopy",
+      "binary": "affcopy",
+      "category": "sleuthkit",
+      "description": "Copy AFF image files (affcopy).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-124",
+      "name": "affcrypto",
+      "binary": "affcrypto",
+      "category": "sleuthkit",
+      "description": "Encrypt or decrypt AFF image segments (affcrypto).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-125",
+      "name": "affdiskprint",
+      "binary": "affdiskprint",
+      "category": "sleuthkit",
+      "description": "Print disk identifiers embedded in AFF images (affdiskprint).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-126",
+      "name": "affinfo",
+      "binary": "affinfo",
+      "category": "sleuthkit",
+      "description": "Display metadata about an AFF forensic image (affinfo).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-127",
+      "name": "affix",
+      "binary": "affix",
+      "category": "sleuthkit",
+      "description": "Repair and re-index damaged AFF images (affix).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-128",
+      "name": "affrecover",
+      "binary": "affrecover",
+      "category": "sleuthkit",
+      "description": "Recover data from damaged AFF images (affrecover).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-129",
+      "name": "affsegment",
+      "binary": "affsegment",
+      "category": "sleuthkit",
+      "description": "Manage AFF image segments (affsegment).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-130",
+      "name": "affsign",
+      "binary": "affsign",
+      "category": "sleuthkit",
+      "description": "Sign AFF image files for integrity (affsign).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-131",
+      "name": "affstats",
+      "binary": "affstats",
+      "category": "sleuthkit",
+      "description": "Report statistics about an AFF image (affstats).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-132",
+      "name": "affuse",
+      "binary": "affuse",
+      "category": "sleuthkit",
+      "description": "Mount AFF images via FUSE (affuse).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-133",
+      "name": "affverify",
+      "binary": "affverify",
+      "category": "sleuthkit",
+      "description": "Verify integrity of AFF image files (affverify).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-134",
+      "name": "affxml",
+      "binary": "affxml",
+      "category": "sleuthkit",
+      "description": "Export AFF metadata to XML (affxml).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-135",
+      "name": "blkcalc",
+      "binary": "blkcalc",
+      "category": "sleuthkit",
+      "description": "Convert between disk sector and file system block addresses (blkcalc).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-136",
+      "name": "blkcat",
+      "binary": "blkcat",
+      "category": "sleuthkit",
+      "description": "Output contents of specific disk blocks (blkcat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-137",
+      "name": "blkid",
+      "binary": "blkid",
+      "category": "sleuthkit",
+      "description": "Locate block devices by label or UUID (blkid).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          },
+          {
+            "flag": "--output",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-138",
+      "name": "blkls",
+      "binary": "blkls",
+      "category": "sleuthkit",
+      "description": "List unallocated disk blocks / slack space (blkls).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 3600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-139",
+      "name": "blkstat",
+      "binary": "blkstat",
+      "category": "sleuthkit",
+      "description": "Display file system metadata about a disk block (blkstat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-140",
+      "name": "bodyfile_pl",
+      "binary": "bodyfile.pl",
+      "category": "sleuthkit",
+      "description": "Generate TSK bodyfile timeline input (RegRipper bodyfile.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-141",
+      "name": "ewfacquirestream",
+      "binary": "ewfacquirestream",
+      "category": "sleuthkit",
+      "description": "Acquire EWF images from a stream source (ewfacquirestream).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-142",
+      "name": "ewfdebug",
+      "binary": "ewfdebug",
+      "category": "sleuthkit",
+      "description": "Debug EWF/E01 image structures (ewfdebug).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-143",
+      "name": "ewfexport",
+      "binary": "ewfexport",
+      "category": "sleuthkit",
+      "description": "Export EWF/E01 images to raw or other formats (ewfexport).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-144",
+      "name": "ewfinfo",
+      "binary": "ewfinfo",
+      "category": "sleuthkit",
+      "description": "Display information about EWF/E01 forensic images (ewfinfo).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-145",
+      "name": "ewfrecover",
+      "binary": "ewfrecover",
+      "category": "sleuthkit",
+      "description": "Recover data from damaged EWF/E01 images (ewfrecover).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-146",
+      "name": "ewfverify",
+      "binary": "ewfverify",
+      "category": "sleuthkit",
+      "description": "Verify integrity of EWF/E01 image files (ewfverify).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-147",
+      "name": "fcat",
+      "binary": "fcat",
+      "category": "sleuthkit",
+      "description": "Extract a file from a disk image by file name (The Sleuth Kit fcat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-148",
+      "name": "fls",
+      "binary": "fls",
+      "category": "sleuthkit",
+      "description": "List files and directories in a disk image (The Sleuth Kit fls).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [],
+        "harness_usage": "List directory: extra_args=[\"-o\", \"63\", \"-l\", \"INODE\"] \u2192 fls -o 63 -l IMAGE INODE. Use MFT entry number only (e.g. 23117), not name-typed form. Optional @@ in extra_args is ignored (inode always after image)."
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-149",
+      "name": "fsstat",
+      "binary": "fsstat",
+      "category": "sleuthkit",
+      "description": "Display file system statistics and layout (The Sleuth Kit fsstat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ],
+        "harness_usage": "Partition layout/stats: extra_args=[\"-o\", \"63\"] when image has DOS/MBR table."
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-150",
+      "name": "hfind",
+      "binary": "hfind",
+      "category": "sleuthkit",
+      "description": "Look up file names in TSK hash databases (The Sleuth Kit hfind).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
         "runnable": true
       }
     }

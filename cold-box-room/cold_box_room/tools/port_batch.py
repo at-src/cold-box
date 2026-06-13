@@ -79,6 +79,57 @@ DESCRIPTION_OVERRIDES: dict[str, str] = {
     "SIFT-098": "Registry hive parser with plugin framework (RegRipper rip.pl).",
     "SIFT-099": "Parse Registry slack space (RegRipper regslack.pl).",
     "SIFT-100": "Windows regsvr32 DLL registration utility (Wine; Windows-only).",
+    # Batch 3 (SIFT-101 … SIFT-150)
+    "SIFT-101": "Windows regsvr32 stable build (Wine; Windows-only).",
+    "SIFT-102": "Parse Registry time values (RegRipper regtime.pl).",
+    "SIFT-103": "Parse Registry File Contents artifacts (RegRipper rfc.pl).",
+    "SIFT-104": "Parse Registry LastOpened MRU data (RegRipper rlo.pl).",
+    "SIFT-105": "Configure shadow volume / VSS-related settings (RegRipper shadowconfig).",
+    "SIFT-106": "Search SMS/text message patterns (RegRipper sms_grep.pl).",
+    "SIFT-107": "Parse SquirrelGripper malware artifacts (RegRipper squirrelgripper.pl).",
+    "SIFT-108": "Recover lost partitions and repair boot sectors (TestDisk).",
+    "SIFT-109": "Calculate time differences from Registry timestamps (RegRipper timediff32.pl).",
+    "SIFT-110": "Unmount mounted filesystems (use with care on evidence mounts).",
+    "SIFT-111": "Convert vmail database to HTML (RegRipper vmail-db-2-html.pl).",
+    "SIFT-112": "Debug Volume Shadow Copy structures (libvshadow vshadowdebug).",
+    "SIFT-113": "List Volume Shadow Copy snapshot information (libvshadow vshadowinfo).",
+    "SIFT-114": "Mount Volume Shadow Copy snapshots as raw devices (vshadowmount).",
+    "SIFT-115": "Network grep — search PCAP or live traffic for patterns (ngrep).",
+    "SIFT-116": "Capture and analyze network packets from interfaces or PCAP files.",
+    "SIFT-117": "Wireshark command-line PCAP analyzer (tshark).",
+    "SIFT-118": "Wireshark network protocol analyzer (GUI; heavy; use tshark in headless runs).",
+    "SIFT-119": "Zeek network security monitor — structured protocol logs from PCAP.",
+    "SIFT-120": "Output contents of an AFF forensic disk image (affcat).",
+    "SIFT-121": "Compare two AFF image files for differences (affcompare).",
+    "SIFT-122": "Convert AFF images between formats (affconvert).",
+    "SIFT-123": "Copy AFF image files (affcopy).",
+    "SIFT-124": "Encrypt or decrypt AFF image segments (affcrypto).",
+    "SIFT-125": "Print disk identifiers embedded in AFF images (affdiskprint).",
+    "SIFT-126": "Display metadata about an AFF forensic image (affinfo).",
+    "SIFT-127": "Repair and re-index damaged AFF images (affix).",
+    "SIFT-128": "Recover data from damaged AFF images (affrecover).",
+    "SIFT-129": "Manage AFF image segments (affsegment).",
+    "SIFT-130": "Sign AFF image files for integrity (affsign).",
+    "SIFT-131": "Report statistics about an AFF image (affstats).",
+    "SIFT-132": "Mount AFF images via FUSE (affuse).",
+    "SIFT-133": "Verify integrity of AFF image files (affverify).",
+    "SIFT-134": "Export AFF metadata to XML (affxml).",
+    "SIFT-135": "Convert between disk sector and file system block addresses (blkcalc).",
+    "SIFT-136": "Output contents of specific disk blocks (blkcat).",
+    "SIFT-137": "Locate block devices by label or UUID (blkid).",
+    "SIFT-138": "List unallocated disk blocks / slack space (blkls).",
+    "SIFT-139": "Display file system metadata about a disk block (blkstat).",
+    "SIFT-140": "Generate TSK bodyfile timeline input (RegRipper bodyfile.pl).",
+    "SIFT-141": "Acquire EWF images from a stream source (ewfacquirestream).",
+    "SIFT-142": "Debug EWF/E01 image structures (ewfdebug).",
+    "SIFT-143": "Export EWF/E01 images to raw or other formats (ewfexport).",
+    "SIFT-144": "Display information about EWF/E01 forensic images (ewfinfo).",
+    "SIFT-145": "Recover data from damaged EWF/E01 images (ewfrecover).",
+    "SIFT-146": "Verify integrity of EWF/E01 image files (ewfverify).",
+    "SIFT-147": "Extract a file from a disk image by file name (The Sleuth Kit fcat).",
+    "SIFT-148": "List files and directories in a disk image (The Sleuth Kit fls).",
+    "SIFT-149": "Display file system statistics and layout (The Sleuth Kit fsstat).",
+    "SIFT-150": "Look up file names in TSK hash databases (The Sleuth Kit hfind).",
 }
 
 
@@ -104,6 +155,14 @@ def _clean_description(tool_id: str, raw: str) -> str:
     # Drop obvious --help noise (version banners kept only if no override)
     if cleaned.startswith("7-Zip (") or cleaned.startswith("Copyright (c)"):
         return DESCRIPTION_OVERRIDES.get(tool_id, cleaned)
+    if re.match(r"^aff\w+ version ", cleaned) or re.match(r"^ewf\w+ \d{8}", cleaned):
+        return DESCRIPTION_OVERRIDES.get(tool_id, cleaned)
+    if cleaned.startswith("TestDisk ") or cleaned.startswith("tcpdump version"):
+        return DESCRIPTION_OVERRIDES.get(tool_id, cleaned)
+    if cleaned.startswith("Wireshark ") and tool_id == "SIFT-118":
+        return DESCRIPTION_OVERRIDES.get(tool_id, cleaned)
+    if cleaned.startswith("umount "):
+        return DESCRIPTION_OVERRIDES.get(tool_id, "Unmount mounted filesystems.")
     if cleaned.startswith("Clam AntiVirus:") or cleaned.startswith("DensityScout"):
         return DESCRIPTION_OVERRIDES.get(tool_id, cleaned)
     if cleaned.startswith("Scalpel version"):
