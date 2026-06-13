@@ -29,12 +29,13 @@ def test_manifest_path_exists():
 def test_load_manifest_batch1():
     data = load_manifest()
     assert data["schema"] == "cold_box_room.tools_manifest_v1"
-    assert data["count"] == 150
-    assert len(data["tools"]) == 150
+    assert data["count"] == 200
+    assert len(data["tools"]) == 200
     assert data["tools"][0]["tool_id"] == "SIFT-001"
     assert data["tools"][99]["tool_id"] == "SIFT-100"
     assert data["tools"][100]["tool_id"] == "SIFT-101"
-    assert data["tools"][-1]["tool_id"] == "SIFT-150"
+    assert data["tools"][150]["tool_id"] == "SIFT-151"
+    assert data["tools"][-1]["tool_id"] == "SIFT-200"
 
 
 def test_batch1_uniform_schema():
@@ -127,10 +128,35 @@ def test_batch3_tshark_unavailable():
     assert tool.verification.agent_runnable is False
 
 
+def test_batch4_icat():
+    tool = get_tool("SIFT-151")
+    assert tool.name == "icat"
+    assert tool.category == "sleuthkit"
+    assert tool.verification.status == "ok"
+    assert tool.output.style == "inode_stream"
+    assert tool.input.harness_usage
+    assert "INODE" in tool.input.harness_usage
+
+
+def test_batch4_mmls_not_tested():
+    tool = get_tool("SIFT-160")
+    assert tool.name == "mmls"
+    assert tool.verification.status == "not_tested"
+    assert tool.input.harness_usage
+
+
+def test_batch4_evtx_dump():
+    tool = get_tool("SIFT-194")
+    assert tool.name == "evtx_dump"
+    assert tool.category == "zimmerman"
+    assert tool.verification.status == "ok"
+
+
 def test_port_batch_matches_manifest_count():
     b1 = port_batch(start=0, limit=50)
     b2 = port_batch(start=50, limit=50)
     b3 = port_batch(start=100, limit=50)
-    assert len(b1) == len(b2) == len(b3) == 50
-    for rec in b1 + b2 + b3:
+    b4 = port_batch(start=150, limit=50)
+    assert len(b1) == len(b2) == len(b3) == len(b4) == 50
+    for rec in b1 + b2 + b3 + b4:
         assert not validate_tool_record(rec)

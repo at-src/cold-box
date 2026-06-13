@@ -1,7 +1,7 @@
 {
   "schema": "cold_box_room.tools_manifest_v1",
   "host_os": "linux",
-  "count": 150,
+  "count": 200,
   "tools": [
     {
       "tool_id": "SIFT-001",
@@ -4734,6 +4734,1710 @@
       },
       "output": {
         "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-151",
+      "name": "icat",
+      "binary": "icat",
+      "category": "sleuthkit",
+      "description": "Extract file content from a disk image by inode (The Sleuth Kit icat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [],
+        "harness_usage": "Extract file bytes: extra_args=[\"-o\", \"63\", \"INODE-FULL\"] \u2192 icat -o 63 IMAGE INODE. Output lands in scratch; parse with analyze_scratch."
+      },
+      "output": {
+        "format": "binary",
+        "style": "inode_stream"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "run with inode from fls; harness streams to scratch",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-152",
+      "name": "ifind",
+      "binary": "ifind",
+      "category": "sleuthkit",
+      "description": "Find inode numbers for file names or data units (The Sleuth Kit ifind).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ],
+        "harness_usage": "ifind: partition flags in extra_args, then path or inode after IMAGE. See common_flags."
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-153",
+      "name": "img_cat",
+      "binary": "img_cat",
+      "category": "sleuthkit",
+      "description": "Display raw bytes from a disk image at a given offset (The Sleuth Kit img_cat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-154",
+      "name": "img_stat",
+      "binary": "img_stat",
+      "category": "sleuthkit",
+      "description": "Display metadata about a disk image (The Sleuth Kit img_stat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-155",
+      "name": "istat",
+      "binary": "istat",
+      "category": "sleuthkit",
+      "description": "Display inode metadata for a file in a disk image (The Sleuth Kit istat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "run with inode from fls",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-156",
+      "name": "jcat",
+      "binary": "jcat",
+      "category": "sleuthkit",
+      "description": "Extract a file from a journal by inode (The Sleuth Kit jcat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-157",
+      "name": "jls",
+      "binary": "jls",
+      "category": "sleuthkit",
+      "description": "List files in a file system journal (The Sleuth Kit jls).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-158",
+      "name": "jstat",
+      "binary": "jstat",
+      "category": "sleuthkit",
+      "description": "Display journal superblock information (The Sleuth Kit jstat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-159",
+      "name": "mmcat",
+      "binary": "mmcat",
+      "category": "sleuthkit",
+      "description": "Extract data from a partition by sector range (The Sleuth Kit mmcat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-160",
+      "name": "mmls",
+      "binary": "mmls",
+      "category": "sleuthkit",
+      "description": "Display partition layout of a disk image (The Sleuth Kit mmls).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [],
+        "harness_usage": "Partition layout/stats: extra_args=[\"-o\", \"63\"] when image has DOS/MBR table."
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "needs partitioned image fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-161",
+      "name": "mmstat",
+      "binary": "mmstat",
+      "category": "sleuthkit",
+      "description": "Display metadata about a partition in a disk image (The Sleuth Kit mmstat).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-162",
+      "name": "sigfind",
+      "binary": "sigfind",
+      "category": "sleuthkit",
+      "description": "Search a disk image for binary signatures (The Sleuth Kit sigfind).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-163",
+      "name": "sorter",
+      "binary": "sorter",
+      "category": "sleuthkit",
+      "description": "Sort and categorize files in a disk image (The Sleuth Kit sorter).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-164",
+      "name": "tsk_recover",
+      "binary": "tsk_recover",
+      "category": "sleuthkit",
+      "description": "Recover deleted files from a disk image to a directory (The Sleuth Kit tsk_recover).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-d",
+            "description": "Directory inode to recover from (optional)",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Partition sector offset",
+            "required": false
+          },
+          {
+            "flag": "-f",
+            "description": "Filesystem type",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-165",
+      "name": "xmount",
+      "binary": "xmount",
+      "category": "sleuthkit",
+      "description": "Mount disk images via FUSE (xmount; may need case-specific options).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          },
+          {
+            "flag": "--out",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-166",
+      "name": "hayabusa",
+      "binary": "hayabusa",
+      "category": "timeline",
+      "description": "Hayabusa Windows event log and Sigma rule scanner (not installed on this host).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-d",
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output file path",
+            "required": false
+          },
+          {
+            "flag": "--min-level",
+            "description": "Minimum alert level (informational, low, medium, high, critical)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "json",
+        "style": "stdout"
+      },
+      "timeout_seconds": 1800,
+      "interactive": false,
+      "verification": {
+        "status": "unavailable",
+        "detail": "not installed",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-167",
+      "name": "log2timeline",
+      "binary": "log2timeline.py",
+      "category": "timeline",
+      "description": "Build super timelines from plaso/log2timeline (may need case-specific arguments).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 7200,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; may need case-specific arguments.",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-168",
+      "name": "mactime",
+      "binary": "mactime",
+      "category": "timeline",
+      "description": "Generate ASCII timeline from TSK bodyfile (The Sleuth Kit mactime).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-b",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-169",
+      "name": "pinfo",
+      "binary": "pinfo.py",
+      "category": "timeline",
+      "description": "Display information about a plaso storage file (pinfo).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 7200,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-170",
+      "name": "psort",
+      "binary": "psort.py",
+      "category": "timeline",
+      "description": "Sort and filter plaso timeline output (psort).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 3600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-171",
+      "name": "tln_pl",
+      "binary": "tln.pl",
+      "category": "timeline",
+      "description": "Convert TLN timeline files to plaso format (tln_pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-r",
+        "common_flags": [
+          {
+            "flag": "-p",
+            "description": "RegRipper plugin name",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-172",
+      "name": "aeskeyfind",
+      "binary": "aeskeyfind",
+      "category": "volatility",
+      "description": "Find AES encryption keys in memory dumps (aeskeyfind).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-173",
+      "name": "vol3",
+      "binary": "vol",
+      "category": "volatility",
+      "description": "Volatility 3 memory forensics framework (may need case-specific arguments).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "-r",
+            "description": "Output renderer (json, csv, text)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "json",
+        "style": "stdout"
+      },
+      "timeout_seconds": 1200,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "needs memory dump fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-174",
+      "name": "accesschk",
+      "binary": "accesschk",
+      "category": "windows_host",
+      "description": "Report effective permissions on files and registry keys (Sysinternals accesschk).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-175",
+      "name": "accesschk64",
+      "binary": "accesschk64",
+      "category": "windows_host",
+      "description": "64-bit accesschk \u2014 report effective permissions (Sysinternals).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-176",
+      "name": "autoruns",
+      "binary": "autoruns",
+      "category": "windows_host",
+      "description": "List autostart programs and persistence locations (Sysinternals autoruns).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-177",
+      "name": "autoruns64",
+      "binary": "autoruns64",
+      "category": "windows_host",
+      "description": "64-bit autoruns \u2014 list autostart programs (Sysinternals).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-178",
+      "name": "handle",
+      "binary": "handle",
+      "category": "windows_host",
+      "description": "Display open handles for processes (Sysinternals handle).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-179",
+      "name": "powershell",
+      "binary": "powershell",
+      "category": "windows_host",
+      "description": "Windows PowerShell shell and scripting environment.",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-180",
+      "name": "procdump",
+      "binary": "procdump",
+      "category": "windows_host",
+      "description": "Capture process memory dumps (Sysinternals procdump).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-181",
+      "name": "procdump64",
+      "binary": "procdump64",
+      "category": "windows_host",
+      "description": "64-bit procdump \u2014 capture process memory dumps (Sysinternals).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-182",
+      "name": "pslist",
+      "binary": "pslist",
+      "category": "windows_host",
+      "description": "List running processes (Sysinternals pslist).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-183",
+      "name": "sigcheck",
+      "binary": "sigcheck",
+      "category": "windows_host",
+      "description": "Verify file signatures and publisher info (Sysinternals sigcheck).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-184",
+      "name": "sigcheck64",
+      "binary": "sigcheck64",
+      "category": "windows_host",
+      "description": "64-bit sigcheck \u2014 verify file signatures (Sysinternals).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-185",
+      "name": "wevtutil",
+      "binary": "wevtutil",
+      "category": "windows_host",
+      "description": "Query and export Windows Event Log channels (wevtutil).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-186",
+      "name": "wmic",
+      "binary": "wmic",
+      "category": "windows_host",
+      "description": "Windows Management Instrumentation command-line interface (wmic).",
+      "host_platforms": [
+        "windows"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "positional",
+        "flag": "",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "Not lab auto-tested; runnable if installed on host.",
+        "runnable": false
+      }
+    },
+    {
+      "tool_id": "SIFT-187",
+      "name": "amcache",
+      "binary": "amcache.py",
+      "category": "zimmerman",
+      "description": "Parse Windows Amcache.hve application compatibility cache.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-188",
+      "name": "AmcacheParser",
+      "binary": "AmcacheParser",
+      "category": "zimmerman",
+      "description": "Parse Amcache.hve with Eric Zimmerman AmcacheParser.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-189",
+      "name": "analyzemft",
+      "binary": "analyzemft",
+      "category": "zimmerman",
+      "description": "Parse and export NTFS $MFT records (analyzeMFT).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          },
+          {
+            "flag": "--output",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "json",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-190",
+      "name": "AppCompatCacheParser",
+      "binary": "AppCompatCacheParser",
+      "category": "zimmerman",
+      "description": "Parse Windows AppCompatCache with Eric Zimmerman parser.",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": true
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 300,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-191",
+      "name": "bing_bar_parser_pl",
+      "binary": "bing-bar-parser.pl",
+      "category": "zimmerman",
+      "description": "Parse Bing Bar artifacts (RegRipper bing_bar_parser.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-192",
+      "name": "bstrings",
+      "binary": "bstrings",
+      "category": "zimmerman",
+      "description": "Extract strings with better Unicode handling (bstrings).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "any"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": []
+      },
+      "output": {
+        "format": "text",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-193",
+      "name": "dump_mft_entry_pl",
+      "binary": "dump-mft-entry.pl",
+      "category": "zimmerman",
+      "description": "Dump individual MFT entries (RegRipper dump_mft_entry.pl).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "not_tested",
+        "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-194",
+      "name": "evtx_dump",
+      "binary": "evtx_dump.py",
+      "category": "zimmerman",
+      "description": "Dump Windows EVTX event logs to XML (evtx_dump).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-195",
+      "name": "evtx_dump_chunk_slack",
+      "binary": "evtx_dump_chunk_slack.py",
+      "category": "zimmerman",
+      "description": "Dump EVTX chunk slack space (evtx_dump_chunk_slack).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-196",
+      "name": "evtx_dump_json",
+      "binary": "evtx_dump_json.py",
+      "category": "zimmerman",
+      "description": "Dump Windows EVTX event logs to JSON (evtx_dump_json).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          },
+          {
+            "flag": "-o",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          },
+          {
+            "flag": "--output",
+            "description": "Output destination (must be under case scratch/)",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-197",
+      "name": "evtx_eid_record_numbers",
+      "binary": "evtx_eid_record_numbers.py",
+      "category": "zimmerman",
+      "description": "List event record numbers in EVTX files (evtx_eid_record_numbers).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-198",
+      "name": "evtx_extract_record",
+      "binary": "evtx_extract_record.py",
+      "category": "zimmerman",
+      "description": "Extract a single EVTX record by id (evtx_extract_record).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-199",
+      "name": "evtx_filter_records",
+      "binary": "evtx_filter_records.py",
+      "category": "zimmerman",
+      "description": "Filter EVTX records by XPath-like criteria (evtx_filter_records).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
+        "style": "stdout"
+      },
+      "timeout_seconds": 600,
+      "interactive": false,
+      "verification": {
+        "status": "ok",
+        "detail": "ok",
+        "runnable": true
+      }
+    },
+    {
+      "tool_id": "SIFT-200",
+      "name": "evtx_info",
+      "binary": "evtx_info.py",
+      "category": "zimmerman",
+      "description": "Display metadata about an EVTX file (evtx_info).",
+      "host_platforms": [
+        "linux"
+      ],
+      "artifact_platforms": [
+        "windows"
+      ],
+      "input": {
+        "style": "flag",
+        "flag": "-f",
+        "common_flags": [
+          {
+            "flag": "--csv",
+            "description": "Output directory for CSV",
+            "required": false
+          },
+          {
+            "flag": "--json",
+            "description": "Write JSON output",
+            "required": false
+          }
+        ]
+      },
+      "output": {
+        "format": "csv",
         "style": "stdout"
       },
       "timeout_seconds": 600,
