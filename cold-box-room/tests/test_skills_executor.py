@@ -89,6 +89,6 @@ def test_dispatch_list_skills_in_room_b():
 
     bootstrap_case_to_room_b(case_id)
     result = dispatch_tool("list_skills", {"case_id": case_id})
-    assert result["count"] == 200
+    assert result["count"] == 250
     assert result["skills"][0]["skill_id"] == "SKILL-001"
     assert "has_script" in result["skills"][0]

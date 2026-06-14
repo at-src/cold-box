@@ -1,6 +1,6 @@
 {
   "schema": "cold_box_room.skills_manifest_v2",
-  "count": 200,
+  "count": 250,
   "batches": [
     {
       "start": 1,
@@ -21,9 +21,14 @@
       "start": 151,
       "end": 200,
       "source": "CB-SKL-151..200"
+    },
+    {
+      "start": 201,
+      "end": 250,
+      "source": "CB-SKL-201..250"
     }
   ],
-  "source": "cold-box-final CB-SKL-001..200",
+  "source": "cold-box-final CB-SKL-001..250",
   "skills": [
     {
       "skill_id": "SKILL-001",
@@ -6251,6 +6256,1454 @@
       "has_script": true,
       "reference_only": false,
       "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-201",
+      "journal_id": "CB-SKL-201",
+      "library_slug": "cb-detecting-pass-the-ticket-attacks",
+      "name": "detecting-pass-the-ticket-attacks",
+      "description": "Cold-box analyst playbook — Detecting Pass The Ticket Attacks. Detect Kerberos Pass-the-Ticket (PtT) attacks by analyzing Windows Event IDs 4768, 4769, and 4771 for anomalous ticket usage patterns in Splunk and Elastic SIEM",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "threat-detection",
+      "tags": [
+        "kerberos",
+        "pass-the-ticket",
+        "active-directory",
+        "splunk",
+        "elastic",
+        "credential-theft",
+        "windows-security"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-202",
+      "journal_id": "CB-SKL-202",
+      "library_slug": "cb-detecting-port-scanning-with-fail2ban",
+      "name": "detecting-port-scanning-with-fail2ban",
+      "description": "Cold-box analyst playbook — Detecting Port Scanning With Fail2Ban. Configures Fail2ban with custom filters and actions to detect port scanning activity, SSH brute force attempts, and network reconnaissance, automatically banning offending IP addresses and alerting security teams to suspicious network probi",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "network-security",
+        "fail2ban",
+        "port-scanning",
+        "intrusion-prevention",
+        "automated-defense"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-005",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-016",
+        "SIFT-020",
+        "SIFT-023",
+        "SIFT-025"
+      ]
+    },
+    {
+      "skill_id": "SKILL-203",
+      "journal_id": "CB-SKL-203",
+      "library_slug": "cb-detecting-privilege-escalation-attempts",
+      "name": "detecting-privilege-escalation-attempts",
+      "description": "Cold-box analyst playbook — Detecting Privilege Escalation Attempts. Detect privilege escalation attempts including token manipulation, UAC bypass, unquoted service paths, kernel exploits, and sudo/doas abuse across Windows and Linux.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "privilege-escalation",
+        "token-manipulation",
+        "uac-bypass",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "linux_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-204",
+      "journal_id": "CB-SKL-204",
+      "library_slug": "cb-detecting-process-hollowing-technique",
+      "name": "detecting-process-hollowing-technique",
+      "description": "Cold-box analyst playbook — Detecting Process Hollowing Technique. Detect process hollowing (T1055.012) by analyzing memory-mapped sections, hollowed process indicators, and parent-child process anomalies in EDR telemetry.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "process-hollowing",
+        "process-injection",
+        "edr",
+        "t1055",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "memory"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-205",
+      "journal_id": "CB-SKL-205",
+      "library_slug": "cb-detecting-ransomware-encryption-behavior",
+      "name": "detecting-ransomware-encryption-behavior",
+      "description": "Cold-box analyst playbook — Detecting Ransomware Encryption Behavior. Detects ransomware encryption activity in real time using entropy analysis, file system I/O monitoring, and behavioral heuristics. Identifies mass file modification patterns, abnormal entropy spikes in written data, and suspicious process b",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "ransomware-defense",
+      "tags": [
+        "ransomware",
+        "detection",
+        "entropy",
+        "behavioral-analysis",
+        "file-monitoring",
+        "heuristics"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-036",
+        "SIFT-046",
+        "SIFT-179",
+        "SIFT-186"
+      ]
+    },
+    {
+      "skill_id": "SKILL-206",
+      "journal_id": "CB-SKL-206",
+      "library_slug": "cb-detecting-ransomware-precursors-in-network",
+      "name": "detecting-ransomware-precursors-in-network",
+      "description": "Cold-box analyst playbook — Detecting Ransomware Precursors In Network. Detects early-stage ransomware indicators in network traffic before encryption begins, including initial access broker activity, command-and-control beaconing, credential harvesting, reconnaissance scanning, and staging behavior. Uses netwo",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "ransomware-defense",
+      "tags": [
+        "ransomware",
+        "detection",
+        "network-security",
+        "incident-response",
+        "defense"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-006",
+        "SIFT-008",
+        "SIFT-010",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-207",
+      "journal_id": "CB-SKL-207",
+      "library_slug": "cb-detecting-service-account-abuse",
+      "name": "detecting-service-account-abuse",
+      "description": "Cold-box analyst playbook — Detecting Service Account Abuse. Detect abuse of service accounts through anomalous interactive logons, privilege escalation, lateral movement, and unauthorized access patterns.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "service-accounts",
+        "privilege-escalation",
+        "t1078",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-208",
+      "journal_id": "CB-SKL-208",
+      "library_slug": "cb-detecting-suspicious-powershell-execution",
+      "name": "detecting-suspicious-powershell-execution",
+      "description": "Cold-box analyst playbook — Detecting Suspicious Powershell Execution. Detect suspicious PowerShell execution patterns including encoded commands, download cradles, AMSI bypass attempts, and constrained language mode evasion.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "powershell",
+        "execution",
+        "t1059",
+        "amsi",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-209",
+      "journal_id": "CB-SKL-209",
+      "library_slug": "cb-detecting-t1548-abuse-elevation-control-mechanism",
+      "name": "detecting-t1548-abuse-elevation-control-mechanism",
+      "description": "Cold-box analyst playbook — Detecting T1548 Abuse Elevation Control Mechanism. Detect abuse of elevation control mechanisms including UAC bypass, sudo exploitation, and setuid/setgid manipulation by monitoring registry modifications, process elevation flags, and unusual parent-child process relationships.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "uac-bypass",
+        "privilege-escalation",
+        "mitre-t1548",
+        "elevation-control",
+        "windows-security"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-210",
+      "journal_id": "CB-SKL-210",
+      "library_slug": "cb-detecting-typosquatting-packages-in-npm-pypi",
+      "name": "detecting-typosquatting-packages-in-npm-pypi",
+      "description": "Cold-box analyst playbook — Detecting Typosquatting Packages In Npm Pypi. Detects typosquatting attacks in npm and PyPI package registries by analyzing package name similarity using Levenshtein distance and other string metrics, examining publish date heuristics to identify recently created packages mimicking est",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "supply-chain-security",
+      "tags": [
+        "typosquatting",
+        "npm",
+        "pypi",
+        "supply-chain",
+        "package-security",
+        "Levenshtein",
+        "dependency-confusion",
+        "malicious-packages"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-044"
+      ]
+    },
+    {
+      "skill_id": "SKILL-211",
+      "journal_id": "CB-SKL-211",
+      "library_slug": "cb-dns-enumeration-and-zone-transfer",
+      "name": "dns-enumeration-and-zone-transfer",
+      "description": "Cold-box analyst playbook — Dns Enumeration And Zone Transfer. Enumerates DNS records, attempts zone transfers, brute-forces subdomains, and maps DNS infrastructure during authorized reconnaissance to identify attack surface, misconfigurations, and information disclosure in target domains.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "network-security",
+        "dns",
+        "enumeration",
+        "zone-transfer",
+        "reconnaissance"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-005",
+        "SIFT-006",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-020"
+      ]
+    },
+    {
+      "skill_id": "SKILL-212",
+      "journal_id": "CB-SKL-212",
+      "library_slug": "cb-dns-logs-for-exfiltration",
+      "name": "dns-logs-for-exfiltration",
+      "description": "Cold-box analyst playbook — Dns Logs For Exfiltration. Analyzes DNS query logs to detect data exfiltration via DNS tunneling, DGA domain communication, and covert C2 channels using entropy analysis, query volume anomalies, and subdomain length detection in SIEM platforms. Use when SOC teams nee",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "soc",
+        "dns",
+        "exfiltration",
+        "dns-tunneling",
+        "dga",
+        "c2-detection",
+        "splunk",
+        "threat-detection"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-020",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-213",
+      "journal_id": "CB-SKL-213",
+      "library_slug": "cb-dns-tunneling-detection",
+      "name": "dns-tunneling-detection",
+      "description": "Cold-box analyst playbook — Dns Tunneling Detection. Detects DNS tunneling by computing Shannon entropy of DNS query names, analyzing query length distributions, inspecting TXT record payloads, and identifying high subdomain cardinality. Uses scapy for packet capture analysis and statistical ",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "dns-tunneling",
+        "exfiltration-detection",
+        "shannon-entropy",
+        "dns-analysis",
+        "threat-detection",
+        "security-operations"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-214",
+      "journal_id": "CB-SKL-214",
+      "library_slug": "cb-dynamic-analysis-with-any-run",
+      "name": "dynamic-analysis-with-any-run",
+      "description": "Cold-box analyst playbook — Dynamic Analysis With Any Run. Performs interactive dynamic malware analysis using the ANY.RUN cloud sandbox to observe real-time execution behavior, interact with malware prompts, and capture process trees, network traffic, and system changes. Activates for requests inv",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "dynamic-analysis",
+        "sandbox",
+        "ANY.RUN",
+        "interactive-analysis"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-013",
+        "SIFT-036",
+        "SIFT-045",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-215",
+      "journal_id": "CB-SKL-215",
+      "library_slug": "cb-evaluating-threat-intelligence-platforms",
+      "name": "evaluating-threat-intelligence-platforms",
+      "description": "Cold-box analyst playbook — Evaluating Threat Intelligence Platforms. Evaluates and selects Threat Intelligence Platform (TIP) products based on organizational requirements including feed integration capability, STIX/TAXII support, workflow automation, analyst interface, and total cost of ownership. Use when ",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "TIP",
+        "ThreatConnect",
+        "MISP",
+        "OpenCTI",
+        "Anomali",
+        "EclecticIQ",
+        "STIX-TAXII",
+        "CTI-program",
+        "procurement"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-178"
+      ]
+    },
+    {
+      "skill_id": "SKILL-216",
+      "journal_id": "CB-SKL-216",
+      "library_slug": "cb-exploiting-bgp-hijacking-vulnerabilities",
+      "name": "exploiting-bgp-hijacking-vulnerabilities",
+      "description": "Cold-box analyst playbook — Exploiting Bgp Hijacking Vulnerabilities. Analyzes and simulates BGP hijacking scenarios in authorized lab environments to assess route origin validation, RPKI deployment, and BGP monitoring defenses against prefix hijacking and route leak attacks on internet routing infrastructure",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "network-security",
+        "bgp",
+        "routing-security",
+        "rpki",
+        "route-hijacking"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-022"
+      ]
+    },
+    {
+      "skill_id": "SKILL-217",
+      "journal_id": "CB-SKL-217",
+      "library_slug": "cb-exploiting-broken-function-level-authorization",
+      "name": "exploiting-broken-function-level-authorization",
+      "description": "Cold-box analyst playbook — Exploiting Broken Function Level Authorization. Tests APIs for Broken Function Level Authorization (BFLA) vulnerabilities where regular users can invoke administrative functions or access privileged API endpoints by directly calling them. The tester identifies admin and privileged endpoi",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "api-security",
+      "tags": [
+        "api-security",
+        "owasp",
+        "authorization",
+        "bfla",
+        "privilege-escalation",
+        "access-control"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-009",
+        "SIFT-011"
+      ]
+    },
+    {
+      "skill_id": "SKILL-218",
+      "journal_id": "CB-SKL-218",
+      "library_slug": "cb-exploiting-ipv6-vulnerabilities",
+      "name": "exploiting-ipv6-vulnerabilities",
+      "description": "Cold-box analyst playbook — Exploiting Ipv6 Vulnerabilities. Identifies and exploits IPv6-specific vulnerabilities including SLAAC spoofing, Router Advertisement flooding, and IPv6 tunneling during authorized assessments to test dual-stack security controls and IPv6-aware network defenses.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "network-security",
+        "ipv6",
+        "slaac",
+        "router-advertisement",
+        "dual-stack-security"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-007",
+        "SIFT-008",
+        "SIFT-010",
+        "SIFT-116",
+        "SIFT-117",
+        "SIFT-118"
+      ]
+    },
+    {
+      "skill_id": "SKILL-219",
+      "journal_id": "CB-SKL-219",
+      "library_slug": "cb-exploiting-kerberoasting-with-impacket",
+      "name": "exploiting-kerberoasting-with-impacket",
+      "description": "Cold-box analyst playbook — Exploiting Kerberoasting With Impacket. Perform Kerberoasting attacks using Impacket's GetUserSPNs to extract and crack Kerberos TGS tickets for Active Directory service accounts.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "red-teaming",
+      "tags": [
+        "kerberoasting",
+        "impacket",
+        "active-directory",
+        "credential-access",
+        "kerberos",
+        "t1558-003",
+        "service-accounts"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-220",
+      "journal_id": "CB-SKL-220",
+      "library_slug": "cb-extracting-config-from-agent-tesla-rat",
+      "name": "extracting-config-from-agent-tesla-rat",
+      "description": "Cold-box analyst playbook — Extracting Config From Agent Tesla Rat. Extract embedded configuration from Agent Tesla RAT samples including SMTP/FTP/Telegram exfiltration credentials, keylogger settings, and C2 endpoints using .NET decompilation and memory analysis.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "agent-tesla",
+        "rat",
+        "config-extraction",
+        "dotnet",
+        "malware-analysis",
+        "keylogger",
+        "credential-theft"
+      ],
+      "case_profiles": [
+        "memory"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-009",
+        "SIFT-044"
+      ]
+    },
+    {
+      "skill_id": "SKILL-221",
+      "journal_id": "CB-SKL-221",
+      "library_slug": "cb-extracting-iocs-from-malware-samples",
+      "name": "extracting-iocs-from-malware-samples",
+      "description": "Cold-box analyst playbook — Extracting Iocs From Malware Samples. Extracts indicators of compromise (IOCs) from malware samples including file hashes, network indicators (IPs, domains, URLs), host artifacts (file paths, registry keys, mutexes), and behavioral patterns for threat intelligence sharing and d",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "IOC-extraction",
+        "threat-intelligence",
+        "indicators",
+        "detection"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-015",
+        "SIFT-017",
+        "SIFT-018",
+        "SIFT-020",
+        "SIFT-043",
+        "SIFT-044",
+        "SIFT-045",
+        "SIFT-117"
+      ]
+    },
+    {
+      "skill_id": "SKILL-222",
+      "journal_id": "CB-SKL-222",
+      "library_slug": "cb-false-positive-reduction-in-siem",
+      "name": "false-positive-reduction-in-siem",
+      "description": "Cold-box analyst playbook — False Positive Reduction In Siem. Perform systematic SIEM false positive reduction through rule tuning, threshold adjustment, correlation refinement, and threat intelligence enrichment to combat alert fatigue.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "siem",
+        "false-positive",
+        "alert-tuning",
+        "detection-engineering",
+        "alert-fatigue",
+        "soc",
+        "correlation"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-011",
+        "SIFT-020",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-223",
+      "journal_id": "CB-SKL-223",
+      "library_slug": "cb-firmware-malware-analysis",
+      "name": "firmware-malware-analysis",
+      "description": "Cold-box analyst playbook — Firmware Malware Analysis. Analyzes firmware images for embedded malware, backdoors, and unauthorized modifications targeting routers, IoT devices, UEFI/BIOS, and embedded systems. Covers firmware extraction, filesystem analysis, binary reverse engineering, and bootk",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "firmware",
+        "IoT",
+        "UEFI",
+        "embedded-security"
+      ],
+      "case_profiles": [
+        "linux_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-007",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-014",
+        "SIFT-018",
+        "SIFT-037",
+        "SIFT-044",
+        "SIFT-045",
+        "SIFT-075",
+        "SIFT-081",
+        "SIFT-083",
+        "SIFT-116"
+      ]
+    },
+    {
+      "skill_id": "SKILL-224",
+      "journal_id": "CB-SKL-224",
+      "library_slug": "cb-generating-threat-intelligence-reports",
+      "name": "generating-threat-intelligence-reports",
+      "description": "Cold-box analyst playbook — Generating Threat Intelligence Reports. Generates structured cyber threat intelligence reports at strategic, operational, and tactical levels tailored to specific audiences including executives, security operations teams, and technical analysts. Use when producing finished intell",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "CTI",
+        "threat-intelligence",
+        "intelligence-products",
+        "TLP",
+        "PIR",
+        "report-writing",
+        "NIST-CSF"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-045"
+      ]
+    },
+    {
+      "skill_id": "SKILL-225",
+      "journal_id": "CB-SKL-225",
+      "library_slug": "cb-golang-malware-with-ghidra",
+      "name": "golang-malware-with-ghidra",
+      "description": "Cold-box analyst playbook — Golang Malware With Ghidra. Reverse engineer Go-compiled malware using Ghidra with specialized scripts for function recovery, string extraction, and type reconstruction in stripped Go binaries.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "golang",
+        "ghidra",
+        "reverse-engineering",
+        "malware-analysis",
+        "binary-analysis",
+        "go-malware",
+        "disassembly"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-020",
+        "SIFT-044"
+      ]
+    },
+    {
+      "skill_id": "SKILL-226",
+      "journal_id": "CB-SKL-226",
+      "library_slug": "cb-hunting-advanced-persistent-threats",
+      "name": "hunting-advanced-persistent-threats",
+      "description": "Cold-box analyst playbook — Hunting Advanced Persistent Threats. Proactively hunts for Advanced Persistent Threat (APT) activity within enterprise environments using hypothesis-driven searches across endpoint telemetry, network logs, and memory artifacts. Use when conducting scheduled threat hunting cycl",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "MITRE-ATT&CK",
+        "threat-hunting",
+        "APT",
+        "Velociraptor",
+        "osquery",
+        "Zeek",
+        "TTP",
+        "NIST-CSF",
+        "EDR"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-009",
+        "SIFT-045",
+        "SIFT-119",
+        "SIFT-179",
+        "SIFT-182"
+      ]
+    },
+    {
+      "skill_id": "SKILL-227",
+      "journal_id": "CB-SKL-227",
+      "library_slug": "cb-hunting-credential-stuffing-attacks",
+      "name": "hunting-credential-stuffing-attacks",
+      "description": "Cold-box analyst playbook — Hunting Credential Stuffing Attacks. Detects credential stuffing attacks by analyzing authentication logs for login velocity anomalies, ASN diversity, password spray patterns, and geographic distribution of failed logins. Uses statistical analysis on Splunk or raw log data. Us",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "credential-stuffing",
+        "authentication-logs",
+        "login-anomaly",
+        "asn-analysis",
+        "threat-hunting",
+        "account-takeover"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-228",
+      "journal_id": "CB-SKL-228",
+      "library_slug": "cb-hunting-for-beaconing-with-frequency-analysis",
+      "name": "hunting-for-beaconing-with-frequency-analysis",
+      "description": "Cold-box analyst playbook — Hunting For Beaconing With Frequency Analysis. Identify command-and-control beaconing patterns in network traffic by applying statistical frequency analysis, jitter calculation, and coefficient of variation scoring to detect periodic callbacks from compromised endpoints.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "beaconing",
+        "c2-detection",
+        "frequency-analysis",
+        "network-traffic",
+        "RITA",
+        "jitter-detection",
+        "mitre-t1071"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-020",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-229",
+      "journal_id": "CB-SKL-229",
+      "library_slug": "cb-hunting-for-command-and-control-beaconing",
+      "name": "hunting-for-command-and-control-beaconing",
+      "description": "Cold-box analyst playbook — Hunting For Command And Control Beaconing. Detect C2 beaconing patterns in network traffic using frequency analysis, jitter detection, and domain reputation to identify compromised endpoints communicating with adversary infrastructure.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "c2",
+        "beaconing",
+        "network-analysis",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-230",
+      "journal_id": "CB-SKL-230",
+      "library_slug": "cb-hunting-for-data-exfiltration-indicators",
+      "name": "hunting-for-data-exfiltration-indicators",
+      "description": "Cold-box analyst playbook — Hunting For Data Exfiltration Indicators. Hunt for data exfiltration through network traffic analysis, detecting unusual data flows, DNS tunneling, cloud storage uploads, and encrypted channel abuse.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "data-exfiltration",
+        "dlp",
+        "network-analysis",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "cloud"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-231",
+      "journal_id": "CB-SKL-231",
+      "library_slug": "cb-hunting-for-data-staging-before-exfiltration",
+      "name": "hunting-for-data-staging-before-exfiltration",
+      "description": "Cold-box analyst playbook — Hunting For Data Staging Before Exfiltration. Detect data staging activity before exfiltration by monitoring for archive creation with 7-Zip/RAR, unusual temp folder access, large file consolidation, and staging directory patterns via EDR and process telemetry",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "data-staging",
+        "exfiltration",
+        "t1074",
+        "archive-detection",
+        "edr",
+        "threat-hunting",
+        "dlp"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-003",
+        "SIFT-008",
+        "SIFT-036",
+        "SIFT-046"
+      ]
+    },
+    {
+      "skill_id": "SKILL-232",
+      "journal_id": "CB-SKL-232",
+      "library_slug": "cb-hunting-for-dcsync-attacks",
+      "name": "hunting-for-dcsync-attacks",
+      "description": "Cold-box analyst playbook — Hunting For Dcsync Attacks. Detect DCSync attacks by analyzing Windows Event ID 4662 for unauthorized DS-Replication-Get-Changes requests from non-domain-controller accounts.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "dcsync",
+        "active-directory",
+        "credential-access",
+        "t1003.006",
+        "mimikatz",
+        "windows",
+        "dfir"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-233",
+      "journal_id": "CB-SKL-233",
+      "library_slug": "cb-hunting-for-dns-tunneling-with-zeek",
+      "name": "hunting-for-dns-tunneling-with-zeek",
+      "description": "Cold-box analyst playbook — Hunting For Dns Tunneling With Zeek. Detect DNS tunneling and data exfiltration by analyzing Zeek dns.log for high-entropy subdomain queries, excessive query volume, long query lengths, and unusual DNS record types indicating covert channel communication.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "dns-tunneling",
+        "zeek",
+        "data-exfiltration",
+        "covert-channel",
+        "mitre-t1071-004",
+        "network-monitoring"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-020",
+        "SIFT-044",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-234",
+      "journal_id": "CB-SKL-234",
+      "library_slug": "cb-hunting-for-domain-fronting-c2-traffic",
+      "name": "hunting-for-domain-fronting-c2-traffic",
+      "description": "Cold-box analyst playbook — Hunting For Domain Fronting C2 Traffic. Detect domain fronting C2 traffic by analyzing SNI vs HTTP Host header mismatches in proxy logs and TLS certificate discrepancies using pyOpenSSL for certificate inspection",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "domain-fronting",
+        "c2-detection",
+        "tls-inspection",
+        "proxy-logs",
+        "pyopenssl",
+        "threat-hunting",
+        "network-security"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-235",
+      "journal_id": "CB-SKL-235",
+      "library_slug": "cb-hunting-for-living-off-the-cloud-techniques",
+      "name": "hunting-for-living-off-the-cloud-techniques",
+      "description": "Cold-box analyst playbook — Hunting For Living Off The Cloud Techniques. Hunt for adversary abuse of legitimate cloud services for C2, data staging, and exfiltration including abuse of Azure, AWS, GCP services, and SaaS platforms.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "cloud-abuse",
+        "c2",
+        "lotc",
+        "saas",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "cloud"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-236",
+      "journal_id": "CB-SKL-236",
+      "library_slug": "cb-hunting-for-living-off-the-land-binaries",
+      "name": "hunting-for-living-off-the-land-binaries",
+      "description": "Cold-box analyst playbook — Hunting For Living Off The Land Binaries. Proactively hunt for adversary abuse of legitimate system binaries (LOLBins) to execute malicious payloads while evading detection.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "lolbins",
+        "edr",
+        "siem",
+        "proactive-detection",
+        "defense-evasion"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-100",
+        "SIFT-179",
+        "SIFT-186"
+      ]
+    },
+    {
+      "skill_id": "SKILL-237",
+      "journal_id": "CB-SKL-237",
+      "library_slug": "cb-hunting-for-lolbins-execution-in-endpoint-logs",
+      "name": "hunting-for-lolbins-execution-in-endpoint-logs",
+      "description": "Cold-box analyst playbook — Hunting For Lolbins Execution In Endpoint Logs. Hunt for adversary abuse of Living Off the Land Binaries (LOLBins) by analyzing endpoint process creation logs for suspicious execution patterns of legitimate Windows system binaries used for malicious purposes.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "lolbins",
+        "living-off-the-land",
+        "endpoint-detection",
+        "process-monitoring",
+        "mitre-t1218",
+        "defense-evasion"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-020",
+        "SIFT-100",
+        "SIFT-179",
+        "SIFT-186"
+      ]
+    },
+    {
+      "skill_id": "SKILL-238",
+      "journal_id": "CB-SKL-238",
+      "library_slug": "cb-hunting-for-ntlm-relay-attacks",
+      "name": "hunting-for-ntlm-relay-attacks",
+      "description": "Cold-box analyst playbook — Hunting For Ntlm Relay Attacks. Detect NTLM relay attacks by analyzing Windows Event 4624 logon type 3 with NTLMSSP authentication, identifying IP-to-hostname mismatches, Responder traffic signatures, SMB signing status, and suspicious authentication patterns across the d",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "NTLM-relay",
+        "Windows-events",
+        "Event-4624",
+        "NTLMSSP",
+        "Responder",
+        "SMB-signing",
+        "credential-access",
+        "T1557.001",
+        "Active-Directory"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-239",
+      "journal_id": "CB-SKL-239",
+      "library_slug": "cb-hunting-for-persistence-mechanisms-in-windows",
+      "name": "hunting-for-persistence-mechanisms-in-windows",
+      "description": "Cold-box analyst playbook — Hunting For Persistence Mechanisms In Windows. Systematically hunt for adversary persistence mechanisms across Windows endpoints including registry, services, startup folders, and WMI subscriptions.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "persistence",
+        "windows",
+        "registry",
+        "siem",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-176",
+        "SIFT-179",
+        "SIFT-224"
+      ]
+    },
+    {
+      "skill_id": "SKILL-240",
+      "journal_id": "CB-SKL-240",
+      "library_slug": "cb-hunting-for-persistence-via-wmi-subscriptions",
+      "name": "hunting-for-persistence-via-wmi-subscriptions",
+      "description": "Cold-box analyst playbook — Hunting For Persistence Via Wmi Subscriptions. Hunt for adversary persistence through Windows Management Instrumentation event subscriptions by monitoring WMI consumer, filter, and binding creation events that execute malicious code triggered by system events.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "wmi-persistence",
+        "mitre-t1546-003",
+        "event-subscription",
+        "windows",
+        "endpoint-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-241",
+      "journal_id": "CB-SKL-241",
+      "library_slug": "cb-hunting-for-registry-persistence-mechanisms",
+      "name": "hunting-for-registry-persistence-mechanisms",
+      "description": "Cold-box analyst playbook — Hunting For Registry Persistence Mechanisms. Hunt for registry-based persistence mechanisms including Run keys, Winlogon modifications, IFEO injection, and COM hijacking in Windows environments.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "registry",
+        "persistence",
+        "windows",
+        "t1547",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-242",
+      "journal_id": "CB-SKL-242",
+      "library_slug": "cb-hunting-for-scheduled-task-persistence",
+      "name": "hunting-for-scheduled-task-persistence",
+      "description": "Cold-box analyst playbook — Hunting For Scheduled Task Persistence. Hunt for adversary persistence via Windows Scheduled Tasks by analyzing task creation events, suspicious task actions, and unusual scheduling patterns.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "scheduled-tasks",
+        "persistence",
+        "t1053",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-243",
+      "journal_id": "CB-SKL-243",
+      "library_slug": "cb-hunting-for-shadow-copy-deletion",
+      "name": "hunting-for-shadow-copy-deletion",
+      "description": "Cold-box analyst playbook — Hunting For Shadow Copy Deletion. Hunt for Volume Shadow Copy deletion activity that indicates ransomware preparation or anti-forensics by monitoring vssadmin, wmic, and PowerShell shadow copy commands.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "shadow-copy",
+        "ransomware",
+        "anti-forensics",
+        "t1490",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-179",
+        "SIFT-186"
+      ]
+    },
+    {
+      "skill_id": "SKILL-244",
+      "journal_id": "CB-SKL-244",
+      "library_slug": "cb-hunting-for-spearphishing-indicators",
+      "name": "hunting-for-spearphishing-indicators",
+      "description": "Cold-box analyst playbook — Hunting For Spearphishing Indicators. Hunt for spearphishing campaign indicators across email logs, endpoint telemetry, and network data to detect targeted email attacks.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "spearphishing",
+        "initial-access",
+        "email-security",
+        "t1566",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-245",
+      "journal_id": "CB-SKL-245",
+      "library_slug": "cb-hunting-for-startup-folder-persistence",
+      "name": "hunting-for-startup-folder-persistence",
+      "description": "Cold-box analyst playbook — Hunting For Startup Folder Persistence. Detect T1547.001 startup folder persistence by monitoring Windows startup directories for suspicious file creation, analyzing autoruns entries, and using Python watchdog for real-time filesystem monitoring.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "T1547.001",
+        "startup-folder",
+        "persistence",
+        "autoruns",
+        "watchdog",
+        "filesystem-monitoring"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-176"
+      ]
+    },
+    {
+      "skill_id": "SKILL-246",
+      "journal_id": "CB-SKL-246",
+      "library_slug": "cb-hunting-for-supply-chain-compromise",
+      "name": "hunting-for-supply-chain-compromise",
+      "description": "Cold-box analyst playbook — Hunting For Supply Chain Compromise. Hunt for supply chain compromise indicators including trojanized software updates, compromised dependencies, unauthorized code modifications, and tampered build artifacts.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "supply-chain",
+        "initial-access",
+        "t1195",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-247",
+      "journal_id": "CB-SKL-247",
+      "library_slug": "cb-hunting-for-suspicious-scheduled-tasks",
+      "name": "hunting-for-suspicious-scheduled-tasks",
+      "description": "Cold-box analyst playbook — Hunting For Suspicious Scheduled Tasks. Hunt for adversary persistence and execution via Windows scheduled tasks by analyzing task creation events, suspicious task properties, and unusual execution patterns that indicate T1053.005 abuse.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "scheduled-tasks",
+        "persistence",
+        "mitre-t1053-005",
+        "windows",
+        "endpoint-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-007",
+        "SIFT-100",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-248",
+      "journal_id": "CB-SKL-248",
+      "library_slug": "cb-hunting-for-unusual-network-connections",
+      "name": "hunting-for-unusual-network-connections",
+      "description": "Cold-box analyst playbook — Hunting For Unusual Network Connections. Hunt for unusual network connections by analyzing outbound traffic patterns, rare destinations, non-standard ports, and anomalous connection frequencies from endpoints.",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "network-analysis",
+        "c2",
+        "anomaly-detection",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-249",
+      "journal_id": "CB-SKL-249",
+      "library_slug": "cb-hunting-for-webshell-activity",
+      "name": "hunting-for-webshell-activity",
+      "description": "Cold-box analyst playbook — Hunting For Webshell Activity. Hunt for web shell deployments on internet-facing servers by analyzing file creation in web directories, suspicious process spawning from web servers, and anomalous HTTP patterns.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "webshell",
+        "persistence",
+        "web-server",
+        "t1505",
+        "proactive-detection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-250",
+      "journal_id": "CB-SKL-250",
+      "library_slug": "cb-implementing-alert-fatigue-reduction",
+      "name": "implementing-alert-fatigue-reduction",
+      "description": "Cold-box analyst playbook — Implementing Alert Fatigue Reduction. Implements strategies to reduce SOC alert fatigue by tuning detection rules, consolidating duplicate alerts, implementing risk-based alerting, and measuring alert quality metrics to maintain analyst effectiveness and prevent critical alert ",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "soc",
+        "alert-fatigue",
+        "tuning",
+        "risk-based-alerting",
+        "false-positive",
+        "siem",
+        "detection-engineering"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-011",
+        "SIFT-020",
+        "SIFT-179"
+      ]
     }
   ]
 }

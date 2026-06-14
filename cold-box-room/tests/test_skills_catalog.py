@@ -29,8 +29,8 @@ def test_manifest_path_exists():
 def test_load_manifest_batches():
     data = load_manifest()
     assert data["schema"] == "cold_box_room.skills_manifest_v2"
-    assert data["count"] == 200
-    assert len(data["skills"]) == 200
+    assert data["count"] == 250
+    assert len(data["skills"]) == 250
     assert data["skills"][0]["skill_id"] == "SKILL-001"
     assert data["skills"][49]["skill_id"] == "SKILL-050"
     assert data["skills"][50]["skill_id"] == "SKILL-051"
@@ -39,7 +39,9 @@ def test_load_manifest_batches():
     assert data["skills"][149]["skill_id"] == "SKILL-150"
     assert data["skills"][150]["skill_id"] == "SKILL-151"
     assert data["skills"][199]["skill_id"] == "SKILL-200"
-    assert len(data.get("batches") or []) == 4
+    assert data["skills"][200]["skill_id"] == "SKILL-201"
+    assert data["skills"][249]["skill_id"] == "SKILL-250"
+    assert len(data.get("batches") or []) == 5
 
 
 def test_batch1_uniform_schema():
@@ -114,10 +116,16 @@ def test_get_skill_151_batch4():
     skill = get_skill("SKILL-151")
     assert skill.journal_id == "CB-SKL-151"
     assert skill.library_slug == "cb-building-threat-intelligence-platform"
+
+
+def test_get_skill_201_batch5():
+    skill = get_skill("SKILL-201")
+    assert skill.journal_id == "CB-SKL-201"
+    assert skill.library_slug == "cb-detecting-pass-the-ticket-attacks"
     assert skill.skill_md_path(skills_root=skills_root()).is_file()
 
 
 def test_catalog_id_sequence():
     data = load_manifest()
     ids = [s["skill_id"] for s in data["skills"]]
-    assert ids == [f"SKILL-{i:03d}" for i in range(1, 201)]
+    assert ids == [f"SKILL-{i:03d}" for i in range(1, 251)]
