@@ -20,8 +20,8 @@ def _require_sandbox_room(case_id: str) -> None:
 
 
 def resolve_sandbox_input_for_skill(case_id: str, input_relpath: str) -> Path:
-    """Resolve sandbox path when skill harness is active (Room 3 allowed)."""
-    _require_sandbox_room(case_id)
+    """Resolve sandbox path for Room 3 skill scripts (also valid in Room 2 during harness)."""
+    require_room_in(case_id, {ROOM_2, ROOM_3})
     return _resolve_sandbox_path(case_id, input_relpath)
 
 

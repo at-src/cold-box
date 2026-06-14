@@ -69,6 +69,22 @@ def test_run_skill_blocked_outside_room3():
         run_skill(skill_id="SKILL-001", case_id=case_id, input_relpath="disk.E01")
 
 
+def test_run_skill_resolves_sandbox_in_room3_not_room2_error():
+    """Regression: skill runner must not require Room 2 before harness activates."""
+    case_id = "skill-room3-resolve"
+    _intake(case_id)
+    bootstrap_case_to_room3(case_id)
+    from cold_box_room.r2.paths import case_sandbox_dir
+    from cold_box_room.r2.sandbox_input import resolve_sandbox_input_for_skill
+
+    sb = case_sandbox_dir(case_id)
+    sb.mkdir(parents=True, exist_ok=True)
+    (sb / "disk.E01").write_bytes(b"evidence")
+    assert current_room(case_id) == "3"
+    path = resolve_sandbox_input_for_skill(case_id, "disk.E01")
+    assert path.is_file()
+
+
 def test_room_b_can_browse_not_run():
     case_id = "skill-browse"
     _intake(case_id)
