@@ -17,19 +17,23 @@ from cold_box_room.agent.llm import (
 )
 from cold_box_room.agent.prompts import (
     DEFAULT_LAYER1_GOAL,
+    DEFAULT_ROOM_3_GOAL,
     DEFAULT_ROOM_A_GOAL,
     DEFAULT_ROOM_B_GOAL,
     LAYER1_SYSTEM_PROMPT,
+    ROOM_3_SYSTEM_PROMPT,
     ROOM_A_SYSTEM_PROMPT,
     ROOM_B_SYSTEM_PROMPT,
 )
 from cold_box_room.agent.situation import (
     format_case_situation_briefing,
+    format_room3_briefing,
     format_room_a_briefing,
     format_room_b_briefing,
 )
 from cold_box_room.agent.tools import (
     LAYER1_TOOL_SCHEMAS,
+    ROOM_3_TOOL_SCHEMAS,
     ROOM_A_TOOL_SCHEMAS,
     ROOM_B_TOOL_SCHEMAS,
     TOOL_SCHEMAS,
@@ -41,6 +45,7 @@ from cold_box_room.r1.paths import case_records_dir
 from cold_box_room.r2.tool_log import read_tool_log
 
 SUBMIT_ONLY_SCHEMA = [t for t in LAYER1_TOOL_SCHEMAS if t["name"] == "submit_layer1_writeup"]
+SUBMIT_LAYER2_SCHEMA = [t for t in ROOM_3_TOOL_SCHEMAS if t["name"] == "submit_layer2_writeup"]
 
 
 def _run_tool_loop(
@@ -55,7 +60,7 @@ def _run_tool_loop(
     extra_headers: dict[str, str],
     stop_on: str,
 ) -> dict[str, Any]:
-    """Shared Anthropic tool loop. stop_on: 'promoted' | 'ready_for_room2' | 'ready_for_room3'."""
+    """Shared Anthropic tool loop. stop_on: promoted | ready_for_room2 | ready_for_room3 | layer2_complete."""
     promoted = False
     gate_open = False
     tool_calls = 0
@@ -110,6 +115,13 @@ def _run_tool_loop(
                     args = {**args, "self_score": normalize_self_score(args["self_score"])}
                 except Exception:
                     pass
+            if name == "submit_layer2_writeup" and "self_score" in args:
+                from cold_box_room.r2.analyst_log import normalize_self_score
+
+                try:
+                    args = {**args, "self_score": normalize_self_score(args["self_score"])}
+                except Exception:
+                    pass
             try:
                 result = dispatch_tool(name, args)
             except Exception as exc:
@@ -133,6 +145,9 @@ def _run_tool_loop(
                             "gate_open",
                             "ready_for_room2",
                             "ready_for_room3",
+                            "ready_for_complete",
+                            "complete",
+                            "run_id",
                             "room",
                             "error",
                             "blocked_reasons",
@@ -152,6 +167,10 @@ def _run_tool_loop(
                 gate_open = True
             if stop_on == "ready_for_room3" and name == "formalize_plan_b" and result.get(
                 "ready_for_room3"
+            ):
+                gate_open = True
+            if stop_on == "layer2_complete" and name == "submit_layer2_writeup" and result.get(
+                "complete"
             ):
                 gate_open = True
             tool_results.append(
@@ -319,6 +338,77 @@ def run_room_b_agent(
     _log_event(case_id, {"type": "session_end", "room_b": summary})
     return summary
 
+
+def run_room3_agent(
+    *,
+    case_id: str,
+    goal: str,
+    max_turns: int = 30,
+    model: str | None = None,
+) -> dict[str, Any]:
+    load_dotenv()
+    try:
+        import anthropic
+    except ImportError as exc:
+        raise RuntimeError("pip install anthropic") from exc
+
+    client = anthropic.Anthropic(api_key=anthropic_api_key())
+    model_name = anthropic_model(model)
+    system = static_system_block(ROOM_3_SYSTEM_PROMPT)
+    tools = cached_tools(ROOM_3_TOOL_SCHEMAS)
+    extra_headers: dict[str, str] = {}
+    if prompt_cache_enabled():
+        extra_headers["anthropic-beta"] = "prompt-caching-2024-07-31"
+
+    briefing = format_room3_briefing(case_id)
+    messages: list[dict[str, Any]] = [
+        {"role": "user", "content": f"**GOAL:** {goal}\n\n{briefing}"}
+    ]
+    _log_event(
+        case_id,
+        {
+            "type": "session_start",
+            "room": "3",
+            "goal": goal,
+            "model": model_name,
+            "prompt_cache": prompt_cache_enabled(),
+        },
+    )
+
+    loop = _run_tool_loop(
+        client=client,
+        model_name=model_name,
+        system=system,
+        tools=tools,
+        messages=messages,
+        case_id=case_id,
+        max_turns=max_turns,
+        extra_headers=extra_headers,
+        stop_on="layer2_complete",
+    )
+
+    if not loop["gate_open"]:
+        from cold_box_room.room_3 import room3_checkpoint
+
+        cp = room3_checkpoint(case_id)
+        if cp.get("ready_for_complete") or cp.get("layer2_complete"):
+            loop["gate_open"] = True
+
+    final_room = current_room(case_id)
+    summary = {
+        "ok": loop["gate_open"],
+        "case_id": case_id,
+        "room": final_room,
+        "gate_open": loop["gate_open"],
+        "layer2_complete": loop["gate_open"],
+        "tool_calls": loop["tool_calls"],
+        "turns_used": loop["turns_used"],
+        "last_gate": loop["last_result"],
+        "reasoning_log": str(_reasoning_path(case_id)),
+        "prompt_cache": prompt_cache_enabled(),
+    }
+    _log_event(case_id, {"type": "session_end", "room_3": summary})
+    return summary
 
 
 def _reasoning_path(case_id: str):
@@ -502,7 +592,6 @@ def run_layer1_agent(
         "case_id": case_id,
         "room": final_room,
         "promoted_to_room_b": promoted,
-        "promoted_to_r3": promoted,
         "tool_calls": tool_calls,
         "turns_used": turn,
         "last_submit": last_submit,

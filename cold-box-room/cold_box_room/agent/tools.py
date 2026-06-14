@@ -32,12 +32,16 @@ from cold_box_room.skills.registry import describe_skill, list_skills_dict
 SKILLS_BROWSE_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "list_skills",
-        "description": "Browse skill catalog by skill_id (SKILL-###) — Layer 2 analysis recipes.",
+        "description": (
+            "Browse skill catalog by skill_id (SKILL-###). "
+            "Default excludes partial and reference-only entries."
+        ),
         "input_schema": {
             "type": "object",
             "properties": {
                 "category": {"type": "string", "default": ""},
                 "tag": {"type": "string", "default": ""},
+                "agent_catalog_only": {"type": "boolean", "default": True},
             },
         },
     },
@@ -55,8 +59,45 @@ SKILLS_BROWSE_SCHEMAS: list[dict[str, Any]] = [
     },
 ]
 
+REVISIT_TOOL_SCHEMAS: list[dict[str, Any]] = [
+    {
+        "name": "list_unlocked_rooms",
+        "description": (
+            "List rooms this case may return to (A, 2, B, 3 — never Room 1; sealed evidence is locked)."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"case_id": {"type": "string"}},
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "return_to_room",
+        "description": (
+            "Return to an earlier unlocked room to fix a mistake (Room A, 2, B, or 3 — not Room 1). "
+            "State what was wrong in reason — required in submit_layer2_writeup corrections if you revisit."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "room": {
+                    "type": "string",
+                    "description": "Target room: 2, B, A, or 3.",
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "What mistake you are fixing by going back.",
+                },
+            },
+            "required": ["case_id", "room", "reason"],
+        },
+    },
+]
+
 ROOM_3_TOOL_SCHEMAS: list[dict[str, Any]] = [
     *SKILLS_BROWSE_SCHEMAS,
+    *REVISIT_TOOL_SCHEMAS,
     {
         "name": "run_skill",
         "description": (
@@ -77,8 +118,161 @@ ROOM_3_TOOL_SCHEMAS: list[dict[str, Any]] = [
                 "script_args": {"type": "array", "items": {"type": "string"}, "default": []},
                 "purpose": {"type": "string", "default": ""},
                 "why": {"type": "string", "default": ""},
+                "plan_step_id": {"type": "integer", "default": 0},
             },
             "required": ["skill_id", "case_id", "input_relpath"],
+        },
+    },
+    {
+        "name": "list_sandbox_files",
+        "description": "List files in the R2 sandbox (same evidence copy from Layer 1).",
+        "input_schema": {
+            "type": "object",
+            "properties": {"case_id": {"type": "string"}},
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "analyze_scratch",
+        "description": "Run grep/strings/sqlite3/file on scratch from skill or extraction runs.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "binary": {"type": "string"},
+                "scratch_relpath": {"type": "string"},
+                "purpose": {"type": "string"},
+                "why": {"type": "string"},
+                "args": {"type": "array", "items": {"type": "string"}},
+                "timeout": {"type": "integer", "default": 0},
+            },
+            "required": ["case_id", "binary", "scratch_relpath", "purpose", "why"],
+        },
+    },
+    {
+        "name": "read_layer2_skill_log",
+        "description": (
+            "Read Layer 2 harness skill log (run_skill executions + audit ids). "
+            "Harness-only — agent never edits this file."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "limit": {"type": "integer", "default": 20},
+            },
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "read_layer2_tool_log",
+        "description": (
+            "Read Layer 2 harness tool log (nested SIFT/scratch from skill scripts). "
+            "Harness-only — agent never edits this file."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "limit": {"type": "integer", "default": 20},
+            },
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "read_layer2_analyst_log",
+        "description": "Read Layer 2 analyst write-up (findings, corrections, self-score, why).",
+        "input_schema": {
+            "type": "object",
+            "properties": {"case_id": {"type": "string"}},
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "get_plan_b_status",
+        "description": "Read plan_b.py checkpoint rows and formalization status.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"case_id": {"type": "string"}},
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "apply_plan_b_step_status",
+        "description": (
+            "Mark a plan_b.py step after run_skill: passed (+1, needs run_id or audit_id from skill log), "
+            "fail (-1, needs note), not_relevant (0, needs note)."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "step_id": {"type": "integer"},
+                "status": {
+                    "type": "string",
+                    "enum": ["passed", "fail", "not_relevant", "held_for_later"],
+                },
+                "run_id": {"type": "string", "default": ""},
+                "audit_id": {"type": "string", "default": ""},
+                "note": {"type": "string", "default": ""},
+            },
+            "required": ["case_id", "step_id", "status"],
+        },
+    },
+    {
+        "name": "extend_plan_b_step",
+        "description": "Append a new pending checkpoint to plan_b.py during Room 3 if analysis needs another step.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "title": {"type": "string"},
+                "reason": {"type": "string"},
+                "tool_id": {"type": "string", "default": ""},
+            },
+            "required": ["case_id", "title", "reason"],
+        },
+    },
+    {
+        "name": "get_room3_status",
+        "description": "Room 3 checkpoint: plan_b resolved, skill runs, analyst log, ready_for_complete.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"case_id": {"type": "string"}},
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "submit_layer2_writeup",
+        "description": (
+            "Submit Layer 2 analyst write-up (findings + self_score + why + corrections). "
+            "Corrections must describe any mistake fixed via return_to_room, or 'none'. "
+            "Requires plan_b resolved, score ≥ 70%, successful skill run, self_score > 8."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "findings": {"type": "string"},
+                "self_score": {"type": "integer"},
+                "why": {"type": "string"},
+                "corrections": {"type": "string"},
+            },
+            "required": ["case_id", "findings", "self_score", "why", "corrections"],
+        },
+    },
+    {
+        "name": "exit_layer2",
+        "description": (
+            "Exit Layer 2 after 3 failed submit_layer2_writeup attempts. Case ends incomplete in Room 3."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "reason": {"type": "string"},
+            },
+            "required": ["case_id", "reason"],
         },
     },
     {
@@ -114,6 +308,7 @@ ROOM_3_TOOL_SCHEMAS: list[dict[str, Any]] = [
 ]
 
 ROOM_A_TOOL_SCHEMAS: list[dict[str, Any]] = [
+    *REVISIT_TOOL_SCHEMAS,
     {
         "name": "list_sift_tools",
         "description": "Browse SIFT tool catalog by tool_id (SIFT-###) — review before planning.",
@@ -172,6 +367,7 @@ ROOM_A_TOOL_SCHEMAS: list[dict[str, Any]] = [
 ]
 
 ROOM_B_TOOL_SCHEMAS: list[dict[str, Any]] = [
+    *REVISIT_TOOL_SCHEMAS,
     {
         "name": "read_layer1_tool_log",
         "description": "Read Layer 1 harness tool log (recent extractions + scratch refs).",
@@ -261,6 +457,7 @@ ROOM_B_TOOL_SCHEMAS: list[dict[str, Any]] = [
 ]
 
 LAYER1_TOOL_SCHEMAS: list[dict[str, Any]] = [
+    *REVISIT_TOOL_SCHEMAS,
     {
         "name": "list_sandbox_files",
         "description": "List files in the R2 sandbox (available in Room 2 only, after Room A gate).",
@@ -454,6 +651,7 @@ def dispatch_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
         rows = list_skills_dict(
             category=str(args.get("category") or "") or None,
             tag=str(args.get("tag") or "") or None,
+            agent_catalog_only=bool(args.get("agent_catalog_only", True)),
         )
         return {"skills": rows, "count": len(rows)}
     if name == "describe_skill":
@@ -462,6 +660,10 @@ def dispatch_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
         script_args = args.get("script_args") or []
         if not isinstance(script_args, list):
             script_args = []
+        plan_step_id = args.get("plan_step_id")
+        step_id: int | None = None
+        if plan_step_id not in (None, "", 0):
+            step_id = int(plan_step_id)
         return run_skill(
             skill_id=str(args["skill_id"]),
             case_id=case_id,
@@ -470,7 +672,102 @@ def dispatch_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
             script_args=[str(a) for a in script_args],
             purpose=str(args.get("purpose") or ""),
             why=str(args.get("why") or ""),
+            plan_step_id=step_id,
         )
+    if name == "list_unlocked_rooms":
+        from cold_box_room.r1.hallway import current_room, list_room_revisits, unlocked_rooms
+
+        return {
+            "case_id": case_id,
+            "room": current_room(case_id),
+            "unlocked_rooms": sorted(unlocked_rooms(case_id)),
+            "revisits": list_room_revisits(case_id),
+        }
+    if name == "return_to_room":
+        from cold_box_room.r1.hallway import return_to_room
+
+        try:
+            return return_to_room(
+                case_id,
+                str(args["room"]),
+                reason=str(args.get("reason") or ""),
+            )
+        except Exception as exc:
+            return {"ok": False, "error": str(exc), "case_id": case_id}
+    if name == "read_layer2_skill_log":
+        from cold_box_room.room_3 import read_skill_log, room3_checkpoint
+
+        log = read_skill_log(case_id, limit=int(args.get("limit") or 20))
+        try:
+            log["checkpoint"] = room3_checkpoint(case_id)
+        except Exception as exc:
+            log["checkpoint_error"] = str(exc)
+        return log
+    if name == "read_layer2_tool_log":
+        from cold_box_room.room_3 import read_layer2_tool_log, room3_checkpoint
+
+        log = read_layer2_tool_log(case_id, limit=int(args.get("limit") or 20))
+        try:
+            log["checkpoint"] = room3_checkpoint(case_id)
+        except Exception as exc:
+            log["checkpoint_error"] = str(exc)
+        return log
+    if name == "read_layer2_analyst_log":
+        from cold_box_room.room_3 import read_analyst_log
+
+        analyst = read_analyst_log(case_id)
+        return {"ok": True, "case_id": case_id, "analyst_log": analyst}
+    if name == "get_room3_status":
+        from cold_box_room.room_3 import get_room3_status
+
+        return get_room3_status(case_id)
+    if name == "apply_plan_b_step_status":
+        proof: dict[str, Any] = {}
+        if args.get("run_id"):
+            proof["run_id"] = str(args["run_id"])
+        if args.get("audit_id"):
+            proof["audit_id"] = str(args["audit_id"])
+        if args.get("note"):
+            proof["note"] = str(args["note"])
+        from cold_box_room.room_3 import apply_plan_b_step_status
+
+        return apply_plan_b_step_status(
+            case_id=case_id,
+            step_id=int(args["step_id"]),
+            status=str(args["status"]),
+            proof=proof,
+        )
+    if name == "extend_plan_b_step":
+        from cold_box_room.room_3 import extend_plan_b_step
+
+        return extend_plan_b_step(
+            case_id=case_id,
+            title=str(args["title"]),
+            reason=str(args["reason"]),
+            tool_id=str(args.get("tool_id") or ""),
+        )
+    if name == "submit_layer2_writeup":
+        from cold_box_room.r2.analyst_log import normalize_self_score
+        from cold_box_room.room_3 import submit_layer2_writeup
+
+        try:
+            score = normalize_self_score(args["self_score"])
+        except Exception as exc:
+            return {"ok": False, "error": str(exc), "case_id": case_id}
+        return submit_layer2_writeup(
+            case_id=case_id,
+            findings=str(args["findings"]),
+            self_score=score,
+            why=str(args["why"]),
+            corrections=str(args["corrections"]),
+        )
+    if name == "exit_layer2":
+        from cold_box_room.room_3 import exit_layer2
+
+        try:
+            return exit_layer2(case_id=case_id, reason=str(args.get("reason") or ""))
+        except Exception as exc:
+            return {"ok": False, "error": str(exc), "case_id": case_id}
     if name == "list_sandbox_files":
         return {
             "case_id": case_id,

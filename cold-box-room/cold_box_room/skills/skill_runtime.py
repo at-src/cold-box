@@ -56,6 +56,7 @@ class SkillRuntime:
     work_dir: Path | None = None
     audit_ids: list[str] = field(default_factory=list)
     last_tool_result: dict[str, Any] | None = None
+    skill_run_id: str = ""
 
     def scratch_root(self) -> Path:
         return scratch_dir(self.case_id)

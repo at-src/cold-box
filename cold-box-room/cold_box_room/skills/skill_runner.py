@@ -30,6 +30,7 @@ def run_skill_script(
     input_relpath: str,
     journal_id: str = "",
     script_args: list[str] | None = None,
+    skill_run_id: str = "",
 ) -> dict[str, Any]:
     """Load library/*/scripts/agent.py and run with SIFT-routed run_cmd/subprocess."""
     row = resolve_skill_ref(skill_ref)
@@ -57,6 +58,7 @@ def run_skill_script(
         skill_id=row.skill_id,
         input_relpath=input_relpath,
         evidence_abs_path=evidence,
+        skill_run_id=skill_run_id,
     )
 
     argv = list(script_args or [])

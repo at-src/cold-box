@@ -35,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
         model=args.model or None,
     )
     print(json.dumps(result, indent=2))
-    return 0 if result.get("promoted_to_r3") else 1
+    return 0 if result.get("promoted_to_room_b") else 1
 
 
 if __name__ == "__main__":

@@ -17,14 +17,21 @@ def bootstrap_case_to_room2(case_id: str) -> dict[str, Any]:
         promote_to_room_a(case_id)
     if current_room(case_id) == "A":
         fast_pass_room_a(case_id)
-    return promote_to_room2(case_id)
+        return promote_to_room2(case_id)
+    if current_room(case_id) == "2":
+        return {"case_id": case_id, "room": "2", "already_in_room2": True}
+    raise RuntimeError(f"expected room 1/A/2 after bootstrap, got {current_room(case_id)}")
 
 
 def bootstrap_case_to_room_b(case_id: str) -> dict[str, Any]:
     """R1 → A → R2 (minimal Layer 1 pass) → B for Room B unit tests."""
-    bootstrap_case_to_room2(case_id)
-    if current_room(case_id) != "2":
-        raise RuntimeError(f"expected room 2 after bootstrap, got {current_room(case_id)}")
+    room = current_room(case_id)
+    if room in {"1", "A"}:
+        bootstrap_case_to_room2(case_id)
+    elif room not in {"2", "B"}:
+        raise RuntimeError(f"expected room ≤2 for Layer 1 bootstrap, got {room}")
+    if current_room(case_id) == "B":
+        return {"case_id": case_id, "room": "B", "already_in_room_b": True}
     append_tool_log(
         case_id=case_id,
         audit_id="CB-bootstrap-b",

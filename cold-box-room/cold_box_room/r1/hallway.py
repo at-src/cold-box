@@ -142,7 +142,7 @@ def promote_to_room_b(case_id: str) -> dict[str, Any]:
 
 
 def promote_to_room3(case_id: str) -> dict[str, Any]:
-    """Room B gate open → Room 3 (Layer 2 analysis execution — not implemented yet)."""
+    """Room B gate open → Room 3 (Layer 2 analysis execution)."""
     from cold_box_room.room_b import room_b_checkpoint
 
     require_room(case_id, ROOM_B)
@@ -158,3 +158,65 @@ def promote_to_room3(case_id: str) -> dict[str, Any]:
     data["updated_at"] = data["promoted_to_room3_at"]
     _save(case_id, data)
     return data
+
+
+def unlocked_rooms(case_id: str) -> set[str]:
+    """Rooms the case may return to after forward promotion (Room 1 is never unlocked)."""
+    data = _load(case_id)
+    unlocked: set[str] = set()
+    if data.get("promoted_to_room_a_at"):
+        unlocked.add(ROOM_A)
+    if data.get("promoted_at"):
+        unlocked.add(ROOM_2)
+    if data.get("promoted_to_room_b_at"):
+        unlocked.add(ROOM_B)
+    if data.get("promoted_to_room3_at"):
+        unlocked.add(ROOM_3)
+    return unlocked
+
+
+def list_room_revisits(case_id: str) -> list[dict[str, Any]]:
+    data = _load(case_id)
+    return list(data.get("room_revisits") or [])
+
+
+def return_to_room(case_id: str, room: str | int, *, reason: str) -> dict[str, Any]:
+    """Move case back to an earlier unlocked room to fix a mistake."""
+    target = normalize_room(room)
+    if target == ROOM_1:
+        raise StagingError(
+            "Room 1 is locked — sealed R1 evidence must not be revisited by the agent. "
+            "Use return_to_room to Room A, 2, or B instead."
+        )
+    current = current_room(case_id)
+    allowed = unlocked_rooms(case_id)
+    if target not in allowed:
+        raise StagingError(
+            f"Room {target!r} is not unlocked for case {case_id!r} "
+            f"(unlocked: {sorted(allowed)})"
+        )
+    if not reason.strip():
+        raise StagingError("return_to_room requires a non-empty reason describing the mistake")
+
+    data = _load(case_id)
+    revisits = list(data.get("room_revisits") or [])
+    revisits.append(
+        {
+            "from_room": current,
+            "to_room": target,
+            "reason": reason.strip(),
+            "at": datetime.now(timezone.utc).isoformat(),
+        }
+    )
+    data["room"] = target
+    data["room_revisits"] = revisits
+    data["updated_at"] = revisits[-1]["at"]
+    _save(case_id, data)
+    return {
+        "ok": True,
+        "case_id": case_id,
+        "room": target,
+        "from_room": current,
+        "reason": reason.strip(),
+        "unlocked_rooms": sorted(allowed),
+    }

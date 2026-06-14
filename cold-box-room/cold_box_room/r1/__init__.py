@@ -9,6 +9,8 @@ from cold_box_room.r1.hallway import (
     promote_to_room_b,
     promote_to_room3,
     require_room,
+    return_to_room,
+    unlocked_rooms,
 )
 from cold_box_room.r1.intake import intake_case, list_staging_cases
 from cold_box_room.r1.seal import is_sealed, require_sealed
@@ -28,4 +30,6 @@ __all__ = [
     "r1_checkpoint",
     "require_room",
     "require_sealed",
+    "return_to_room",
+    "unlocked_rooms",
 ]

@@ -176,6 +176,7 @@ def run_layer1_e2e(
     model: str | None = None,
     reuse_kitchen: bool = False,
     skip_room_a_agent: bool = False,
+    skip_layer1_agent: bool = False,
 ) -> dict[str, Any]:
     case_id = case_id or run_id
 
@@ -238,6 +239,20 @@ def run_layer1_e2e(
         result["kitchen"]["room"] = current_room(case_id)
         result["kitchen"]["sandbox_files"] = list_sandbox_files(case_id)
 
+    if skip_layer1_agent:
+        from cold_box_room.testing.hallway import bootstrap_case_to_room_b
+
+        bootstrap_case_to_room_b(case_id)
+        agent_result = {
+            "skipped": True,
+            "promoted_to_room_b": True,
+            "room": current_room(case_id),
+        }
+        result["agent"] = agent_result
+        result["status"] = "complete"
+        result["output_dir"] = str(get_records_root() / case_id)
+        return result
+
     preflight = preflight_agent(case_id=case_id)
     result["preflight"] = preflight
 
@@ -250,7 +265,7 @@ def run_layer1_e2e(
         model=model,
     )
     result["agent"] = agent_result
-    result["status"] = "complete"
+    result["status"] = "complete" if agent_result.get("promoted_to_room_b") else "layer1_failed"
     result["output_dir"] = str(get_records_root() / case_id)
     return result
 
@@ -280,6 +295,11 @@ def main(argv: list[str] | None = None) -> int:
         help="Fast-pass Room A deterministically (tests/bootstrap)",
     )
     parser.add_argument(
+        "--skip-layer1-agent",
+        action="store_true",
+        help="Bootstrap minimal Layer 1 pass instead of Room 2 agent",
+    )
+    parser.add_argument(
         "--reuse-kitchen",
         action="store_true",
         help="Skip wipe + intake; run agents on existing workspace",
@@ -296,6 +316,7 @@ def main(argv: list[str] | None = None) -> int:
         room_a_max_turns=args.room_a_max_turns,
         run_agent=not args.kitchen_only,
         skip_room_a_agent=args.skip_room_a_agent,
+        skip_layer1_agent=args.skip_layer1_agent,
         model=args.model or None,
         reuse_kitchen=args.reuse_kitchen,
     )
@@ -304,9 +325,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if out.get("status") == "room_a_failed":
         return 2
-    promoted = out.get("agent", {}).get("promoted_to_room_b") or out.get("agent", {}).get(
-        "promoted_to_r3"
-    )
+    promoted = out.get("agent", {}).get("promoted_to_room_b")
     return 0 if promoted else 1
 
 

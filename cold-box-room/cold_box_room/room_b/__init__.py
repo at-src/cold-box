@@ -62,11 +62,15 @@ def get_plan_b_status(case_id: str):
 
 def fast_pass_room_b(case_id: str, *, markdown: str | None = None) -> dict:
     """Deterministic Room B completion for tests (not an agent run)."""
-    from cold_box_room.planning.markdown import PLAN_B_SKELETON
     from cold_box_room.r1.hallway import current_room, require_room
 
     require_room(case_id, "B")
-    body = markdown or PLAN_B_SKELETON.format(case_id=case_id)
+    body = markdown or f"""# Analysis plan — `{case_id}`
+
+## Step 1 — Bootstrap analysis step
+
+**Reason:** Minimal valid plan for harness tests and bootstrap runs.
+"""
     write_plan_b_md(case_id=case_id, markdown=body)
     result = formalize_plan_b(case_id=case_id)
     checkpoint = room_b_checkpoint(case_id)

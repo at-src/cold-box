@@ -13,6 +13,7 @@ from cold_box_room.r2.checkpoint import layer1_readonly_summary, r2_layer1_check
 from cold_box_room.r2.sandbox import list_sandbox_files
 from cold_box_room.room_a import get_plan_a_status, room_a_checkpoint
 from cold_box_room.room_b import get_plan_b_status, room_b_checkpoint
+from cold_box_room.room_3 import layer2_readonly_summary, room3_checkpoint
 
 
 def _load_hallway(case_id: str) -> dict[str, Any] | None:
@@ -190,6 +191,93 @@ def format_room_b_briefing(case_id: str) -> str:
     return "\n".join(lines)
 
 
+def format_room3_briefing(case_id: str) -> str:
+    """Opening briefing for Room 3 — Layer 1 context + plan_b execution."""
+    room = current_room(case_id)
+    hallway = _load_hallway(case_id) or {}
+    layer1 = hallway.get("layer1_checkpoint") or {}
+    room_b = hallway.get("room_b_checkpoint") or {}
+
+    lines: list[str] = [
+        f"## Case `{case_id}` — you are in Room {room}",
+        "",
+        "### Input context — Layer 1 (already done)",
+        "",
+        "Your analysis must build on Layer 1 extractions and the analyst write-up below.",
+        "",
+    ]
+
+    try:
+        summary = layer1_readonly_summary(case_id)
+        analyst = summary.get("analyst_log") or {}
+        if analyst.get("complete"):
+            findings = analyst.get("findings", "")
+            why = analyst.get("why", "")
+            excerpt = findings[:2000] + ("…" if len(findings) > 2000 else "")
+            lines.extend(
+                [
+                    f"**Layer 1 self-score:** {summary.get('self_score')}",
+                    f"**Successful extractions:** {summary.get('successful_extractions')}",
+                    "",
+                    "**Layer 1 findings (excerpt):**",
+                    excerpt,
+                    "",
+                    "**Layer 1 why (excerpt):**",
+                    (why[:1200] + ("…" if len(why) > 1200 else "")),
+                    "",
+                ]
+            )
+        else:
+            lines.append("**Layer 1 analyst log incomplete** — read `read_layer1_analyst_log` before analyzing.")
+    except Exception as exc:
+        lines.append(f"Layer 1 summary unavailable: {exc}")
+
+    if room_b.get("step_count"):
+        lines.append(f"**Analysis plan:** {room_b['step_count']} step(s) in plan_b.py.")
+
+    lines.extend(
+        [
+            "",
+            "### Your work — Room 3 (Layer 2 analysis)",
+            "",
+            "1. Read `read_layer1_tool_log` and `read_layer1_analyst_log` if you need full detail.",
+            "2. Execute plan_b.py — `run_skill` per step, mark with `apply_plan_b_step_status`.",
+            "3. Harness logs: `layer2_skill_log.md` (skills) + `layer2_tool_log.md` (nested SIFT) — read-only.",
+            "4. `submit_layer2_writeup` → `layer2_analyst_log.md` with findings, corrections, self_score, why.",
+            "5. Use `return_to_room` to fix mistakes (Room A, 2, or B only — Room 1 locked) — document in corrections.",
+            "",
+        ]
+    )
+
+    if room != "3":
+        lines.append(f"Warning: case is in Room {room}, not Room 3.")
+        return "\n".join(lines)
+
+    try:
+        status = room3_checkpoint(case_id)
+        plan_status = get_plan_b_status(case_id)
+    except Exception as exc:
+        lines.append(f"Room 3 checkpoint unavailable: {exc}")
+        return "\n".join(lines)
+
+    blocked = status.get("blocked_reasons") or []
+    plan_score = (status.get("plan_gate") or {}).get("plan_score_pct")
+    lines.extend(
+        [
+            f"**plan_b.py steps:** {plan_status.get('step_count', 0)}",
+            "",
+            "**Room 3 checkpoint:**",
+            f"- Successful skill runs: {status.get('successful_skill_runs')} (need ≥1)",
+            f"- Plan resolved: {status.get('plan_resolved_gate')}",
+            f"- Plan score: {plan_score if plan_score is not None else 'n/a'}% (need ≥ {PLAN_SCORE_MIN_PCT:g}%)",
+            f"- ready_for_complete: {status.get('ready_for_complete')}",
+            f"- Blocked: {blocked or 'none'}",
+            f"- Prior revisits: {len(status.get('room_revisits') or [])}",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def format_case_situation_briefing(case_id: str) -> str:
     """Per-case opening for Room 2 — R1/A done, sandbox inventory, Layer 1 gates."""
     room = current_room(case_id)
@@ -197,6 +285,8 @@ def format_case_situation_briefing(case_id: str) -> str:
         return format_room_a_briefing(case_id)
     if room == "B":
         return format_room_b_briefing(case_id)
+    if room == "3":
+        return format_room3_briefing(case_id)
 
     hallway = _load_hallway(case_id) or {}
     r1 = hallway.get("r1_checkpoint") or {}

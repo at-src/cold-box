@@ -21,7 +21,7 @@ from cold_box_room.r2.output_files import (
     stream_pipe_to_file,
 )
 from cold_box_room.r2.security import sanitize_extra_args
-from cold_box_room.r2.tool_log import append_tool_log
+from cold_box_room.r2.harness_log import append_harness_tool_log
 
 ALLOWED_BINARIES = frozenset({"grep", "strings", "file", "sqlite3", "head", "tail", "wc", "identify"})
 DEFAULT_TIMEOUT = 120
@@ -31,7 +31,7 @@ def resolve_scratch_path(case_id: str, scratch_relpath: str) -> Path:
     if skill_harness_active():
         require_room_in(case_id, {ROOM_2, ROOM_3})
     else:
-        require_room(case_id, ROOM_2)
+        require_room_in(case_id, {ROOM_2, ROOM_3})
     root = scratch_dir(case_id).resolve()
     raw = scratch_relpath.strip()
     if Path(raw).is_absolute():
@@ -113,12 +113,13 @@ def run_scratch_analysis(
             elapsed_ms=elapsed_ms,
             error=f"Timed out after {timeout or DEFAULT_TIMEOUT}s",
         )
-        append_tool_log(
+        append_harness_tool_log(
             case_id=case_id,
             audit_id=audit_id,
             tool_id="SCRATCH",
             tool_name=name,
             purpose=purpose,
+            why=why,
             command=cmd,
             input_relpath=scratch_relpath,
             exit_code=-1,
@@ -157,12 +158,13 @@ def run_scratch_analysis(
         output_files=output_files,
         stdout_preview=audit_preview,
     )
-    append_tool_log(
+    append_harness_tool_log(
         case_id=case_id,
         audit_id=audit_id,
         tool_id="SCRATCH",
         tool_name=name,
         purpose=purpose,
+        why=why,
         command=cmd,
         input_relpath=scratch_relpath,
         exit_code=proc.returncode,

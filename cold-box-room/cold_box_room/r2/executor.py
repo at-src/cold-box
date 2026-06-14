@@ -423,12 +423,15 @@ def _log_run(
         stdout_preview=stdout_preview,
         error=error,
     )
-    append_tool_log(
+    from cold_box_room.r2.harness_log import append_harness_tool_log
+
+    append_harness_tool_log(
         case_id=case_id,
         audit_id=audit_id,
         tool_id=tool.tool_id,
         tool_name=tool.name,
         purpose=purpose,
+        why=why,
         command=cmd,
         input_relpath=input_relpath,
         exit_code=exit_code,

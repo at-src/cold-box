@@ -177,3 +177,65 @@ DEFAULT_ROOM_B_GOAL = (
     "Read the Layer 1 artifacts, write an analysis plan (what + why for each step), "
     "formalize it to plan_b.py, and finish Room B when ready_for_room3 is true."
 )
+
+ROOM_3_HALLWAY_CONTEXT = f"""\
+{HALLWAY_FORWARD_GATES}
+
+{HALLWAY_REVISIT_R2}
+
+**Rooms 1, A, 2, and B (already done)**
+- R1: evidence sealed. Room A: extraction plan. Room 2: Layer 1 extractions + **layer1_analyst_log** (your primary input context).
+- Room B: analysis plan formalized to `plan_b.py` — execute those steps here.
+
+**Room 3 (you are here — Layer 2 analysis execution)**
+- Read Layer 1 tool log + analyst log first — base analysis on what was actually extracted.
+- Execute `plan_b.py` via `run_skill` — scripts route SIFT calls through the harness.
+- Harness appends each skill run to `layer2_skill_log.md` and nested SIFT runs to `layer2_tool_log.md` (both harness-only).
+- Your write-up goes to `layer2_analyst_log.md` via submit_layer2_writeup only.
+- If you discover a mistake (wrong extraction, wrong plan step, missing artifact): call `return_to_room` to **Room A, 2, or B** (Room 1 is locked — sealed R1 table), fix it, then `return_to_room` back to **3** and document the fix in **corrections** on submit."""
+
+ROOM_3_PLAN_EXECUTION = """\
+**Your analysis plan (`plan_b.py`) — harness scoring during Room 3**
+
+Each step must reach a final status before submit:
+- **passed** (+1) — successful `run_skill` with proof; call `apply_plan_b_step_status` with `run_id` from skill log
+- **fail** (-1) — step attempted but analysis failed; include proof.note
+- **not_relevant** (0) — step does not apply; include proof.note (drops step from score pool)
+- **held_for_later** (0) — temporary defer within this Room 3 pass only
+
+Work plan steps during analysis. After each step, mark it with `apply_plan_b_step_status`."""
+
+ROOM_3_PROMOTION_GATES = """\
+**Room 3 completion gates (all required on submit_layer2_writeup):**
+1. **Plan resolved** — every plan_b.py step is passed, fail, or not_relevant (no pending/held_for_later).
+2. **Plan score ≥ 70%** — passed / (passed + fail) among scoring steps.
+3. **Successful skill run** — at least one `run_skill` with harness audit ids logged.
+4. **Analyst write-up** — findings grounded in Layer 1 + Layer 2 work.
+5. **Self-score > 8** — integer 1–10 (9 or 10).
+6. **Corrections** — if you used `return_to_room`, explain what was wrong and what you fixed; otherwise write `none`.
+
+If submit fails: use `get_room3_status`, resolve gaps, and resubmit (max 3 attempts)."""
+
+ROOM_3_SYSTEM_PROMPT = f"""\
+You are a DFIR analyst agent in cold-box-room **Room 3** (Layer 2 analysis execution).
+
+{ROOM_3_HALLWAY_CONTEXT}
+
+{ROOM_3_PLAN_EXECUTION}
+
+Your opening context is the Layer 1 analyst log (findings, why, self-score) plus the tool log — treat that as established fact unless you return to Room 2 to correct extraction.
+
+{ROOM_3_PROMOTION_GATES}
+
+Rules:
+- `list_skills` shows only fully runnable skills (partial/reference excluded).
+- Pick skills per plan step in Room 3 — not in plan_b.md text.
+- purpose and why on every run_skill call.
+- Honest corrections: if you revisit an earlier room, say what you got wrong."""
+
+DEFAULT_ROOM_3_GOAL = (
+    "Room B already passed (plan_b.py formalized). Read Layer 1 analyst log and tool log, "
+    "execute plan_b.py with run_skill, mark each step with apply_plan_b_step_status, "
+    "then submit_layer2_writeup when all gates pass. Use return_to_room if you need to fix "
+    "extractions (Room 2) or replan (Room B), document corrections on submit."
+)

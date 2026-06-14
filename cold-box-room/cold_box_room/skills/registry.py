@@ -108,11 +108,21 @@ def get_skill(skill_id: str) -> SkillRecord:
     return resolve_skill_ref(skill_id)
 
 
+def is_agent_runnable(rec: SkillRecord) -> bool:
+    """Skills exposed to the agent catalog and run_skill (excludes partial/reference)."""
+    return (
+        rec.has_script
+        and not rec.reference_only
+        and rec.execution_mode != "partial"
+    )
+
+
 def list_skills(
     *,
     category: str | None = None,
     tag: str | None = None,
     runnable_only: bool = False,
+    agent_catalog_only: bool = False,
 ) -> list[SkillRecord]:
     rows = list(_records_by_id().values())
     if category:
@@ -120,9 +130,29 @@ def list_skills(
     if tag:
         needle = tag.strip().lower()
         rows = [r for r in rows if needle in {t.lower() for t in r.tags}]
-    if runnable_only:
+    if agent_catalog_only:
+        rows = [r for r in rows if is_agent_runnable(r)]
+    elif runnable_only:
         rows = [r for r in rows if r.has_script and not r.reference_only]
     return sorted(rows, key=lambda r: r.skill_id)
+
+
+def list_skills_dict(
+    *,
+    category: str | None = None,
+    tag: str | None = None,
+    runnable_only: bool = False,
+    agent_catalog_only: bool = False,
+) -> list[dict[str, Any]]:
+    return [
+        s.to_list_dict()
+        for s in list_skills(
+            category=category,
+            tag=tag,
+            runnable_only=runnable_only,
+            agent_catalog_only=agent_catalog_only,
+        )
+    ]
 
 
 def list_categories() -> list[str]:
@@ -134,18 +164,6 @@ def list_tags() -> list[str]:
     for rec in _records_by_id().values():
         tags.update(rec.tags)
     return sorted(tags)
-
-
-def list_skills_dict(
-    *,
-    category: str | None = None,
-    tag: str | None = None,
-    runnable_only: bool = False,
-) -> list[dict[str, Any]]:
-    return [
-        s.to_list_dict()
-        for s in list_skills(category=category, tag=tag, runnable_only=runnable_only)
-    ]
 
 
 def _read_skill_md(rec: SkillRecord) -> tuple[dict[str, Any], str]:
