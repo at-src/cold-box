@@ -29,8 +29,8 @@ def test_manifest_path_exists():
 def test_load_manifest_batches():
     data = load_manifest()
     assert data["schema"] == "cold_box_room.skills_manifest_v2"
-    assert data["count"] == 300
-    assert len(data["skills"]) == 300
+    assert data["count"] == 339
+    assert len(data["skills"]) == 339
     assert data["skills"][0]["skill_id"] == "SKILL-001"
     assert data["skills"][49]["skill_id"] == "SKILL-050"
     assert data["skills"][50]["skill_id"] == "SKILL-051"
@@ -43,7 +43,9 @@ def test_load_manifest_batches():
     assert data["skills"][249]["skill_id"] == "SKILL-250"
     assert data["skills"][250]["skill_id"] == "SKILL-251"
     assert data["skills"][299]["skill_id"] == "SKILL-300"
-    assert len(data.get("batches") or []) == 6
+    assert data["skills"][300]["skill_id"] == "SKILL-301"
+    assert data["skills"][338]["skill_id"] == "SKILL-339"
+    assert len(data.get("batches") or []) == 7
 
 
 def test_batch1_uniform_schema():
@@ -134,7 +136,14 @@ def test_get_skill_251_batch6():
     assert skill.skill_md_path(skills_root=skills_root()).is_file()
 
 
+def test_get_skill_301_batch7():
+    skill = get_skill("SKILL-301")
+    assert skill.journal_id == "CB-SKL-301"
+    assert skill.library_slug == "cb-monitoring-darkweb-sources"
+    assert skill.skill_md_path(skills_root=skills_root()).is_file()
+
+
 def test_catalog_id_sequence():
     data = load_manifest()
     ids = [s["skill_id"] for s in data["skills"]]
-    assert ids == [f"SKILL-{i:03d}" for i in range(1, 301)]
+    assert ids == [f"SKILL-{i:03d}" for i in range(1, 340)]
