@@ -77,3 +77,21 @@ def promote_to_room2(case_id: str) -> dict[str, Any]:
     data["updated_at"] = data["promoted_at"]
     _save(case_id, data)
     return data
+
+
+def promote_to_room3(case_id: str) -> dict[str, Any]:
+    from cold_box_room.r2.checkpoint import r2_layer1_checkpoint
+
+    require_room(case_id, 2)
+    check = r2_layer1_checkpoint(case_id)
+    if not check["ready_for_room3"]:
+        reasons = ", ".join(check["blocked_reasons"]) or "checkpoint failed"
+        raise StagingError(f"Layer 1 checkpoint failed: {reasons}")
+
+    data = _load(case_id)
+    data["room"] = 3
+    data["promoted_to_r3_at"] = datetime.now(timezone.utc).isoformat()
+    data["layer1_checkpoint"] = check
+    data["updated_at"] = data["promoted_to_r3_at"]
+    _save(case_id, data)
+    return data

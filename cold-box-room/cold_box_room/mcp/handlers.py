@@ -5,9 +5,12 @@ from __future__ import annotations
 from typing import Any
 
 from cold_box_room.r1.paths import StagingError
+from cold_box_room.r2.checkpoint import exit_layer1, r2_layer1_checkpoint, submit_layer1_writeup
 from cold_box_room.r2.errors import ToolExecutionError
 from cold_box_room.r2.executor import run_sift_tool as execute_sift_tool
 from cold_box_room.r2.scratch_analysis import run_scratch_analysis
+from cold_box_room.r2.analyst_log import read_analyst_log
+from cold_box_room.r2.tool_log import read_tool_log
 from cold_box_room.tools.registry import (
     ToolCatalogError,
     describe_tool,
@@ -101,3 +104,49 @@ def handle_analyze_scratch(
             "case_id": case_id,
             "binary": binary,
         }
+
+
+def handle_read_layer1_tool_log(case_id: str, limit: int = 20) -> dict[str, Any]:
+    try:
+        log = read_tool_log(case_id, limit=limit)
+        log["checkpoint"] = r2_layer1_checkpoint(case_id)
+        return log
+    except StagingError as exc:
+        return {"ok": False, "error": str(exc), "case_id": case_id}
+
+
+def handle_get_layer1_status(case_id: str) -> dict[str, Any]:
+    try:
+        checkpoint = r2_layer1_checkpoint(case_id)
+        analyst = read_analyst_log(case_id)
+        return {
+            "checkpoint": checkpoint,
+            "analyst_log": analyst,
+        }
+    except StagingError as exc:
+        return {"ok": False, "error": str(exc), "case_id": case_id}
+
+
+def handle_submit_layer1_writeup(
+    *,
+    case_id: str,
+    findings: str,
+    self_score: int,
+    why: str,
+) -> dict[str, Any]:
+    try:
+        return submit_layer1_writeup(
+            case_id=case_id,
+            findings=findings,
+            self_score=self_score,
+            why=why,
+        )
+    except StagingError as exc:
+        return {"ok": False, "error": str(exc), "case_id": case_id}
+
+
+def handle_exit_layer1(*, case_id: str, reason: str) -> dict[str, Any]:
+    try:
+        return exit_layer1(case_id=case_id, reason=reason)
+    except StagingError as exc:
+        return {"ok": False, "error": str(exc), "case_id": case_id}

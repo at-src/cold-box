@@ -1,4 +1,4 @@
-"""Cold-box-room MCP server — four SIFT harness tools."""
+"""Cold-box-room MCP server — SIFT harness + Layer 1 logbook."""
 
 from __future__ import annotations
 
@@ -7,24 +7,36 @@ from mcp.server.fastmcp import FastMCP
 from cold_box_room.mcp.handlers import (
     handle_analyze_scratch,
     handle_describe_sift_tool,
+    handle_exit_layer1,
+    handle_get_layer1_status,
     handle_list_sift_tools,
+    handle_read_layer1_tool_log,
     handle_run_sift_tool,
+    handle_submit_layer1_writeup,
 )
 
 INSTRUCTIONS = """\
-Cold-box-room — R2 sandbox + SIFT tool harness.
+Cold-box-room — R2 sandbox + SIFT tool harness + Layer 1 logbook.
 
 Evidence is copied from sealed R1 staging into the R2 sandbox on promotion.
 You MUST NOT write to R1 staging. Tool output goes to case scratch only.
 
-Workflow:
+Tools workflow:
 1. list_sift_tools — browse catalog by tool_id (SIFT-###)
 2. describe_sift_tool — flags, timeout, harness_usage, verification label
 3. run_sift_tool — read sandbox evidence, write scratch + audit_id
 4. analyze_scratch — grep/strings/sqlite3/file on scratch outputs
 
-Case must be in room 2 (promoted from R1) before run_sift_tool or analyze_scratch.
-Every run returns audit_id (CB-…) for citations.
+Layer 1 logbook (two files — do not mix):
+- layer1_tool_log.md — harness fills automatically on every run_sift_tool / analyze_scratch
+- layer1_analyst_log.md — YOU write findings + self_score + why via submit_layer1_writeup
+
+Before Room 3:
+- read_layer1_tool_log / get_layer1_status — see harness tool output and gate status
+- submit_layer1_writeup — findings, self_score (1-10), why; promotes if score > 8 and ≥1 successful extraction
+- exit_layer1 — after 3 failed promotion attempts, document why you cannot score above 8
+
+Case must be in room 2 for tool runs and analyst write-up.
 """
 
 
@@ -82,6 +94,36 @@ def create_server() -> FastMCP:
             args=args,
             timeout=timeout,
         )
+
+    @server.tool()
+    def read_layer1_tool_log(case_id: str, limit: int = 20) -> dict:
+        """Read harness tool log (layer1_tool_log.md + recent JSONL entries)."""
+        return handle_read_layer1_tool_log(case_id, limit=limit)
+
+    @server.tool()
+    def get_layer1_status(case_id: str) -> dict:
+        """Layer 1 promotion gates — extractions, analyst log, score, attempts."""
+        return handle_get_layer1_status(case_id)
+
+    @server.tool()
+    def submit_layer1_writeup(
+        case_id: str,
+        findings: str,
+        self_score: int,
+        why: str,
+    ) -> dict:
+        """Agent Layer 1 write-up (findings + self_score + why). Promotes to R3 when gates pass."""
+        return handle_submit_layer1_writeup(
+            case_id=case_id,
+            findings=findings,
+            self_score=self_score,
+            why=why,
+        )
+
+    @server.tool()
+    def exit_layer1(case_id: str, reason: str) -> dict:
+        """After 3 failed promotion attempts, document why score cannot exceed 8 and exit Layer 1."""
+        return handle_exit_layer1(case_id=case_id, reason=reason)
 
     return server
 

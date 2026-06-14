@@ -13,8 +13,11 @@ from cold_box_room.r1.intake import intake_case, list_staging_cases
 from cold_box_room.r1.paths import get_records_root, get_staging_root, hallway_state_path
 from cold_box_room.r1.seal import is_sealed, seal_record_path
 from cold_box_room.r1.staging_read import open_staging_read
+from cold_box_room.r2.checkpoint import r2_layer1_checkpoint, submit_layer1_writeup
 from cold_box_room.r2.paths import case_sandbox_dir, get_sandbox_root
 from cold_box_room.r2.sandbox import list_sandbox_files, r2_status
+from cold_box_room.r2.analyst_log import read_analyst_log
+from cold_box_room.r2.tool_log import read_tool_log
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -51,6 +54,20 @@ def main(argv: list[str] | None = None) -> int:
 
     p_sandbox_ls = sub.add_parser("sandbox-ls")
     p_sandbox_ls.add_argument("--case-id", required=True)
+
+    p_layer1 = sub.add_parser("layer1-status")
+    p_layer1.add_argument("--case-id", required=True)
+
+    p_r2check = sub.add_parser("r2-check")
+    p_r2check.add_argument("--case-id", required=True)
+    p_r2check.add_argument("--findings", default="")
+    p_r2check.add_argument("--self-score", type=int, default=0)
+    p_r2check.add_argument("--why", default="")
+    p_r2check.add_argument(
+        "--submit",
+        action="store_true",
+        help="Submit Layer 1 analyst write-up (requires findings, self-score, why)",
+    )
 
     args = parser.parse_args(argv)
 
@@ -125,6 +142,43 @@ def main(argv: list[str] | None = None) -> int:
                 indent=2,
             )
         )
+        return 0
+
+    if args.command == "layer1-status":
+        print(
+            json.dumps(
+                {
+                    "checkpoint": r2_layer1_checkpoint(args.case_id),
+                    "tool_log": read_tool_log(args.case_id),
+                    "analyst_log": read_analyst_log(args.case_id),
+                },
+                indent=2,
+            )
+        )
+        return 0
+
+    if args.command == "r2-check":
+        if args.submit:
+            if not args.findings or not args.why or args.self_score < 1:
+                print(
+                    json.dumps(
+                        {
+                            "ok": False,
+                            "error": "Use --findings, --self-score, and --why with --submit",
+                        },
+                        indent=2,
+                    )
+                )
+                return 2
+            result = submit_layer1_writeup(
+                case_id=args.case_id,
+                findings=args.findings,
+                self_score=args.self_score,
+                why=args.why,
+            )
+            print(json.dumps(result, indent=2))
+            return 0 if result.get("promoted") else 2
+        print(json.dumps(r2_layer1_checkpoint(args.case_id), indent=2))
         return 0
 
     return 1
