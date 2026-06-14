@@ -66,7 +66,10 @@ def run_scratch_analysis(
 
     target = resolve_scratch_path(case_id, scratch_relpath)
     extra = sanitize_extra_args(list(args or []), tool_name=name)
-    cmd = [resolved_bin, *extra, str(target)]
+    if name == "sqlite3":
+        cmd = [resolved_bin, str(target), *extra]
+    else:
+        cmd = [resolved_bin, *extra, str(target)]
 
     audit_id = next_audit_id()
     scratch = scratch_dir(case_id)

@@ -54,6 +54,7 @@ def test_batch1_uniform_schema():
             "scratch_file",
             "inode_stream",
             "scratch_dir_trailing",
+            "scratch_dir_flag_o",
         }
         assert rec["verification"]["status"] in STATUS_AGENT_LABELS
         assert "label" not in rec["verification"]  # label computed at describe time

@@ -291,7 +291,9 @@ def _map_output_style(old_style: str, name: str) -> str:
         return "inode_stream"
     if old_style == "scratch_dir_trailing":
         return "scratch_dir_trailing"
-    if old_style in {"stdout", "stderr", "scratch_file", "inode_stream", "scratch_dir_trailing"}:
+    if old_style == "scratch_dir_flag_o":
+        return "scratch_dir_flag_o"
+    if old_style in {"stdout", "stderr", "scratch_file", "inode_stream", "scratch_dir_trailing", "scratch_dir_flag_o"}:
         return old_style
     return "stdout"
 

@@ -4,7 +4,8 @@ import pytest
 
 from cold_box_room.r1.checkpoint import r1_checkpoint
 from cold_box_room.r1.guard import TouchForbiddenError, assert_not_staging_write
-from cold_box_room.r1.hallway import current_room, promote_to_room2
+from cold_box_room.r1.hallway import current_room, promote_to_room_a, promote_to_room2
+from cold_box_room.testing import bootstrap_case_to_room2
 from cold_box_room.r1.intake import intake_case
 from cold_box_room.r1.paths import StagingError, case_staging_dir, resolve_in_staging
 from cold_box_room.r1.seal import is_sealed
@@ -30,7 +31,7 @@ def test_intake_seals_and_starts_room1():
     assert rec["room"] == 1
     assert rec["status"] == "sealed"
     assert is_sealed("lab-1")
-    assert current_room("lab-1") == 1
+    assert current_room("lab-1") == "1"
 
 
 def test_r1_checkpoint_requires_non_empty_file():
@@ -56,16 +57,21 @@ def test_r1_checkpoint_fails_when_all_empty():
     assert "all_files_empty" in check["reasons"]
 
 
-def test_promote_to_room2_solid_wall():
+def test_promote_to_room_a_then_room2():
     staging = case_staging_dir("lab-4")
     staging.mkdir(parents=True)
     (staging / "evidence.E01").write_bytes(b"evidence")
     intake_case("lab-4")
 
-    promoted = promote_to_room2("lab-4")
-    assert promoted["room"] == 2
-    assert current_room("lab-4") == 2
-    assert promoted["r2_sandbox"]["file_count"] == 1
+    promoted_a = promote_to_room_a("lab-4")
+    assert promoted_a["room"] == "A"
+    assert current_room("lab-4") == "A"
+
+    with pytest.raises(StagingError, match="Room A checkpoint failed"):
+        promote_to_room2("lab-4")
+
+    bootstrap_case_to_room2("lab-4")
+    assert current_room("lab-4") == "2"
 
     from cold_box_room.r2.sandbox import load_sandbox_record, r2_status
 
@@ -82,7 +88,7 @@ def test_promote_blocked_when_checkpoint_fails():
     intake_case("lab-5")
 
     with pytest.raises(StagingError, match="R1 checkpoint failed"):
-        promote_to_room2("lab-5")
+        promote_to_room_a("lab-5")
 
 
 def test_write_blocked_after_seal():

@@ -29,7 +29,7 @@ Machine validation: `tools/manifest.schema.json`.
 | **input.common_flags** | Documented flags (flag, description, required) |
 | **input.harness_usage** | How `extra_args` map to the real command |
 | **output.format** | `text` \| `json` \| `csv` \| `binary` |
-| **output.style** | `stdout` \| `stderr` \| `scratch_file` \| `inode_stream` \| `scratch_dir_trailing` |
+| **output.style** | `stdout` \| `stderr` \| `scratch_file` \| `inode_stream` \| `scratch_dir_trailing` \| `scratch_dir_flag_o` |
 | **timeout_seconds** | Harness kill timeout |
 | **interactive** | Usually `false` |
 | **verification.status** | `ok` \| `not_tested` \| `bad` \| `unavailable` |

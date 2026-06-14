@@ -10,7 +10,7 @@ from cold_box_room.mcp.handlers import (
     handle_list_sift_tools,
     handle_run_sift_tool,
 )
-from cold_box_room.r1.hallway import promote_to_room2
+from cold_box_room.testing import bootstrap_case_to_room2
 from cold_box_room.r1.intake import intake_case
 from cold_box_room.r1.paths import case_records_dir, case_staging_dir
 from cold_box_room.r2.output_files import scratch_dir
@@ -73,7 +73,7 @@ def test_run_sift_tool_file_on_sandbox(monkeypatch):
     staging.mkdir(parents=True)
     (staging / "note.txt").write_text("plain text\n", encoding="utf-8")
     intake_case("mcp-b")
-    promote_to_room2("mcp-b")
+    bootstrap_case_to_room2("mcp-b")
 
     captured: list[list[str]] = []
 
@@ -117,7 +117,7 @@ def test_analyze_scratch_on_scratch_file(monkeypatch):
     staging.mkdir(parents=True)
     (staging / "data.bin").write_bytes(b"SECRETTOKEN")
     intake_case("mcp-c")
-    promote_to_room2("mcp-c")
+    bootstrap_case_to_room2("mcp-c")
 
     target = scratch_dir("mcp-c") / "extracted.bin"
     target.write_bytes(b"SECRETTOKEN")

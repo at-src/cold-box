@@ -4,7 +4,8 @@ import json
 
 import pytest
 
-from cold_box_room.r1.hallway import current_room, promote_to_room2
+from cold_box_room.r1.hallway import current_room
+from cold_box_room.testing import bootstrap_case_to_room2
 from cold_box_room.r1.intake import intake_case
 from cold_box_room.r1.paths import case_records_dir, case_staging_dir
 from cold_box_room.r2.analyst_log import read_analyst_log, write_analyst_log
@@ -31,7 +32,7 @@ def _promote_case(case_id: str, filename: str = "evidence.bin", content: bytes =
     staging.mkdir(parents=True)
     (staging / filename).write_bytes(content)
     intake_case(case_id)
-    promote_to_room2(case_id)
+    bootstrap_case_to_room2(case_id)
 
 
 def test_tool_logbook_md_created_on_append():
@@ -108,7 +109,7 @@ def test_submit_promotes_to_room3(monkeypatch):
         why="Successful file tool run with scratch output.",
     )
     assert result["promoted"] is True
-    assert current_room("log-c") == 3
+    assert current_room("log-c") == "B"
 
 
 def test_low_score_increments_attempts():
@@ -178,7 +179,7 @@ def test_exit_layer1_after_three_attempts():
         reason="Cannot reach score above 8 without registry hive extraction.",
     )
     assert result["exited"] is True
-    assert current_room("log-f") == 2
+    assert current_room("log-f") == "2"
     checkpoint = r2_layer1_checkpoint("log-f")
     assert checkpoint["exited"] is True
 
@@ -187,4 +188,4 @@ def test_r2_layer1_checkpoint_json():
     _promote_case("log-g")
     checkpoint = r2_layer1_checkpoint("log-g")
     assert checkpoint["successful_extractions"] == 0
-    assert checkpoint["ready_for_room3"] is False
+    assert checkpoint["ready_for_room_b"] is False

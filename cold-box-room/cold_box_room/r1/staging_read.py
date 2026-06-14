@@ -33,13 +33,16 @@ class StagingReader:
 
     def _resolve(self, relpath: str) -> Path:
         rel = relpath.replace("\\", "/").lstrip("/")
-        target = self._root if rel in {".", ""} else (self._root / rel).resolve()
+        if ".." in Path(rel).parts:
+            raise StagingError(f"Invalid relpath: {relpath!r}")
+        target = self._root if rel in {".", ""} else (self._root / rel)
         try:
             target.relative_to(self._root)
         except ValueError as exc:
             raise StagingError(f"Read path escapes R1 staging: {target}") from exc
         if not target.exists():
             raise StagingError(f"Path not found in R1 staging: {relpath!r}")
+        # Keep symlink entries under staging (link intake); do not resolve() outward.
         return target
 
     def list_dir(self, relpath: str = ".") -> list[StagingEntry]:

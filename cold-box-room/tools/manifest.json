@@ -944,7 +944,7 @@
       "name": "bulk_extractor",
       "binary": "bulk_extractor",
       "category": "file_analysis",
-      "description": "Record carving from disk images and unallocated space",
+      "description": "Scan a disk image for emails, URLs, cards, and other carved artifacts without parsing the filesystem. On this host the installed binary lacks libewf — it cannot read EnCase E01/EWF images (error: compiled without E01 support). For E01 evidence use Sleuth Kit instead: mmls → fls → icat or istat → blkcat, then analyze_scratch with strings/grep/sqlite3 on scratch output.",
       "host_platforms": [
         "linux"
       ],
@@ -954,17 +954,24 @@
       "input": {
         "style": "positional",
         "flag": "",
-        "common_flags": []
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output directory (harness injects under scratch when omitted)",
+            "required": false
+          }
+        ],
+        "harness_usage": "Raw/DD images only on this host. Harness injects -o <scratch/output> when omitted; never use /tmp. E01/EWF (.E01): do not use this tool — use SIFT-160 mmls, SIFT-148 fls, SIFT-151 icat, SIFT-136 blkcat, SIFT-155 istat, then analyze_scratch (strings, grep, sqlite3) on extracted scratch files."
       },
       "output": {
         "format": "text",
-        "style": "stdout"
+        "style": "scratch_dir_flag_o"
       },
       "timeout_seconds": 7200,
       "interactive": false,
       "verification": {
         "status": "ok",
-        "detail": "ok",
+        "detail": "Installed bulk_extractor 1.6.x on this host was built without libewf — E01 fails immediately. Use Sleuth Kit + analyze_scratch for E01 cases until a libewf-linked build is installed.",
         "runnable": true
       }
     },
@@ -1210,11 +1217,18 @@
       "input": {
         "style": "positional",
         "flag": "",
-        "common_flags": []
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output directory (harness injects under scratch when omitted)",
+            "required": false
+          }
+        ],
+        "harness_usage": "Carve files by signature. Harness injects -o <scratch/output> when omitted."
       },
       "output": {
         "format": "text",
-        "style": "stdout"
+        "style": "scratch_dir_flag_o"
       },
       "timeout_seconds": 600,
       "interactive": false,
@@ -1268,11 +1282,18 @@
       "input": {
         "style": "positional",
         "flag": "",
-        "common_flags": []
+        "common_flags": [
+          {
+            "flag": "-o",
+            "description": "Output directory (harness injects under scratch when omitted)",
+            "required": false
+          }
+        ],
+        "harness_usage": "Carve files by header/footer rules. Harness injects -o <scratch/output> when omitted."
       },
       "output": {
         "format": "text",
-        "style": "stdout"
+        "style": "scratch_dir_flag_o"
       },
       "timeout_seconds": 600,
       "interactive": false,

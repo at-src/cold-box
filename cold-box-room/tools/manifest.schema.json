@@ -119,8 +119,8 @@
             },
             "style": {
               "type": "string",
-              "enum": ["stdout", "stderr", "scratch_file", "inode_stream", "scratch_dir_trailing"],
-              "description": "Where harness captures output (preview + scratch path). scratch_dir_trailing: harness appends output directory as final CLI arg."
+              "enum": ["stdout", "stderr", "scratch_file", "inode_stream", "scratch_dir_trailing", "scratch_dir_flag_o"],
+              "description": "Where harness captures output. scratch_dir_trailing: final arg is output dir. scratch_dir_flag_o: harness injects -o <scratch/output>."
             }
           }
         },

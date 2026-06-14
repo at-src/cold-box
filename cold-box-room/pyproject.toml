@@ -18,6 +18,9 @@ dev = ["pytest>=8.0", "mcp>=1.0"]
 [project.scripts]
 cold-box-room = "cold_box_room.r1.cli:main"
 cold-box-room-mcp = "cold_box_room.mcp.server:main"
+cold-box-room-agent = "cold_box_room.agent.cli:main"
+cold-box-room-e2e = "cold_box_room.e2e.run_layer1:main"
+cold-box-room-formalize-plan-a = "cold_box_room.room_a.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

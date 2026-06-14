@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from cold_box_room.r1.hallway import promote_to_room2
+from cold_box_room.testing import bootstrap_case_to_room2
 from cold_box_room.r1.intake import intake_case
 from cold_box_room.r1.paths import case_records_dir, case_staging_dir
 from cold_box_room.r2.errors import ToolExecutionError
@@ -28,7 +28,7 @@ def test_tsk_recover_appends_output_dir(monkeypatch):
     staging.mkdir(parents=True)
     (staging / "disk.dd").write_bytes(b"fake-image")
     intake_case("recover")
-    promote_to_room2("recover")
+    bootstrap_case_to_room2("recover")
 
     captured: list[list[str]] = []
 
@@ -66,7 +66,7 @@ def test_blocks_unavailable_tool():
     staging.mkdir(parents=True)
     (staging / "x").write_bytes(b"1")
     intake_case("blocked")
-    promote_to_room2("blocked")
+    bootstrap_case_to_room2("blocked")
 
     with pytest.raises(ToolExecutionError, match="not installed"):
         run_sift_tool(
@@ -83,7 +83,7 @@ def test_tool_log_written(monkeypatch):
     staging.mkdir(parents=True)
     (staging / "a.txt").write_text("hi", encoding="utf-8")
     intake_case("logged")
-    promote_to_room2("logged")
+    bootstrap_case_to_room2("logged")
 
     monkeypatch.setattr(
         "cold_box_room.r2.executor._execute",

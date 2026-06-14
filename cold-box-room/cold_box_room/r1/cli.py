@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from cold_box_room.r1.checkpoint import r1_checkpoint
-from cold_box_room.r1.hallway import current_room, promote_to_room2, record_r1_check
+from cold_box_room.r1.hallway import current_room, promote_to_room_a, promote_to_room2, record_r1_check
 from cold_box_room.r1.intake import intake_case, list_staging_cases
 from cold_box_room.r1.paths import get_records_root, get_staging_root, hallway_state_path
 from cold_box_room.r1.seal import is_sealed, seal_record_path
@@ -37,7 +37,7 @@ def main(argv: list[str] | None = None) -> int:
     p_check.add_argument(
         "--promote",
         action="store_true",
-        help="Promote to room 2 when checkpoint passes",
+        help="Promote to Room A when checkpoint passes (Room 2 requires Room A gate)",
     )
 
     p_intake = sub.add_parser("intake")
@@ -106,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "r1-check":
         check = record_r1_check(args.case_id)
         if args.promote and check["ok"]:
-            promoted = promote_to_room2(args.case_id)
+            promoted = promote_to_room_a(args.case_id)
             print(json.dumps({"checkpoint": check, "hallway": promoted}, indent=2))
         else:
             print(json.dumps(check, indent=2))

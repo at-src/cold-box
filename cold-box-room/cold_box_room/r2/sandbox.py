@@ -97,6 +97,8 @@ def load_sandbox_record(case_id: str) -> dict[str, Any]:
 def r2_status(case_id: str) -> dict[str, Any]:
     from cold_box_room.r1.hallway import require_room
 
+    from cold_box_room.r1.hallway import current_room
+
     require_room(case_id, 2)
     record = load_sandbox_record(case_id)
     sandbox = case_sandbox_dir(case_id)
@@ -104,7 +106,7 @@ def r2_status(case_id: str) -> dict[str, Any]:
     non_empty = [item["path"] for item in live_files if item["size"] > 0]
     return {
         "case_id": case_id,
-        "room": 2,
+        "room": current_room(case_id),
         "sandbox_dir": str(sandbox.resolve()),
         "file_count": len(live_files),
         "non_empty_files": non_empty,

@@ -18,6 +18,27 @@ class AnalystLogError(StagingError):
     """Invalid analyst log submission."""
 
 
+def normalize_self_score(raw: int | float | str) -> int:
+    """Map agent score to syllabus range 1–10 (handles percentages like 72)."""
+    if isinstance(raw, bool):
+        raise AnalystLogError("self_score must be an integer from 1 to 10")
+    if isinstance(raw, str):
+        raw = raw.strip()
+        if not raw.isdigit():
+            raise AnalystLogError("self_score must be an integer from 1 to 10")
+        value = int(raw)
+    elif isinstance(raw, float):
+        value = int(round(raw))
+    else:
+        value = int(raw)
+
+    if 1 <= value <= 10:
+        return value
+    if 11 <= value <= 100:
+        return max(1, min(10, round(value / 10)))
+    raise AnalystLogError("self_score must be an integer from 1 to 10")
+
+
 def _validate_submission(*, findings: str, self_score: int, why: str) -> None:
     if not findings.strip():
         raise AnalystLogError("findings must not be empty")
@@ -43,20 +64,21 @@ def write_analyst_log(
     *,
     case_id: str,
     findings: str,
-    self_score: int,
+    self_score: int | float | str,
     why: str,
 ) -> dict[str, Any]:
     require_room(case_id, 2)
-    _validate_submission(findings=findings, self_score=self_score, why=why)
+    normalized_score = normalize_self_score(self_score)
+    _validate_submission(findings=findings, self_score=normalized_score, why=why)
     path = layer1_analyst_log_md_path(case_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        format_analyst_log(findings=findings, self_score=self_score, why=why),
+        format_analyst_log(findings=findings, self_score=normalized_score, why=why),
         encoding="utf-8",
     )
     return {
         "path": str(path.resolve()),
-        "self_score": self_score,
+        "self_score": normalized_score,
         "findings_chars": len(findings.strip()),
         "why_chars": len(why.strip()),
     }

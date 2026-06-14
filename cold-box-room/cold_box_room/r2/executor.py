@@ -23,7 +23,12 @@ from cold_box_room.r2.output_files import (
     stream_pipe_to_file,
 )
 from cold_box_room.r2.sandbox_input import resolve_sandbox_input, sha256_file
-from cold_box_room.r2.security import is_denied, sanitize_extra_args, validate_output_args
+from cold_box_room.r2.security import (
+    is_denied,
+    prepare_harness_output_args,
+    sanitize_extra_args,
+    validate_output_args,
+)
 from cold_box_room.r2.tool_log import append_tool_log
 from cold_box_room.tools.models import ToolRecord
 from cold_box_room.tools.registry import ToolCatalogError, get_tool
@@ -179,9 +184,18 @@ def _istat_size_bytes(image_path: Path, offset: str, inode: str) -> int | None:
         return None
     if proc.returncode != 0:
         return None
-    match = re.search(r"(?:Size|size):\s*(\d+)", proc.stdout)
-    if match:
-        return int(match.group(1))
+    text = proc.stdout
+    # Prefer $DATA attribute content size — not "Allocated Size: 0" from $FILE_NAME.
+    for pattern in (
+        r"\$DATA[^\n]*?\binit_size:\s*(\d+)",
+        r"Type:\s*\$DATA[^\n]*?\bsize:\s*(\d+)",
+        r"\$DATA[^\n]*?\bsize:\s*(\d+)",
+    ):
+        match = re.search(pattern, text)
+        if match:
+            size = int(match.group(1))
+            if size > 0:
+                return size
     return None
 
 
@@ -443,17 +457,25 @@ def run_sift_tool(
 
     extra = list(extra_args or [])
     scratch = scratch_dir(case_id)
+
+    audit_id = next_audit_id()
+    out_root = scratch / f"{audit_id}_{tool.tool_id}_{tool.name}"
+    output_dir = out_root / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    extra = prepare_harness_output_args(
+        extra,
+        tool_name=tool.name,
+        output_style=tool.output.style,
+        output_dir=output_dir,
+        scratch_root=scratch,
+    )
     validate_output_args(extra, scratch, tool.name)
 
     input_path = resolve_sandbox_input(case_id, input_relpath)
     input_sha256 = sha256_file(input_path)
 
-    audit_id = next_audit_id()
-    out_root = scratch / f"{audit_id}_{tool.tool_id}_{tool.name}"
     if tool.output.style == "scratch_dir_trailing":
-        output_dir = out_root / "output"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        extra = list(extra) + [str(output_dir)]
+        pass  # output dir already appended in prepare_harness_output_args
     cmd = _build_command(tool, input_path, extra)
     stdout_file = out_root / "stdout.txt"
     start = time.monotonic()
@@ -469,7 +491,7 @@ def run_sift_tool(
     try:
         if tool.output.style == "inode_stream" and stream_out is not None:
             cap = ICAT_MAX_BYTES
-            if stream_source_bytes is not None:
+            if stream_source_bytes and stream_source_bytes > 0:
                 cap = min(ICAT_MAX_BYTES, stream_source_bytes)
             result = _execute_icat_capped(
                 cmd,
