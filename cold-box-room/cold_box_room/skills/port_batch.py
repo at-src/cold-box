@@ -168,6 +168,22 @@ def _load_existing_manifest() -> list[dict[str, Any]]:
     return list(data.get("skills") or [])
 
 
+def _batch_ranges(total: int, *, chunk: int = 50) -> list[dict[str, Any]]:
+    ranges: list[dict[str, Any]] = []
+    start = 1
+    while start <= total:
+        end = min(start + chunk - 1, total)
+        ranges.append(
+            {
+                "start": start,
+                "end": end,
+                "source": f"CB-SKL-{start:03d}..{end:03d}",
+            }
+        )
+        start = end + 1
+    return ranges
+
+
 def write_manifest(
     new_skills: list[dict[str, Any]],
     *,
@@ -181,18 +197,10 @@ def write_manifest(
     merged.sort(key=lambda row: _skill_num(row["skill_id"]))
 
     batch_end = start + len(new_skills)
-    if batch_end <= 50:
-        batches = [{"start": 1, "end": batch_end, "source": f"CB-SKL-001..{batch_end:03d}"}]
-    else:
-        batches = [
-            {"start": 1, "end": 50, "source": "CB-SKL-001..050"},
-            {"start": 51, "end": batch_end, "source": f"CB-SKL-051..{batch_end:03d}"},
-        ]
-
     payload = {
         "schema": "cold_box_room.skills_manifest_v2",
         "count": len(merged),
-        "batches": batches,
+        "batches": _batch_ranges(batch_end),
         "source": f"cold-box-final CB-SKL-001..{batch_end:03d}",
         "skills": merged,
     }
