@@ -26,14 +26,16 @@ def test_manifest_path_exists():
     assert manifest_path().is_file()
 
 
-def test_load_manifest_batch1():
+def test_load_manifest_batches():
     data = load_manifest()
     assert data["schema"] == "cold_box_room.skills_manifest_v2"
-    assert data["count"] == 50
-    assert data["batch"] == 1
-    assert len(data["skills"]) == 50
+    assert data["count"] == 100
+    assert len(data["skills"]) == 100
     assert data["skills"][0]["skill_id"] == "SKILL-001"
     assert data["skills"][49]["skill_id"] == "SKILL-050"
+    assert data["skills"][50]["skill_id"] == "SKILL-051"
+    assert data["skills"][99]["skill_id"] == "SKILL-100"
+    assert len(data.get("batches") or []) == 2
 
 
 def test_batch1_uniform_schema():
@@ -65,6 +67,13 @@ def test_get_skill_002_reference_only():
     assert skill.execution_mode == "reference"
 
 
+def test_get_skill_019_has_script_without_external_api():
+    skill = get_skill("SKILL-019")
+    assert skill.name == "containing-active-breach"
+    assert skill.has_script is True
+    assert skill.reference_only is False
+
+
 def test_describe_includes_full_playbook():
     d = describe_skill("SKILL-034")
     assert d["skill_id"] == "SKILL-034"
@@ -90,7 +99,14 @@ def test_unknown_skill():
         get_skill("SKILL-999")
 
 
-def test_batch1_id_sequence():
+def test_get_skill_051_batch2():
+    skill = get_skill("SKILL-051")
+    assert skill.journal_id == "CB-SKL-051"
+    assert skill.library_slug == "cb-hunting-for-dns-based-persistence"
+    assert skill.skill_md_path(skills_root=skills_root()).is_file()
+
+
+def test_catalog_id_sequence():
     data = load_manifest()
     ids = [s["skill_id"] for s in data["skills"]]
-    assert ids == [f"SKILL-{i:03d}" for i in range(1, 51)]
+    assert ids == [f"SKILL-{i:03d}" for i in range(1, 101)]

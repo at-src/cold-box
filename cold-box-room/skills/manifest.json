@@ -1,8 +1,19 @@
 {
   "schema": "cold_box_room.skills_manifest_v2",
-  "count": 50,
-  "batch": 1,
-  "source": "cold-box-final CB-SKL-001..050",
+  "count": 100,
+  "batches": [
+    {
+      "start": 1,
+      "end": 50,
+      "source": "CB-SKL-001..050"
+    },
+    {
+      "start": 51,
+      "end": 100,
+      "source": "CB-SKL-051..100"
+    }
+  ],
+  "source": "cold-box-final CB-SKL-001..100",
   "skills": [
     {
       "skill_id": "SKILL-001",
@@ -220,7 +231,7 @@
       "name": "building-malware-incident-communication-template",
       "description": "Cold-box analyst playbook — Building Malware Incident Communication Template. Build structured communication templates for malware incidents including stakeholder notifications, executive briefings, technical advisories, and regulatory disclosures with severity-based escalation procedures.",
       "tier": "core",
-      "execution_mode": "reference",
+      "execution_mode": "sift_runnable",
       "category": "incident-response",
       "subdomain": "incident-response",
       "tags": [
@@ -234,8 +245,8 @@
       "case_profiles": [
         "malware_analysis"
       ],
-      "has_script": false,
-      "reference_only": true,
+      "has_script": true,
+      "reference_only": false,
       "suggested_tool_ids": [
         "SIFT-008",
         "SIFT-034"
@@ -342,7 +353,7 @@
       "name": "cloud-incident-response",
       "description": "Cold-box analyst playbook — Cloud Incident Response. Responds to security incidents in cloud environments (AWS, Azure, GCP) by performing identity-based containment, cloud-native log analysis, resource isolation, and forensic evidence acquisition adapted for ephemeral cloud infrastructure. Ac",
       "tier": "core",
-      "execution_mode": "reference",
+      "execution_mode": "sift_runnable",
       "category": "incident-response",
       "subdomain": "incident-response",
       "tags": [
@@ -355,8 +366,8 @@
       "case_profiles": [
         "cloud"
       ],
-      "has_script": false,
-      "reference_only": true,
+      "has_script": true,
+      "reference_only": false,
       "suggested_tool_ids": [
         "SIFT-013",
         "SIFT-179"
@@ -397,7 +408,7 @@
       "name": "cloud-storage-access-patterns",
       "description": "Cold-box analyst playbook — Cloud Storage Access Patterns. Detect abnormal access patterns in AWS S3, GCS, and Azure Blob Storage by analyzing CloudTrail Data Events, GCS audit logs, and Azure Storage Analytics. Identifies after-hours bulk downloads, access from new IP addresses, unusual API calls ",
       "tier": "core",
-      "execution_mode": "reference",
+      "execution_mode": "partial",
       "category": "cloud",
       "subdomain": "cloud-security",
       "tags": [
@@ -412,8 +423,8 @@
       "case_profiles": [
         "cloud"
       ],
-      "has_script": false,
-      "reference_only": true,
+      "has_script": true,
+      "reference_only": false,
       "suggested_tool_ids": []
     },
     {
@@ -524,7 +535,7 @@
       "name": "configuring-windows-event-logging-for-detection",
       "description": "Cold-box analyst playbook — Configuring Windows Event Logging For Detection. Configures Windows Event Logging with advanced audit policies to generate high-fidelity security events for threat detection and forensic investigation. Use when enabling audit policies for logon events, process creation, privilege use, and",
       "tier": "core",
-      "execution_mode": "reference",
+      "execution_mode": "sift_runnable",
       "category": "endpoint",
       "subdomain": "endpoint-security",
       "tags": [
@@ -537,8 +548,8 @@
       "case_profiles": [
         "soc_siem"
       ],
-      "has_script": false,
-      "reference_only": true,
+      "has_script": true,
+      "reference_only": false,
       "suggested_tool_ids": [
         "SIFT-008",
         "SIFT-179",
@@ -552,7 +563,7 @@
       "name": "containing-active-breach",
       "description": "Cold-box analyst playbook — Containing Active Breach. Executes containment strategies to stop active adversary operations and prevent lateral movement during a confirmed security breach. Implements short-term and long-term containment using network segmentation, endpoint isolation, credential ",
       "tier": "core",
-      "execution_mode": "reference",
+      "execution_mode": "sift_runnable",
       "category": "incident-response",
       "subdomain": "incident-response",
       "tags": [
@@ -565,8 +576,8 @@
       "case_profiles": [
         "windows_disk"
       ],
-      "has_script": false,
-      "reference_only": true,
+      "has_script": true,
+      "reference_only": false,
       "suggested_tool_ids": [
         "SIFT-008",
         "SIFT-154",
@@ -846,7 +857,7 @@
       "name": "detecting-rdp-brute-force-attacks",
       "description": "Cold-box analyst playbook — Detecting Rdp Brute Force Attacks. Detect RDP brute force attacks by analyzing Windows Security Event Logs for failed authentication patterns (Event ID 4625), successful logons after failures (Event ID 4624), NLA failures, and source IP frequency analysis.",
       "tier": "core",
-      "execution_mode": "reference",
+      "execution_mode": "partial",
       "category": "methodology",
       "subdomain": "threat-detection",
       "tags": [
@@ -860,8 +871,8 @@
       "case_profiles": [
         "soc_siem"
       ],
-      "has_script": false,
-      "reference_only": true,
+      "has_script": true,
+      "reference_only": false,
       "suggested_tool_ids": [
         "SIFT-185"
       ]
@@ -1219,7 +1230,7 @@
       "name": "eradicating-malware-from-infected-systems",
       "description": "Cold-box analyst playbook — Eradicating Malware From Infected Systems. Systematically remove malware, backdoors, and attacker persistence mechanisms from infected systems while ensuring complete eradication and preventing re-infection.",
       "tier": "core",
-      "execution_mode": "reference",
+      "execution_mode": "sift_runnable",
       "category": "incident-response",
       "subdomain": "incident-response",
       "tags": [
@@ -1232,8 +1243,8 @@
       "case_profiles": [
         "malware_analysis"
       ],
-      "has_script": false,
-      "reference_only": true,
+      "has_script": true,
+      "reference_only": false,
       "suggested_tool_ids": [
         "SIFT-008",
         "SIFT-009",
@@ -1587,6 +1598,1579 @@
         "SIFT-179",
         "SIFT-189",
         "SIFT-217"
+      ]
+    },
+    {
+      "skill_id": "SKILL-051",
+      "journal_id": "CB-SKL-051",
+      "library_slug": "cb-hunting-for-dns-based-persistence",
+      "name": "hunting-for-dns-based-persistence",
+      "description": "Cold-box analyst playbook — Hunting For Dns Based Persistence. Hunt for DNS-based persistence mechanisms including DNS hijacking, dangling CNAME records, wildcard DNS abuse, and unauthorized zone modifications using passive DNS databases, SecurityTrails API, and DNS audit log analysis.",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "dns",
+        "persistence",
+        "threat-hunting",
+        "passive-dns",
+        "dns-hijacking",
+        "subdomain-takeover",
+        "securitytrails"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-052",
+      "journal_id": "CB-SKL-052",
+      "library_slug": "cb-hunting-for-lateral-movement-via-wmi",
+      "name": "hunting-for-lateral-movement-via-wmi",
+      "description": "Cold-box analyst playbook — Hunting For Lateral Movement Via Wmi. Detect WMI-based lateral movement by analyzing Windows Event ID 4688 process creation and Sysmon Event ID 1 for WmiPrvSE.exe child process patterns, remote process execution, and WMI event subscription persistence.",
+      "tier": "core",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "lateral-movement",
+        "wmi",
+        "sysmon",
+        "mitre-attack",
+        "process-creation"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-179",
+        "SIFT-186"
+      ]
+    },
+    {
+      "skill_id": "SKILL-053",
+      "journal_id": "CB-SKL-053",
+      "library_slug": "cb-hunting-for-process-injection-techniques",
+      "name": "hunting-for-process-injection-techniques",
+      "description": "Cold-box analyst playbook — Hunting For Process Injection Techniques. Detect process injection techniques (T1055) including CreateRemoteThread, process hollowing, and DLL injection via Sysmon Event IDs 8 and 10 and EDR process telemetry",
+      "tier": "core",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "process-injection",
+        "t1055",
+        "sysmon",
+        "createremotethread",
+        "dll-injection",
+        "edr",
+        "threat-hunting"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-054",
+      "journal_id": "CB-SKL-054",
+      "library_slug": "cb-hunting-for-registry-run-key-persistence",
+      "name": "hunting-for-registry-run-key-persistence",
+      "description": "Cold-box analyst playbook — Hunting For Registry Run Key Persistence. Detect MITRE ATT&CK T1547.001 registry Run key persistence by analyzing Sysmon Event ID 13 logs and registry queries to identify malicious auto-start entries.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "persistence",
+        "registry-run-keys",
+        "t1547-001",
+        "sysmon",
+        "threat-hunting",
+        "windows-forensics",
+        "mitre-attack"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-100",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-055",
+      "journal_id": "CB-SKL-055",
+      "library_slug": "cb-hunting-for-t1098-account-manipulation",
+      "name": "hunting-for-t1098-account-manipulation",
+      "description": "Cold-box analyst playbook — Hunting For T1098 Account Manipulation. Hunt for MITRE ATT&CK T1098 account manipulation including shadow admin creation, SID history injection, group membership changes, and credential modifications using Windows Security Event Logs.",
+      "tier": "core",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "mitre-attack",
+        "t1098",
+        "account-manipulation",
+        "active-directory",
+        "persistence"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-056",
+      "journal_id": "CB-SKL-056",
+      "library_slug": "cb-hunting-for-unusual-service-installations",
+      "name": "hunting-for-unusual-service-installations",
+      "description": "Cold-box analyst playbook — Hunting For Unusual Service Installations. Detect suspicious Windows service installations (MITRE ATT&CK T1543.003) by parsing System event logs for Event ID 7045, analyzing service binary paths, and identifying indicators of persistence mechanisms.",
+      "tier": "core",
+      "execution_mode": "partial",
+      "category": "threat-hunting",
+      "subdomain": "threat-hunting",
+      "tags": [
+        "threat-hunting",
+        "T1543.003",
+        "service-installation",
+        "persistence",
+        "Event-7045",
+        "Sysmon",
+        "Windows-services"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-057",
+      "journal_id": "CB-SKL-057",
+      "library_slug": "cb-implementing-log-integrity-with-blockchain",
+      "name": "implementing-log-integrity-with-blockchain",
+      "description": "Cold-box analyst playbook — Implementing Log Integrity With Blockchain. Build an append-only log integrity chain using SHA-256 hash chaining for tamper detection. Each log entry is hashed with the previous entry's hash to create a blockchain-like structure where modifying any entry invalidates all subsequent ha",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "log-integrity",
+        "tamper-detection",
+        "hash-chaining",
+        "sha-256",
+        "audit-logging",
+        "security-operations"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-058",
+      "journal_id": "CB-SKL-058",
+      "library_slug": "cb-implementing-network-traffic-analysis-with-arkime",
+      "name": "implementing-network-traffic-analysis-with-arkime",
+      "description": "Cold-box analyst playbook — Implementing Network Traffic Analysis With Arkime. Deploy and query Arkime (formerly Moloch) for full packet capture network traffic analysis. Uses the Arkime API v3 to search sessions, download PCAPs, analyze connection patterns, detect beaconing behavior, and identify suspicious network f",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "network-security",
+        "arkime",
+        "full-packet-capture",
+        "nta",
+        "pcap-analysis",
+        "network-forensics"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-059",
+      "journal_id": "CB-SKL-059",
+      "library_slug": "cb-implementing-ot-incident-response-playbook",
+      "name": "implementing-ot-incident-response-playbook",
+      "description": "Cold-box analyst playbook — Implementing Ot Incident Response Playbook. Develop and implement OT-specific incident response playbooks aligned with SANS PICERL framework, IEC 62443, and NIST SP 800-82 that address unique ICS challenges including safety-critical systems, limited downtime tolerance, and coordinati",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "ot-ics-security",
+      "tags": [
+        "ot-security",
+        "ics",
+        "incident-response",
+        "playbook",
+        "sans",
+        "iec62443",
+        "nist",
+        "safety-critical"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-060",
+      "journal_id": "CB-SKL-060",
+      "library_slug": "cb-implementing-siem-correlation-rules-for-apt",
+      "name": "implementing-siem-correlation-rules-for-apt",
+      "description": "Cold-box analyst playbook — Implementing Siem Correlation Rules For Apt. Write multi-event correlation rules that detect APT lateral movement by chaining Windows authentication events, process execution telemetry, and network connection logs across hosts. Uses Splunk SPL and Sigma rule format to correlate Event ",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "siem",
+        "correlation-rules",
+        "apt-detection",
+        "lateral-movement",
+        "windows-event-logs",
+        "security-operations"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-061",
+      "journal_id": "CB-SKL-061",
+      "library_slug": "cb-implementing-soar-automation-with-phantom",
+      "name": "implementing-soar-automation-with-phantom",
+      "description": "Cold-box analyst playbook — Implementing Soar Automation With Phantom. Implements Security Orchestration, Automation, and Response (SOAR) workflows using Splunk SOAR (formerly Phantom) to automate alert triage, IOC enrichment, containment actions, and incident response playbooks. Use when SOC teams need to red",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "soc",
+        "soar",
+        "phantom",
+        "splunk-soar",
+        "automation",
+        "playbook",
+        "orchestration",
+        "incident-response"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-020",
+        "SIFT-178"
+      ]
+    },
+    {
+      "skill_id": "SKILL-062",
+      "journal_id": "CB-SKL-062",
+      "library_slug": "cb-implementing-soar-playbook-with-palo-alto-xsoar",
+      "name": "implementing-soar-playbook-with-palo-alto-xsoar",
+      "description": "Cold-box analyst playbook — Implementing Soar Playbook With Palo Alto Xsoar. Implement automated incident response playbooks in Cortex XSOAR to orchestrate security workflows across SOC tools and reduce manual response time.",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "xsoar",
+        "soar",
+        "palo-alto",
+        "playbook",
+        "automation",
+        "incident-response",
+        "orchestration",
+        "cortex"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-063",
+      "journal_id": "CB-SKL-063",
+      "library_slug": "cb-implementing-velociraptor-for-ir-collection",
+      "name": "implementing-velociraptor-for-ir-collection",
+      "description": "Cold-box analyst playbook — Implementing Velociraptor For Ir Collection. Deploy and configure Velociraptor for scalable endpoint forensic artifact collection during incident response using VQL queries, hunts, and pre-built artifact packs across Windows, Linux, and macOS environments.",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "incident-response",
+      "subdomain": "incident-response",
+      "tags": [
+        "velociraptor",
+        "dfir",
+        "endpoint-collection",
+        "vql",
+        "forensic-artifacts",
+        "rapid7",
+        "threat-hunting",
+        "incident-response"
+      ],
+      "case_profiles": [
+        "linux_disk"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-044",
+        "SIFT-045",
+        "SIFT-176",
+        "SIFT-179",
+        "SIFT-182"
+      ]
+    },
+    {
+      "skill_id": "SKILL-064",
+      "journal_id": "CB-SKL-064",
+      "library_slug": "cb-indicators-of-compromise",
+      "name": "indicators-of-compromise",
+      "description": "Cold-box analyst playbook — Indicators Of Compromise. Analyzes indicators of compromise (IOCs) including IP addresses, domains, file hashes, URLs, and email artifacts to determine maliciousness confidence, campaign attribution, and blocking priority. Use when triaging IOCs from phishing emails",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "IOC",
+        "VirusTotal",
+        "AbuseIPDB",
+        "MalwareBazaar",
+        "MISP",
+        "threat-intelligence",
+        "STIX",
+        "NIST-CSF"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-045"
+      ]
+    },
+    {
+      "skill_id": "SKILL-065",
+      "journal_id": "CB-SKL-065",
+      "library_slug": "cb-insider-threat-indicators",
+      "name": "insider-threat-indicators",
+      "description": "Cold-box analyst playbook — Insider Threat Indicators. Investigates insider threat indicators including data exfiltration attempts, unauthorized access patterns, policy violations, and pre-departure behaviors using SIEM analytics, DLP alerts, and HR data correlation. Use when SOC teams receive ",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "soc",
+        "insider-threat",
+        "data-exfiltration",
+        "dlp",
+        "ueba",
+        "investigation",
+        "hr-correlation"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-020"
+      ]
+    },
+    {
+      "skill_id": "SKILL-066",
+      "journal_id": "CB-SKL-066",
+      "library_slug": "cb-insider-threat-investigation",
+      "name": "insider-threat-investigation",
+      "description": "Cold-box analyst playbook — Insider Threat Investigation. Investigates insider threat incidents involving employees, contractors, or trusted partners who misuse authorized access to steal data, sabotage systems, or violate security policies. Combines digital forensics, user behavior analytics, and",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "incident-response",
+      "subdomain": "incident-response",
+      "tags": [
+        "insider-threat",
+        "user-behavior-analytics",
+        "data-exfiltration",
+        "privilege-misuse",
+        "DFIR"
+      ],
+      "case_profiles": [
+        "windows_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-067",
+      "journal_id": "CB-SKL-067",
+      "library_slug": "cb-ioc-enrichment-automation",
+      "name": "ioc-enrichment-automation",
+      "description": "Cold-box analyst playbook — Ioc Enrichment Automation. Automates Indicator of Compromise (IOC) enrichment by orchestrating lookups across VirusTotal, AbuseIPDB, Shodan, MISP, and other intelligence sources to provide contextual scoring and disposition recommendations. Use when SOC analysts need",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "soc",
+        "ioc",
+        "enrichment",
+        "automation",
+        "virustotal",
+        "abuseipdb",
+        "shodan",
+        "threat-intelligence"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-020"
+      ]
+    },
+    {
+      "skill_id": "SKILL-068",
+      "journal_id": "CB-SKL-068",
+      "library_slug": "cb-kubernetes-audit-logs",
+      "name": "kubernetes-audit-logs",
+      "description": "Cold-box analyst playbook — Kubernetes Audit Logs. Parses Kubernetes API server audit logs (JSON lines) to detect exec-into-pod, secret access, RBAC modifications, privileged pod creation, and anonymous API access. Builds threat detection rules from audit event patterns. Use when investigat",
+      "tier": "core",
+      "execution_mode": "partial",
+      "category": "methodology",
+      "subdomain": "container-security",
+      "tags": [
+        "kubernetes-security",
+        "container-security",
+        "audit-log-analysis",
+        "rbac",
+        "privilege-escalation",
+        "k8s-api-server",
+        "threat-detection"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-069",
+      "journal_id": "CB-SKL-069",
+      "library_slug": "cb-lateral-movement-detection",
+      "name": "lateral-movement-detection",
+      "description": "Cold-box analyst playbook — Lateral Movement Detection. Detects lateral movement techniques including Pass-the-Hash, PsExec, WMI execution, RDP pivoting, and SMB-based spreading using SIEM correlation of Windows event logs, network flow data, and endpoint telemetry mapped to MITRE ATT&CK Lateral",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "soc",
+        "lateral-movement",
+        "mitre-attack",
+        "pass-the-hash",
+        "psexec",
+        "wmi",
+        "rdp",
+        "smb",
+        "detection"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-020",
+        "SIFT-119",
+        "SIFT-179",
+        "SIFT-186"
+      ]
+    },
+    {
+      "skill_id": "SKILL-070",
+      "journal_id": "CB-SKL-070",
+      "library_slug": "cb-linux-audit-logs-for-intrusion",
+      "name": "linux-audit-logs-for-intrusion",
+      "description": "Cold-box analyst playbook — Linux Audit Logs For Intrusion. Uses the Linux Audit framework (auditd) with ausearch and aureport utilities to detect intrusion attempts, unauthorized access, privilege escalation, and suspicious system activity. Covers audit rule configuration, log querying, timeline re",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "incident-response",
+      "subdomain": "incident-response",
+      "tags": [
+        "auditd",
+        "ausearch",
+        "aureport",
+        "linux-security",
+        "intrusion-detection",
+        "HIDS",
+        "forensics"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-026",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-071",
+      "journal_id": "CB-SKL-071",
+      "library_slug": "cb-linux-kernel-rootkits",
+      "name": "linux-kernel-rootkits",
+      "description": "Cold-box analyst playbook — Linux Kernel Rootkits. Detect kernel-level rootkits in Linux memory dumps using Volatility3 linux plugins (check_syscall, lsmod, hidden_modules), rkhunter system scanning, and /proc vs /sys discrepancy analysis to identify hooked syscalls, hidden kernel modules, ",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "rootkit",
+        "linux",
+        "kernel",
+        "volatility3",
+        "memory-forensics",
+        "malware-analysis",
+        "rkhunter",
+        "forensics"
+      ],
+      "case_profiles": [
+        "memory"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-014"
+      ]
+    },
+    {
+      "skill_id": "SKILL-072",
+      "journal_id": "CB-SKL-072",
+      "library_slug": "cb-linux-log-forensics-investigation",
+      "name": "linux-log-forensics-investigation",
+      "description": "Cold-box analyst playbook — Linux Log Forensics Investigation. Perform forensic investigation of Linux system logs including syslog, auth.log, systemd journal, kern.log, and application logs to reconstruct user activity, detect unauthorized access, and establish event timelines on compromised Linux sys",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "linux-forensics",
+        "syslog",
+        "auth-log",
+        "systemd-journal",
+        "journalctl",
+        "linux-logs",
+        "ssh-forensics",
+        "cron",
+        "audit-log",
+        "log-analysis"
+      ],
+      "case_profiles": [
+        "linux_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-005",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-014",
+        "SIFT-020",
+        "SIFT-025"
+      ]
+    },
+    {
+      "skill_id": "SKILL-073",
+      "journal_id": "CB-SKL-073",
+      "library_slug": "cb-linux-system-artifacts",
+      "name": "linux-system-artifacts",
+      "description": "Cold-box analyst playbook — Linux System Artifacts. Examine Linux system artifacts including auth logs, cron jobs, shell history, and system configuration to uncover evidence of compromise or unauthorized activity.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "forensics",
+        "linux-forensics",
+        "system-artifacts",
+        "log-analysis",
+        "persistence-detection",
+        "incident-investigation"
+      ],
+      "case_profiles": [
+        "linux_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-003",
+        "SIFT-005",
+        "SIFT-007",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-014",
+        "SIFT-018",
+        "SIFT-034",
+        "SIFT-036",
+        "SIFT-075"
+      ]
+    },
+    {
+      "skill_id": "SKILL-074",
+      "journal_id": "CB-SKL-074",
+      "library_slug": "cb-lnk-file-and-jump-list-artifacts",
+      "name": "lnk-file-and-jump-list-artifacts",
+      "description": "Cold-box analyst playbook — Lnk File And Jump List Artifacts. Analyze Windows LNK shortcut files and Jump List artifacts to establish evidence of file access, program execution, and user activity using LECmd, JLECmd, and manual binary parsing of the Shell Link Binary format.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "lnk-files",
+        "jump-lists",
+        "lecmd",
+        "jlecmd",
+        "windows-forensics",
+        "shell-link",
+        "user-activity",
+        "file-access",
+        "program-execution",
+        "recent-files"
+      ],
+      "case_profiles": [
+        "windows_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-154",
+        "SIFT-160",
+        "SIFT-179",
+        "SIFT-212",
+        "SIFT-213"
+      ]
+    },
+    {
+      "skill_id": "SKILL-075",
+      "journal_id": "CB-SKL-075",
+      "library_slug": "cb-log-analysis-for-forensic-investigation",
+      "name": "log-analysis-for-forensic-investigation",
+      "description": "Cold-box analyst playbook — Log Analysis For Forensic Investigation. Collect, parse, and correlate system, application, and security logs to reconstruct events and establish timelines during forensic investigations.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "forensics",
+        "log-analysis",
+        "siem",
+        "event-correlation",
+        "timeline-analysis",
+        "evidence-collection"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-003",
+        "SIFT-005",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-013",
+        "SIFT-018",
+        "SIFT-020",
+        "SIFT-025",
+        "SIFT-166",
+        "SIFT-179",
+        "SIFT-205"
+      ]
+    },
+    {
+      "skill_id": "SKILL-076",
+      "journal_id": "CB-SKL-076",
+      "library_slug": "cb-malware-family-relationships-with-malpedia",
+      "name": "malware-family-relationships-with-malpedia",
+      "description": "Cold-box analyst playbook — Malware Family Relationships With Malpedia. Use the Malpedia platform and API to research malware family relationships, track variant evolution, link families to threat actors, and integrate YARA rules for detection across malware lineages.",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "malpedia",
+        "malware-family",
+        "yara",
+        "threat-actor",
+        "malware-tracking",
+        "threat-intelligence",
+        "variant-analysis",
+        "malware-intelligence"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-009",
+        "SIFT-045"
+      ]
+    },
+    {
+      "skill_id": "SKILL-077",
+      "journal_id": "CB-SKL-077",
+      "library_slug": "cb-malware-hash-enrichment-with-virustotal",
+      "name": "malware-hash-enrichment-with-virustotal",
+      "description": "Cold-box analyst playbook — Malware Hash Enrichment With Virustotal. Enrich malware file hashes using the VirusTotal API to retrieve detection rates, behavioral analysis, YARA matches, and contextual threat intelligence for incident triage and IOC validation.",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "virustotal",
+        "malware-analysis",
+        "hash-enrichment",
+        "ioc",
+        "threat-intelligence",
+        "triage",
+        "api",
+        "detection"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-045"
+      ]
+    },
+    {
+      "skill_id": "SKILL-078",
+      "journal_id": "CB-SKL-078",
+      "library_slug": "cb-malware-incident-response",
+      "name": "malware-incident-response",
+      "description": "Cold-box analyst playbook — Malware Incident Response. Responds to malware infections across enterprise endpoints by identifying the malware family, determining infection vectors, assessing spread, and executing eradication procedures. Covers the full lifecycle from detection through containmen",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "incident-response",
+      "subdomain": "incident-response",
+      "tags": [
+        "malware-response",
+        "malware-analysis",
+        "eradication",
+        "endpoint-remediation",
+        "MITRE-ATT&CK"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-045",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-079",
+      "journal_id": "CB-SKL-079",
+      "library_slug": "cb-malware-ioc-extraction",
+      "name": "malware-ioc-extraction",
+      "description": "Cold-box analyst playbook — Malware Ioc Extraction. Malware IOC extraction is the process of analyzing malicious software to identify actionable indicators of compromise including file hashes, network indicators (C2 domains, IP addresses, URLs), regist",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "threat-intelligence",
+        "cti",
+        "ioc",
+        "mitre-attack",
+        "stix",
+        "malware-analysis",
+        "yara",
+        "reverse-engineering"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-044",
+        "SIFT-045",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-080",
+      "journal_id": "CB-SKL-080",
+      "library_slug": "cb-malware-persistence-investigation",
+      "name": "malware-persistence-investigation",
+      "description": "Cold-box analyst playbook — Malware Persistence Investigation. Systematically investigate all persistence mechanisms on Windows and Linux systems to identify how malware survives reboots and maintains access.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "forensics",
+        "malware-persistence",
+        "autoruns",
+        "registry",
+        "scheduled-tasks",
+        "rootkit-detection",
+        "incident-response"
+      ],
+      "case_profiles": [
+        "linux_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-014",
+        "SIFT-018",
+        "SIFT-034",
+        "SIFT-044",
+        "SIFT-045",
+        "SIFT-075",
+        "SIFT-100",
+        "SIFT-176",
+        "SIFT-179",
+        "SIFT-224"
+      ]
+    },
+    {
+      "skill_id": "SKILL-081",
+      "journal_id": "CB-SKL-081",
+      "library_slug": "cb-malware-triage-with-yara",
+      "name": "malware-triage-with-yara",
+      "description": "Cold-box analyst playbook — Malware Triage With Yara. Performs rapid malware triage and classification using YARA rules to match file patterns, strings, byte sequences, and structural characteristics against known malware families and suspicious indicators. Covers rule writing, scanning, and i",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "YARA",
+        "triage",
+        "classification",
+        "pattern-matching"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-026",
+        "SIFT-044",
+        "SIFT-045"
+      ]
+    },
+    {
+      "skill_id": "SKILL-082",
+      "journal_id": "CB-SKL-082",
+      "library_slug": "cb-mapping-mitre-attack-techniques",
+      "name": "mapping-mitre-attack-techniques",
+      "description": "Cold-box analyst playbook — Mapping Mitre Attack Techniques. Maps observed adversary behaviors, security alerts, and detection rules to MITRE ATT&CK techniques and sub-techniques to quantify detection coverage and guide control prioritization. Use when building an ATT&CK-based coverage heatmap, taggi",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "MITRE-ATT&CK",
+        "ATT&CK-Navigator",
+        "Sigma",
+        "D3FEND",
+        "TTP",
+        "detection-engineering",
+        "NIST-CSF"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-083",
+      "journal_id": "CB-SKL-083",
+      "library_slug": "cb-memory-dumps-with-volatility",
+      "name": "memory-dumps-with-volatility",
+      "description": "Cold-box analyst playbook — Memory Dumps With Volatility. Analyzes RAM memory dumps from compromised systems using the Volatility framework to identify malicious processes, injected code, network connections, loaded modules, and extracted credentials. Supports Windows, Linux, and macOS memory fore",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "memory-forensics",
+        "Volatility",
+        "RAM-analysis",
+        "incident-response"
+      ],
+      "case_profiles": [
+        "memory"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-044",
+        "SIFT-045",
+        "SIFT-047",
+        "SIFT-179",
+        "SIFT-182"
+      ]
+    },
+    {
+      "skill_id": "SKILL-084",
+      "journal_id": "CB-SKL-084",
+      "library_slug": "cb-memory-forensics-with-lime-and-volatility",
+      "name": "memory-forensics-with-lime-and-volatility",
+      "description": "Cold-box analyst playbook — Memory Forensics With Lime And Volatility. Performs Linux memory acquisition using LiME (Linux Memory Extractor) kernel module and analysis with Volatility 3 framework. Extracts process lists, network connections, bash history, loaded kernel modules, and injected code from Linux mem",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "memory-forensics",
+        "linux-forensics",
+        "lime",
+        "volatility",
+        "incident-response",
+        "kernel-modules"
+      ],
+      "case_profiles": [
+        "memory"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-010",
+        "SIFT-182"
+      ]
+    },
+    {
+      "skill_id": "SKILL-085",
+      "journal_id": "CB-SKL-085",
+      "library_slug": "cb-memory-forensics-with-volatility",
+      "name": "memory-forensics-with-volatility",
+      "description": "Cold-box analyst playbook — Memory Forensics With Volatility. Performs memory forensics analysis using Volatility 3 to extract evidence of malware execution, process injection, network connections, and credential theft from RAM dumps captured during incident response. Covers memory acquisition, proces",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "incident-response",
+      "subdomain": "incident-response",
+      "tags": [
+        "memory-forensics",
+        "volatility",
+        "RAM-analysis",
+        "process-injection",
+        "DFIR"
+      ],
+      "case_profiles": [
+        "memory"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-012",
+        "SIFT-045",
+        "SIFT-047",
+        "SIFT-173",
+        "SIFT-179",
+        "SIFT-182"
+      ]
+    },
+    {
+      "skill_id": "SKILL-086",
+      "journal_id": "CB-SKL-086",
+      "library_slug": "cb-memory-forensics-with-volatility3",
+      "name": "memory-forensics-with-volatility3",
+      "description": "Cold-box analyst playbook — Memory Forensics With Volatility3. Analyze volatile memory dumps using Volatility 3 to extract running processes, network connections, loaded modules, and evidence of malicious activity.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "forensics",
+        "memory-forensics",
+        "volatility",
+        "ram-analysis",
+        "malware-detection",
+        "incident-response"
+      ],
+      "case_profiles": [
+        "memory"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-004",
+        "SIFT-005",
+        "SIFT-007",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-014",
+        "SIFT-018",
+        "SIFT-020",
+        "SIFT-036",
+        "SIFT-044",
+        "SIFT-045",
+        "SIFT-173",
+        "SIFT-179",
+        "SIFT-182"
+      ]
+    },
+    {
+      "skill_id": "SKILL-087",
+      "journal_id": "CB-SKL-087",
+      "library_slug": "cb-memory-forensics-with-volatility3-plugins",
+      "name": "memory-forensics-with-volatility3-plugins",
+      "description": "Cold-box analyst playbook — Memory Forensics With Volatility3 Plugins. Analyze memory dumps using Volatility3 plugins to detect injected code, rootkits, credential theft, and malware artifacts in Windows, Linux, and macOS memory images.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "memory-forensics",
+        "volatility3",
+        "malware-analysis",
+        "incident-response",
+        "process-injection",
+        "rootkit-detection",
+        "dfir"
+      ],
+      "case_profiles": [
+        "memory"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-012",
+        "SIFT-045",
+        "SIFT-173",
+        "SIFT-182"
+      ]
+    },
+    {
+      "skill_id": "SKILL-088",
+      "journal_id": "CB-SKL-088",
+      "library_slug": "cb-mft-for-deleted-file-recovery",
+      "name": "mft-for-deleted-file-recovery",
+      "description": "Cold-box analyst playbook — Mft For Deleted File Recovery. Analyze the NTFS Master File Table ($MFT) to recover metadata and content of deleted files by examining MFT record entries, $LogFile, $UsnJrnl, and MFT slack space using MFTECmd, analyzeMFT, and X-Ways Forensics.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "mft",
+        "ntfs",
+        "deleted-files",
+        "file-recovery",
+        "mftecmd",
+        "usn-journal",
+        "logfile",
+        "mft-slack-space",
+        "file-system-forensics",
+        "dfir"
+      ],
+      "case_profiles": [
+        "windows_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-034",
+        "SIFT-044",
+        "SIFT-075",
+        "SIFT-154",
+        "SIFT-160",
+        "SIFT-179",
+        "SIFT-189",
+        "SIFT-217",
+        "SIFT-222"
+      ]
+    },
+    {
+      "skill_id": "SKILL-089",
+      "journal_id": "CB-SKL-089",
+      "library_slug": "cb-mobile-device-forensics-with-cellebrite",
+      "name": "mobile-device-forensics-with-cellebrite",
+      "description": "Cold-box analyst playbook — Mobile Device Forensics With Cellebrite. Acquire and analyze mobile device data using Cellebrite UFED and open-source tools to extract communications, location data, and application artifacts.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "forensics",
+        "mobile-forensics",
+        "cellebrite",
+        "smartphone-analysis",
+        "ios-forensics",
+        "android-forensics"
+      ],
+      "case_profiles": [
+        "windows_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-003",
+        "SIFT-008",
+        "SIFT-010",
+        "SIFT-018",
+        "SIFT-021",
+        "SIFT-034",
+        "SIFT-154",
+        "SIFT-160",
+        "SIFT-178"
+      ]
+    },
+    {
+      "skill_id": "SKILL-090",
+      "journal_id": "CB-SKL-090",
+      "library_slug": "cb-network-forensics-with-wireshark",
+      "name": "network-forensics-with-wireshark",
+      "description": "Cold-box analyst playbook — Network Forensics With Wireshark. Capture and analyze network traffic using Wireshark and tshark to reconstruct network events, extract artifacts, and identify malicious communications.",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "forensics",
+        "network-forensics",
+        "wireshark",
+        "pcap",
+        "packet-analysis",
+        "traffic-analysis"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-004",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-018",
+        "SIFT-020",
+        "SIFT-036",
+        "SIFT-115",
+        "SIFT-116",
+        "SIFT-117",
+        "SIFT-118",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-091",
+      "journal_id": "CB-SKL-091",
+      "library_slug": "cb-network-packet-capture-analysis",
+      "name": "network-packet-capture-analysis",
+      "description": "Cold-box analyst playbook — Network Packet Capture Analysis. Perform forensic analysis of network packet captures (PCAP/PCAPNG) using Wireshark, tshark, and tcpdump to reconstruct network communications, extract transferred files, identify malicious traffic, and establish evidence of data exfiltratio",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "pcap",
+        "wireshark",
+        "tshark",
+        "tcpdump",
+        "network-forensics",
+        "packet-capture",
+        "protocol-analysis",
+        "traffic-analysis",
+        "pcapng",
+        "network-evidence"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-020",
+        "SIFT-116",
+        "SIFT-117",
+        "SIFT-118"
+      ]
+    },
+    {
+      "skill_id": "SKILL-092",
+      "journal_id": "CB-SKL-092",
+      "library_slug": "cb-network-packets-with-scapy",
+      "name": "network-packets-with-scapy",
+      "description": "Cold-box analyst playbook — Network Packets With Scapy. Craft, send, sniff, and dissect network packets using Scapy for protocol analysis, network reconnaissance, and traffic anomaly detection in authorized security testing",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "scapy",
+        "packet-analysis",
+        "network-forensics",
+        "protocol-dissection",
+        "pcap",
+        "traffic-analysis"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-093",
+      "journal_id": "CB-SKL-093",
+      "library_slug": "cb-network-traffic-analysis-with-tshark",
+      "name": "network-traffic-analysis-with-tshark",
+      "description": "Cold-box analyst playbook — Network Traffic Analysis With Tshark. Automate network traffic analysis using tshark and pyshark for protocol statistics, suspicious flow detection, DNS anomaly identification, and IOC extraction from PCAP files",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "tshark",
+        "pyshark",
+        "pcap",
+        "packet-analysis",
+        "network-forensics",
+        "wireshark",
+        "traffic-analysis"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-117",
+        "SIFT-118"
+      ]
+    },
+    {
+      "skill_id": "SKILL-094",
+      "journal_id": "CB-SKL-094",
+      "library_slug": "cb-network-traffic-analysis-with-zeek",
+      "name": "network-traffic-analysis-with-zeek",
+      "description": "Cold-box analyst playbook — Network Traffic Analysis With Zeek. Deploy Zeek network security monitor to capture, parse, and analyze network traffic metadata for threat detection, anomaly identification, and forensic investigation.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "zeek",
+        "network-monitoring",
+        "traffic-analysis",
+        "ids",
+        "nids",
+        "pcap",
+        "threat-detection",
+        "forensics",
+        "siem-integration"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-005",
+        "SIFT-006",
+        "SIFT-007",
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-020",
+        "SIFT-025",
+        "SIFT-034",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-095",
+      "journal_id": "CB-SKL-095",
+      "library_slug": "cb-network-traffic-for-incidents",
+      "name": "network-traffic-for-incidents",
+      "description": "Cold-box analyst playbook — Network Traffic For Incidents. Analyzes network traffic captures and flow data to identify adversary activity during security incidents, including command-and-control communications, lateral movement, data exfiltration, and exploitation attempts. Uses Wireshark, Zeek, an",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "incident-response",
+      "subdomain": "incident-response",
+      "tags": [
+        "network-forensics",
+        "PCAP-analysis",
+        "Wireshark",
+        "Zeek",
+        "traffic-analysis"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-005",
+        "SIFT-006",
+        "SIFT-008",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-020",
+        "SIFT-025",
+        "SIFT-044",
+        "SIFT-116",
+        "SIFT-118",
+        "SIFT-119",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-096",
+      "journal_id": "CB-SKL-096",
+      "library_slug": "cb-network-traffic-of-malware",
+      "name": "network-traffic-of-malware",
+      "description": "Cold-box analyst playbook — Network Traffic Of Malware. Analyzes network traffic generated by malware during sandbox execution or live incident response to identify C2 protocols, data exfiltration channels, payload downloads, and lateral movement patterns using Wireshark, Zeek, and Suricata. Act",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "network-analysis",
+        "PCAP",
+        "Wireshark",
+        "C2-detection"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-014",
+        "SIFT-018",
+        "SIFT-020",
+        "SIFT-117",
+        "SIFT-118",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-097",
+      "journal_id": "CB-SKL-097",
+      "library_slug": "cb-network-traffic-with-wireshark",
+      "name": "network-traffic-with-wireshark",
+      "description": "Cold-box analyst playbook — Network Traffic With Wireshark. Captures and analyzes network packet data using Wireshark and tshark to identify malicious traffic patterns, diagnose protocol issues, extract artifacts, and support incident response investigations on authorized network segments.",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "network-security",
+        "wireshark",
+        "packet-analysis",
+        "traffic-analysis",
+        "pcap"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-011",
+        "SIFT-018",
+        "SIFT-020",
+        "SIFT-022",
+        "SIFT-025",
+        "SIFT-116",
+        "SIFT-117",
+        "SIFT-118"
+      ]
+    },
+    {
+      "skill_id": "SKILL-098",
+      "journal_id": "CB-SKL-098",
+      "library_slug": "cb-outlook-pst-for-email-forensics",
+      "name": "outlook-pst-for-email-forensics",
+      "description": "Cold-box analyst playbook — Outlook Pst For Email Forensics. Analyze Microsoft Outlook PST and OST files for email forensic evidence including message content, headers, attachments, deleted items, and metadata using libpff, pst-utils, and forensic email analysis tools for legal investigations and inc",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "windows-artifacts",
+      "subdomain": "digital-forensics",
+      "tags": [
+        "email-forensics",
+        "pst",
+        "ost",
+        "outlook",
+        "mapi",
+        "email-headers",
+        "attachments",
+        "deleted-emails",
+        "libpff",
+        "eml-extraction"
+      ],
+      "case_profiles": [
+        "windows_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-046"
+      ]
+    },
+    {
+      "skill_id": "SKILL-099",
+      "journal_id": "CB-SKL-099",
+      "library_slug": "cb-phishing-incident-response",
+      "name": "phishing-incident-response",
+      "description": "Cold-box analyst playbook — Phishing Incident Response. Responds to phishing incidents by analyzing reported emails, extracting indicators, assessing credential compromise, quarantining malicious messages across the organization, and remediating affected accounts. Covers email header analysis, U",
+      "tier": "core",
+      "execution_mode": "reference",
+      "category": "incident-response",
+      "subdomain": "incident-response",
+      "tags": [
+        "phishing-response",
+        "email-security",
+        "credential-compromise",
+        "email-header-analysis",
+        "mailbox-remediation"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-100",
+      "journal_id": "CB-SKL-100",
+      "library_slug": "cb-post-incident-lessons-learned",
+      "name": "post-incident-lessons-learned",
+      "description": "Cold-box analyst playbook — Post Incident Lessons Learned. Facilitate structured post-incident reviews to identify root causes, document what worked and failed, and produce actionable recommendations to improve future incident response.",
+      "tier": "core",
+      "execution_mode": "sift_runnable",
+      "category": "incident-response",
+      "subdomain": "incident-response",
+      "tags": [
+        "incident-response",
+        "lessons-learned",
+        "post-incident",
+        "after-action-review",
+        "process-improvement"
+      ],
+      "case_profiles": [
+        "windows_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-009",
+        "SIFT-010",
+        "SIFT-013"
       ]
     }
   ]
