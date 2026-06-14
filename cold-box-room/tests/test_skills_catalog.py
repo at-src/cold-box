@@ -26,26 +26,14 @@ def test_manifest_path_exists():
     assert manifest_path().is_file()
 
 
-def test_load_manifest_batches():
+def test_load_manifest_runnable_catalog():
     data = load_manifest()
     assert data["schema"] == "cold_box_room.skills_manifest_v2"
-    assert data["count"] == 339
-    assert len(data["skills"]) == 339
+    assert data["count"] == 213
+    assert len(data["skills"]) == 213
     assert data["skills"][0]["skill_id"] == "SKILL-001"
-    assert data["skills"][49]["skill_id"] == "SKILL-050"
-    assert data["skills"][50]["skill_id"] == "SKILL-051"
-    assert data["skills"][99]["skill_id"] == "SKILL-100"
-    assert data["skills"][100]["skill_id"] == "SKILL-101"
-    assert data["skills"][149]["skill_id"] == "SKILL-150"
-    assert data["skills"][150]["skill_id"] == "SKILL-151"
-    assert data["skills"][199]["skill_id"] == "SKILL-200"
-    assert data["skills"][200]["skill_id"] == "SKILL-201"
-    assert data["skills"][249]["skill_id"] == "SKILL-250"
-    assert data["skills"][250]["skill_id"] == "SKILL-251"
-    assert data["skills"][299]["skill_id"] == "SKILL-300"
-    assert data["skills"][300]["skill_id"] == "SKILL-301"
-    assert data["skills"][338]["skill_id"] == "SKILL-339"
-    assert len(data.get("batches") or []) == 7
+    assert all(s["has_script"] for s in data["skills"])
+    assert not any(s.get("reference_only") for s in data["skills"])
 
 
 def test_batch1_uniform_schema():
@@ -68,13 +56,6 @@ def test_get_skill_001_runnable():
     assert skill.library_slug == "cb-active-directory-compromise-investigation"
     assert skill.has_script is True
     assert skill.reference_only is False
-
-
-def test_get_skill_002_reference_only():
-    skill = get_skill("SKILL-002")
-    assert skill.reference_only is True
-    assert skill.has_script is False
-    assert skill.execution_mode == "reference"
 
 
 def test_get_skill_019_has_script_without_external_api():
@@ -109,10 +90,10 @@ def test_unknown_skill():
         get_skill("SKILL-999")
 
 
-def test_get_skill_051_batch2():
-    skill = get_skill("SKILL-051")
-    assert skill.journal_id == "CB-SKL-051"
-    assert skill.library_slug == "cb-hunting-for-dns-based-persistence"
+def test_get_skill_052_batch2():
+    skill = get_skill("SKILL-052")
+    assert skill.journal_id == "CB-SKL-052"
+    assert skill.library_slug == "cb-hunting-for-lateral-movement-via-wmi"
     assert skill.skill_md_path(skills_root=skills_root()).is_file()
 
 
@@ -122,28 +103,31 @@ def test_get_skill_151_batch4():
     assert skill.library_slug == "cb-building-threat-intelligence-platform"
 
 
-def test_get_skill_201_batch5():
-    skill = get_skill("SKILL-201")
-    assert skill.journal_id == "CB-SKL-201"
-    assert skill.library_slug == "cb-detecting-pass-the-ticket-attacks"
+def test_get_skill_202_batch5():
+    skill = get_skill("SKILL-202")
+    assert skill.journal_id == "CB-SKL-202"
+    assert skill.library_slug == "cb-detecting-port-scanning-with-fail2ban"
     assert skill.skill_md_path(skills_root=skills_root()).is_file()
 
 
-def test_get_skill_251_batch6():
-    skill = get_skill("SKILL-251")
-    assert skill.journal_id == "CB-SKL-251"
-    assert skill.library_slug == "cb-implementing-api-abuse-detection-with-rate-limiting"
+def test_get_skill_252_batch6():
+    skill = get_skill("SKILL-252")
+    assert skill.journal_id == "CB-SKL-252"
+    assert skill.library_slug == "cb-implementing-api-key-security-controls"
     assert skill.skill_md_path(skills_root=skills_root()).is_file()
 
 
-def test_get_skill_301_batch7():
-    skill = get_skill("SKILL-301")
-    assert skill.journal_id == "CB-SKL-301"
-    assert skill.library_slug == "cb-monitoring-darkweb-sources"
+def test_get_skill_302_batch7():
+    skill = get_skill("SKILL-302")
+    assert skill.journal_id == "CB-SKL-302"
+    assert skill.library_slug == "cb-network-covert-channels-in-malware"
     assert skill.skill_md_path(skills_root=skills_root()).is_file()
 
 
-def test_catalog_id_sequence():
+def test_catalog_preserves_original_skill_ids():
     data = load_manifest()
-    ids = [s["skill_id"] for s in data["skills"]]
-    assert ids == [f"SKILL-{i:03d}" for i in range(1, 340)]
+    ids = {s["skill_id"] for s in data["skills"]}
+    assert "SKILL-001" in ids
+    assert "SKILL-339" in ids
+    assert "SKILL-002" not in ids
+    assert len(ids) == 213

@@ -38,8 +38,8 @@ def _intake(case_id: str) -> None:
     intake_case(case_id)
 
 
-def test_reference_skill_cannot_run():
-    case_id = "skill-ref-blocked"
+def test_removed_reference_skill_not_in_catalog():
+    case_id = "skill-ref-removed"
     _intake(case_id)
     bootstrap_case_to_room3(case_id)
 
@@ -49,7 +49,7 @@ def test_reference_skill_cannot_run():
         input_relpath="disk.E01",
     )
     assert result["ok"] is False
-    assert result["reference_only"] is True
+    assert "Unknown skill ref" in result["error"]
 
 
 def test_runnable_skill_requires_input_relpath():
@@ -89,6 +89,6 @@ def test_dispatch_list_skills_in_room_b():
 
     bootstrap_case_to_room_b(case_id)
     result = dispatch_tool("list_skills", {"case_id": case_id})
-    assert result["count"] == 339
+    assert result["count"] == 213
     assert result["skills"][0]["skill_id"] == "SKILL-001"
     assert "has_script" in result["skills"][0]
