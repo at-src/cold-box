@@ -1,6 +1,6 @@
 {
   "schema": "cold_box_room.skills_manifest_v2",
-  "count": 250,
+  "count": 300,
   "batches": [
     {
       "start": 1,
@@ -26,9 +26,14 @@
       "start": 201,
       "end": 250,
       "source": "CB-SKL-201..250"
+    },
+    {
+      "start": 251,
+      "end": 300,
+      "source": "CB-SKL-251..300"
     }
   ],
-  "source": "cold-box-final CB-SKL-001..250",
+  "source": "cold-box-final CB-SKL-001..300",
   "skills": [
     {
       "skill_id": "SKILL-001",
@@ -7704,6 +7709,1431 @@
         "SIFT-020",
         "SIFT-179"
       ]
+    },
+    {
+      "skill_id": "SKILL-251",
+      "journal_id": "CB-SKL-251",
+      "library_slug": "cb-implementing-api-abuse-detection-with-rate-limiting",
+      "name": "implementing-api-abuse-detection-with-rate-limiting",
+      "description": "Cold-box analyst playbook — Implementing Api Abuse Detection With Rate Limiting. Implement API abuse detection using token bucket, sliding window, and adaptive rate limiting algorithms to prevent DDoS, brute force, and credential stuffing attacks.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "api-security",
+      "tags": [
+        "api-security",
+        "rate-limiting",
+        "token-bucket",
+        "sliding-window",
+        "ddos-protection",
+        "brute-force-prevention",
+        "api-abuse",
+        "api-gateway"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-252",
+      "journal_id": "CB-SKL-252",
+      "library_slug": "cb-implementing-api-key-security-controls",
+      "name": "implementing-api-key-security-controls",
+      "description": "Cold-box analyst playbook — Implementing Api Key Security Controls. Implements secure API key generation, storage, rotation, and revocation controls to protect API authentication credentials from leakage, brute force, and abuse. The engineer designs API key formats with sufficient entropy, implements secure",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "api-security",
+      "tags": [
+        "api-security",
+        "api-keys",
+        "credential-management",
+        "key-rotation",
+        "secret-management"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-044"
+      ]
+    },
+    {
+      "skill_id": "SKILL-253",
+      "journal_id": "CB-SKL-253",
+      "library_slug": "cb-implementing-api-rate-limiting-and-throttling",
+      "name": "implementing-api-rate-limiting-and-throttling",
+      "description": "Cold-box analyst playbook — Implementing Api Rate Limiting And Throttling. Implements API rate limiting and throttling controls using token bucket, sliding window, and fixed window algorithms to protect against brute force attacks, credential stuffing, resource exhaustion, and API abuse. The engineer configures pe",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "api-security",
+      "tags": [
+        "api-security",
+        "rate-limiting",
+        "throttling",
+        "redis",
+        "token-bucket",
+        "abuse-prevention"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-254",
+      "journal_id": "CB-SKL-254",
+      "library_slug": "cb-implementing-bgp-security-with-rpki",
+      "name": "implementing-bgp-security-with-rpki",
+      "description": "Cold-box analyst playbook — Implementing Bgp Security With Rpki. Implement BGP route origin validation using RPKI with Route Origin Authorizations, RPKI-to-Router protocol, and ROV policies on Cisco and Juniper routers to prevent route hijacking.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "bgp",
+        "rpki",
+        "route-origin-validation",
+        "rov",
+        "roa",
+        "route-hijacking",
+        "internet-routing",
+        "bgp-security",
+        "prefix-hijack"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-011"
+      ]
+    },
+    {
+      "skill_id": "SKILL-255",
+      "journal_id": "CB-SKL-255",
+      "library_slug": "cb-implementing-canary-tokens-for-network-intrusion",
+      "name": "implementing-canary-tokens-for-network-intrusion",
+      "description": "Cold-box analyst playbook — Implementing Canary Tokens For Network Intrusion. Deploys DNS, HTTP, and AWS API key canary tokens across network infrastructure to detect unauthorized access and lateral movement. Integrates with webhook alerting (Slack, Teams, email, generic HTTP) for real-time intrusion notifications. P",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "canary-tokens",
+        "intrusion-detection",
+        "deception",
+        "network-security",
+        "honeytokens",
+        "breach-detection"
+      ],
+      "case_profiles": [
+        "cloud"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-044"
+      ]
+    },
+    {
+      "skill_id": "SKILL-256",
+      "journal_id": "CB-SKL-256",
+      "library_slug": "cb-implementing-cloud-trail-log-analysis",
+      "name": "implementing-cloud-trail-log-analysis",
+      "description": "Cold-box analyst playbook — Implementing Cloud Trail Log Analysis. Implementing AWS CloudTrail log analysis for security monitoring, threat detection, and forensic investigation using Athena, CloudWatch Logs Insights, and SIEM integration to identify unauthorized access, privilege escalation, and suspiciou",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "cloud",
+      "subdomain": "cloud-security",
+      "tags": [
+        "cloud-security",
+        "aws",
+        "cloudtrail",
+        "log-analysis",
+        "threat-detection",
+        "forensics"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-020"
+      ]
+    },
+    {
+      "skill_id": "SKILL-257",
+      "journal_id": "CB-SKL-257",
+      "library_slug": "cb-implementing-delinea-secret-server-for-pam",
+      "name": "implementing-delinea-secret-server-for-pam",
+      "description": "Cold-box analyst playbook — Implementing Delinea Secret Server For Pam. Implements Delinea Secret Server for privileged access management (PAM) including secret vault configuration, role-based access policies, automated password rotation, session recording, and integration with Active Directory and cloud platfo",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "identity-access-management",
+      "tags": [
+        "PAM",
+        "Delinea",
+        "Secret-Server",
+        "privileged-access",
+        "password-vault",
+        "credential-management"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-009",
+        "SIFT-034",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-258",
+      "journal_id": "CB-SKL-258",
+      "library_slug": "cb-implementing-diamond-model-analysis",
+      "name": "implementing-diamond-model-analysis",
+      "description": "Cold-box analyst playbook — Implementing Diamond Model Analysis. The Diamond Model of Intrusion Analysis provides a structured framework for analyzing cyber intrusions by examining four core features - Adversary, Capability, Infrastructure, and Victim. This skill covers implementing the Diamond Model pro",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "threat-intelligence",
+        "cti",
+        "ioc",
+        "mitre-attack",
+        "stix",
+        "diamond-model",
+        "intrusion-analysis"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-009"
+      ]
+    },
+    {
+      "skill_id": "SKILL-259",
+      "journal_id": "CB-SKL-259",
+      "library_slug": "cb-implementing-ebpf-security-monitoring",
+      "name": "implementing-ebpf-security-monitoring",
+      "description": "Cold-box analyst playbook — Implementing Ebpf Security Monitoring. Implements eBPF-based security monitoring using Cilium Tetragon for real-time process execution tracking, network connection observability, file access auditing, and runtime enforcement. Covers TracingPolicy CRD authoring with kprobe/tracep",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "ebpf",
+        "tetragon",
+        "cilium",
+        "runtime-security",
+        "observability",
+        "kernel-security",
+        "kubernetes-security"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-003",
+        "SIFT-008",
+        "SIFT-011",
+        "SIFT-013",
+        "SIFT-023"
+      ]
+    },
+    {
+      "skill_id": "SKILL-260",
+      "journal_id": "CB-SKL-260",
+      "library_slug": "cb-implementing-endpoint-detection-with-wazuh",
+      "name": "implementing-endpoint-detection-with-wazuh",
+      "description": "Cold-box analyst playbook — Implementing Endpoint Detection With Wazuh. Deploy and configure Wazuh SIEM/XDR for endpoint detection including agent management, custom decoder and rule XML creation, alert querying via the Wazuh REST API, and automated response actions.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "siem",
+        "xdr",
+        "wazuh",
+        "endpoint-detection",
+        "custom-rules",
+        "incident-response"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-261",
+      "journal_id": "CB-SKL-261",
+      "library_slug": "cb-implementing-endpoint-dlp-controls",
+      "name": "implementing-endpoint-dlp-controls",
+      "description": "Cold-box analyst playbook — Implementing Endpoint Dlp Controls. Implements endpoint Data Loss Prevention (DLP) controls to detect and prevent sensitive data exfiltration through email, USB, cloud storage, and printing. Use when deploying DLP agents, creating content inspection policies, or preventing un",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "endpoint",
+      "subdomain": "endpoint-security",
+      "tags": [
+        "endpoint",
+        "DLP",
+        "data-loss-prevention",
+        "data-protection",
+        "content-inspection"
+      ],
+      "case_profiles": [
+        "cloud"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-262",
+      "journal_id": "CB-SKL-262",
+      "library_slug": "cb-implementing-google-workspace-phishing-protection",
+      "name": "implementing-google-workspace-phishing-protection",
+      "description": "Cold-box analyst playbook — Implementing Google Workspace Phishing Protection. Configure Google Workspace advanced phishing and malware protection settings including pre-delivery scanning, attachment protection, spoofing detection, and Enhanced Safe Browsing.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "phishing-defense",
+      "tags": [
+        "google-workspace",
+        "gmail",
+        "phishing",
+        "email-security",
+        "safe-browsing",
+        "anti-spoofing",
+        "admin-console"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-263",
+      "journal_id": "CB-SKL-263",
+      "library_slug": "cb-implementing-hardware-security-key-authentication",
+      "name": "implementing-hardware-security-key-authentication",
+      "description": "Cold-box analyst playbook — Implementing Hardware Security Key Authentication. Implements FIDO2/WebAuthn hardware security key authentication including registration ceremonies, authentication flows, YubiKey enrollment, and passkey migration strategies. Builds a complete relying party server using the python-fido2 libr",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "methodology",
+      "subdomain": "identity-and-access-management",
+      "tags": [
+        "FIDO2",
+        "WebAuthn",
+        "hardware-security-key",
+        "YubiKey",
+        "passkeys",
+        "passwordless-authentication",
+        "CTAP2"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-264",
+      "journal_id": "CB-SKL-264",
+      "library_slug": "cb-implementing-hashicorp-vault-dynamic-secrets",
+      "name": "implementing-hashicorp-vault-dynamic-secrets",
+      "description": "Cold-box analyst playbook — Implementing Hashicorp Vault Dynamic Secrets. Implements HashiCorp Vault dynamic secrets engines for database credentials, AWS IAM keys, and PKI certificates with automatic generation, lease management, and credential rotation to eliminate static secrets in application configurations. ",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "identity-access-management",
+      "tags": [
+        "HashiCorp-Vault",
+        "dynamic-secrets",
+        "secrets-management",
+        "database-credentials",
+        "AWS-secrets",
+        "PKI"
+      ],
+      "case_profiles": [
+        "cloud"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-011",
+        "SIFT-013",
+        "SIFT-020",
+        "SIFT-023",
+        "SIFT-025",
+        "SIFT-178"
+      ]
+    },
+    {
+      "skill_id": "SKILL-265",
+      "journal_id": "CB-SKL-265",
+      "library_slug": "cb-implementing-honeypot-for-ransomware-detection",
+      "name": "implementing-honeypot-for-ransomware-detection",
+      "description": "Cold-box analyst playbook — Implementing Honeypot For Ransomware Detection. Deploys canary files, honeypot shares, and decoy systems to detect ransomware activity at the earliest possible stage. Configures canary tokens embedded in strategic file locations that trigger alerts when ransomware attempts encryption, us",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "ransomware-defense",
+      "tags": [
+        "ransomware",
+        "detection",
+        "honeypot",
+        "canary",
+        "defense",
+        "deception"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-266",
+      "journal_id": "CB-SKL-266",
+      "library_slug": "cb-implementing-honeytokens-for-breach-detection",
+      "name": "implementing-honeytokens-for-breach-detection",
+      "description": "Cold-box analyst playbook — Implementing Honeytokens For Breach Detection. Deploys canary tokens and honeytokens (fake AWS credentials, DNS canaries, document beacons, database records) that trigger alerts when accessed by attackers. Uses the Canarytokens API and custom webhook integrations for breach detection. U",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "deception-technology",
+        "honeytokens",
+        "canary-tokens",
+        "breach-detection",
+        "dns-canary",
+        "security-operations"
+      ],
+      "case_profiles": [
+        "cloud"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-267",
+      "journal_id": "CB-SKL-267",
+      "library_slug": "cb-implementing-immutable-backup-with-restic",
+      "name": "implementing-immutable-backup-with-restic",
+      "description": "Cold-box analyst playbook — Implementing Immutable Backup With Restic. Implements immutable backup strategy using restic with S3-compatible storage and object lock for ransomware-resistant data protection. Automates backup creation, integrity verification via restic check --read-data, snapshot retention policy",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "methodology",
+      "subdomain": "ransomware-defense",
+      "tags": [
+        "restic",
+        "backup",
+        "immutable",
+        "ransomware",
+        "s3",
+        "object-lock",
+        "worm",
+        "recovery"
+      ],
+      "case_profiles": [
+        "cloud"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-268",
+      "journal_id": "CB-SKL-268",
+      "library_slug": "cb-implementing-log-forwarding-with-fluentd",
+      "name": "implementing-log-forwarding-with-fluentd",
+      "description": "Cold-box analyst playbook — Implementing Log Forwarding With Fluentd. Configure Fluentd and Fluent Bit for centralized log aggregation, routing, filtering, and enrichment across distributed infrastructure",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "fluentd",
+        "fluent-bit",
+        "log-aggregation",
+        "log-forwarding",
+        "siem",
+        "centralized-logging",
+        "observability"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-010"
+      ]
+    },
+    {
+      "skill_id": "SKILL-269",
+      "journal_id": "CB-SKL-269",
+      "library_slug": "cb-implementing-mitre-attack-coverage-mapping",
+      "name": "implementing-mitre-attack-coverage-mapping",
+      "description": "Cold-box analyst playbook — Implementing Mitre Attack Coverage Mapping. Implement MITRE ATT&CK coverage mapping to identify detection gaps, prioritize rule development, and measure SOC detection maturity against adversary techniques.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "mitre-attack",
+        "detection-coverage",
+        "gap-analysis",
+        "attack-navigator",
+        "soc",
+        "detection-engineering"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-020",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-270",
+      "journal_id": "CB-SKL-270",
+      "library_slug": "cb-implementing-network-deception-with-honeypots",
+      "name": "implementing-network-deception-with-honeypots",
+      "description": "Cold-box analyst playbook — Implementing Network Deception With Honeypots. Deploy and manage network honeypots using OpenCanary, T-Pot, or Cowrie to detect unauthorized access, lateral movement, and attacker reconnaissance.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "deception-technology",
+      "tags": [
+        "deception",
+        "honeypot",
+        "opencanary",
+        "cowrie",
+        "t-pot",
+        "detection",
+        "lateral-movement",
+        "network-security"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-271",
+      "journal_id": "CB-SKL-271",
+      "library_slug": "cb-implementing-network-intrusion-prevention-with-suricata",
+      "name": "implementing-network-intrusion-prevention-with-suricata",
+      "description": "Cold-box analyst playbook — Implementing Network Intrusion Prevention With Suricata. Deploy and configure Suricata as a network intrusion prevention system with custom rules, Emerging Threats rulesets, and inline traffic inspection for real-time threat blocking.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "suricata",
+        "ips",
+        "ids",
+        "intrusion-prevention",
+        "network-security",
+        "emerging-threats",
+        "rule-management",
+        "nfqueue",
+        "inline-mode"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-010",
+        "SIFT-011",
+        "SIFT-013",
+        "SIFT-020",
+        "SIFT-023",
+        "SIFT-025",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-272",
+      "journal_id": "CB-SKL-272",
+      "library_slug": "cb-implementing-network-traffic-baselining",
+      "name": "implementing-network-traffic-baselining",
+      "description": "Cold-box analyst playbook — Implementing Network Traffic Baselining. Build network traffic baselines from NetFlow/IPFIX data using Python pandas for statistical analysis, z-score anomaly detection, and hourly/daily traffic pattern profiling",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "netflow",
+        "ipfix",
+        "traffic-analysis",
+        "baselining",
+        "anomaly-detection",
+        "pandas",
+        "network-monitoring"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-273",
+      "journal_id": "CB-SKL-273",
+      "library_slug": "cb-implementing-next-generation-firewall-with-palo-alto",
+      "name": "implementing-next-generation-firewall-with-palo-alto",
+      "description": "Cold-box analyst playbook — Implementing Next Generation Firewall With Palo Alto. Configure and deploy Palo Alto Networks next-generation firewalls with App-ID, User-ID, zone-based policies, SSL decryption, and threat prevention profiles for enterprise network security.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "palo-alto",
+        "ngfw",
+        "firewall",
+        "app-id",
+        "user-id",
+        "threat-prevention",
+        "network-security",
+        "ssl-decryption",
+        "zone-protection"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009"
+      ]
+    },
+    {
+      "skill_id": "SKILL-274",
+      "journal_id": "CB-SKL-274",
+      "library_slug": "cb-implementing-ot-network-traffic-analysis-with-nozomi",
+      "name": "implementing-ot-network-traffic-analysis-with-nozomi",
+      "description": "Cold-box analyst playbook — Implementing Ot Network Traffic Analysis With Nozomi. Deploy Nozomi Networks Guardian sensors for passive OT network traffic analysis to achieve comprehensive asset visibility, real-time threat detection, and vulnerability assessment across industrial control systems without disrupting operati",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "ot-ics-security",
+      "tags": [
+        "ot-security",
+        "ics",
+        "nozomi",
+        "guardian",
+        "network-monitoring",
+        "asset-visibility",
+        "anomaly-detection",
+        "ndr"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-034"
+      ]
+    },
+    {
+      "skill_id": "SKILL-275",
+      "journal_id": "CB-SKL-275",
+      "library_slug": "cb-implementing-pam-for-database-access",
+      "name": "implementing-pam-for-database-access",
+      "description": "Cold-box analyst playbook — Implementing Pam For Database Access. Deploy privileged access management for database systems including Oracle, SQL Server, PostgreSQL, and MySQL. Covers session proxy configuration, credential vaulting, query auditing, dynamic credentia",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "methodology",
+      "subdomain": "identity-access-management",
+      "tags": [
+        "iam",
+        "identity",
+        "access-control",
+        "privileged-access",
+        "pam",
+        "database",
+        "dba"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-276",
+      "journal_id": "CB-SKL-276",
+      "library_slug": "cb-implementing-privileged-access-management-with-cyberark",
+      "name": "implementing-privileged-access-management-with-cyberark",
+      "description": "Cold-box analyst playbook — Implementing Privileged Access Management With Cyberark. Deploy CyberArk Privileged Access Management to discover, vault, rotate, and monitor privileged credentials across enterprise infrastructure. This skill covers vault architecture, session isolation, c",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "identity-access-management",
+      "tags": [
+        "iam",
+        "identity",
+        "access-control",
+        "privileged-access",
+        "pam",
+        "cyberark"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-277",
+      "journal_id": "CB-SKL-277",
+      "library_slug": "cb-implementing-proofpoint-email-security-gateway",
+      "name": "implementing-proofpoint-email-security-gateway",
+      "description": "Cold-box analyst playbook — Implementing Proofpoint Email Security Gateway. Deploy and configure Proofpoint Email Protection as a secure email gateway to detect and block phishing, malware, BEC, and spam before messages reach user inboxes.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "phishing-defense",
+      "tags": [
+        "email-security",
+        "proofpoint",
+        "secure-email-gateway",
+        "phishing",
+        "anti-spam",
+        "anti-malware",
+        "bec",
+        "email-filtering"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-278",
+      "journal_id": "CB-SKL-278",
+      "library_slug": "cb-implementing-ransomware-backup-strategy",
+      "name": "implementing-ransomware-backup-strategy",
+      "description": "Cold-box analyst playbook — Implementing Ransomware Backup Strategy. Designs and implements a ransomware-resilient backup strategy following the 3-2-1-1-0 methodology (3 copies, 2 media types, 1 offsite, 1 immutable/air-gapped, 0 errors on restore verification). Configures backup schedules aligned to RPO/RTO",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "ransomware-defense",
+      "tags": [
+        "ransomware",
+        "backup",
+        "incident-response",
+        "defense",
+        "recovery",
+        "immutable-storage"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-016",
+        "SIFT-075",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-279",
+      "journal_id": "CB-SKL-279",
+      "library_slug": "cb-implementing-ransomware-kill-switch-detection",
+      "name": "implementing-ransomware-kill-switch-detection",
+      "description": "Cold-box analyst playbook — Implementing Ransomware Kill Switch Detection. Detects and exploits ransomware kill switch mechanisms including mutex-based execution guards, domain-based kill switches, and registry-based termination checks. Implements proactive mutex vaccination and kill switch domain monitoring to pr",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "methodology",
+      "subdomain": "ransomware-defense",
+      "tags": [
+        "ransomware",
+        "kill-switch",
+        "mutex",
+        "detection",
+        "WannaCry",
+        "malware-analysis"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-178",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-280",
+      "journal_id": "CB-SKL-280",
+      "library_slug": "cb-implementing-security-information-sharing-with-stix2",
+      "name": "implementing-security-information-sharing-with-stix2",
+      "description": "Cold-box analyst playbook — Implementing Security Information Sharing With Stix2. Create, validate, and share STIX 2.1 threat intelligence objects using the stix2 Python library. Covers indicators, malware, campaigns, relationships, bundles, and TAXII 2.1 publishing.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "stix",
+        "taxii",
+        "threat-sharing",
+        "intelligence-exchange"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-281",
+      "journal_id": "CB-SKL-281",
+      "library_slug": "cb-implementing-siem-use-case-tuning",
+      "name": "implementing-siem-use-case-tuning",
+      "description": "Cold-box analyst playbook — Implementing Siem Use Case Tuning. Tune SIEM detection rules to reduce false positives by analyzing alert volumes, creating whitelists, adjusting thresholds, and measuring detection efficacy metrics in Splunk and Elastic",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "siem",
+        "detection-engineering",
+        "false-positive-reduction",
+        "splunk",
+        "elastic",
+        "alert-tuning",
+        "soc"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-282",
+      "journal_id": "CB-SKL-282",
+      "library_slug": "cb-implementing-siem-use-cases-for-detection",
+      "name": "implementing-siem-use-cases-for-detection",
+      "description": "Cold-box analyst playbook — Implementing Siem Use Cases For Detection. Implements SIEM detection use cases by designing correlation rules, threshold alerts, and behavioral analytics mapped to MITRE ATT&CK techniques across Splunk, Elastic, and Sentinel. Use when SOC teams need to expand detection coverage, for",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "soc",
+        "siem",
+        "use-cases",
+        "detection-engineering",
+        "mitre-attack",
+        "splunk",
+        "elastic",
+        "sentinel"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-020",
+        "SIFT-179",
+        "SIFT-180"
+      ]
+    },
+    {
+      "skill_id": "SKILL-283",
+      "journal_id": "CB-SKL-283",
+      "library_slug": "cb-implementing-soar-playbook-for-phishing",
+      "name": "implementing-soar-playbook-for-phishing",
+      "description": "Cold-box analyst playbook — Implementing Soar Playbook For Phishing. Automate phishing incident response using Splunk SOAR REST API to create containers, add artifacts, and trigger playbooks",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "soar",
+        "splunk-phantom",
+        "phishing",
+        "incident-response"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-284",
+      "journal_id": "CB-SKL-284",
+      "library_slug": "cb-implementing-stix-taxii-feed-integration",
+      "name": "implementing-stix-taxii-feed-integration",
+      "description": "Cold-box analyst playbook — Implementing Stix Taxii Feed Integration. STIX (Structured Threat Information eXpression) and TAXII (Trusted Automated eXchange of Intelligence Information) are OASIS open standards for representing and transporting cyber threat intelligence.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "threat-intelligence",
+        "cti",
+        "ioc",
+        "mitre-attack",
+        "stix",
+        "taxii",
+        "feed-integration",
+        "oasis"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009"
+      ]
+    },
+    {
+      "skill_id": "SKILL-285",
+      "journal_id": "CB-SKL-285",
+      "library_slug": "cb-implementing-syslog-centralization-with-rsyslog",
+      "name": "implementing-syslog-centralization-with-rsyslog",
+      "description": "Cold-box analyst playbook — Implementing Syslog Centralization With Rsyslog. Configure rsyslog for centralized log collection with TLS encryption, custom templates, and log rotation. Generates server and client configuration files with GnuTLS stream drivers, x509 certificate authentication, per-host log segregation,",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "methodology",
+      "subdomain": "security-operations",
+      "tags": [
+        "syslog",
+        "rsyslog",
+        "log-centralization",
+        "tls-encryption",
+        "log-management",
+        "security-operations"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-286",
+      "journal_id": "CB-SKL-286",
+      "library_slug": "cb-implementing-taxii-server-with-opentaxii",
+      "name": "implementing-taxii-server-with-opentaxii",
+      "description": "Cold-box analyst playbook — Implementing Taxii Server With Opentaxii. Deploy and configure an OpenTAXII server to share and consume STIX-formatted cyber threat intelligence using the TAXII 2.1 protocol for automated indicator exchange between organizations.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "taxii",
+        "stix",
+        "opentaxii",
+        "threat-sharing",
+        "cti",
+        "indicator-exchange",
+        "taxii-server",
+        "automation"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009"
+      ]
+    },
+    {
+      "skill_id": "SKILL-287",
+      "journal_id": "CB-SKL-287",
+      "library_slug": "cb-implementing-threat-intelligence-lifecycle-management",
+      "name": "implementing-threat-intelligence-lifecycle-management",
+      "description": "Cold-box analyst playbook — Implementing Threat Intelligence Lifecycle Management. Implement a structured threat intelligence lifecycle encompassing planning, collection, processing, analysis, dissemination, and feedback stages to produce actionable intelligence for organizational decision-making.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "threat-intelligence",
+        "lifecycle",
+        "intelligence-cycle",
+        "collection",
+        "analysis",
+        "dissemination",
+        "strategic-intelligence",
+        "cti-program"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-288",
+      "journal_id": "CB-SKL-288",
+      "library_slug": "cb-implementing-threat-modeling-with-mitre-attack",
+      "name": "implementing-threat-modeling-with-mitre-attack",
+      "description": "Cold-box analyst playbook — Implementing Threat Modeling With Mitre Attack. Implements threat modeling using the MITRE ATT&CK framework to map adversary TTPs against organizational assets, assess detection coverage gaps, and prioritize defensive investments. Use when SOC teams need to align detection engineering wi",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "soc",
+        "mitre-attack",
+        "threat-modeling",
+        "ttp",
+        "detection-coverage",
+        "attack-navigator",
+        "risk-assessment"
+      ],
+      "case_profiles": [
+        "general"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-289",
+      "journal_id": "CB-SKL-289",
+      "library_slug": "cb-implementing-usb-device-control-policy",
+      "name": "implementing-usb-device-control-policy",
+      "description": "Cold-box analyst playbook — Implementing Usb Device Control Policy. Implements USB device control policies to restrict unauthorized removable media access on endpoints, preventing data exfiltration and malware introduction via USB devices. Use when deploying device control via Group Policy, Intune, or EDR p",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "endpoint",
+      "subdomain": "endpoint-security",
+      "tags": [
+        "endpoint",
+        "USB-control",
+        "device-control",
+        "data-loss-prevention",
+        "removable-media"
+      ],
+      "case_profiles": [
+        "windows_usb"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-290",
+      "journal_id": "CB-SKL-290",
+      "library_slug": "cb-indicator-lifecycle-management",
+      "name": "indicator-lifecycle-management",
+      "description": "Cold-box analyst playbook — Indicator Lifecycle Management. Indicator lifecycle management tracks IOCs from initial discovery through validation, enrichment, deployment, monitoring, and eventual retirement. This skill covers implementing systematic processes f",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "threat-intelligence",
+        "cti",
+        "ioc",
+        "mitre-attack",
+        "stix",
+        "indicator-lifecycle",
+        "ioc-management"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-291",
+      "journal_id": "CB-SKL-291",
+      "library_slug": "cb-ip-reputation-analysis-with-shodan",
+      "name": "ip-reputation-analysis-with-shodan",
+      "description": "Cold-box analyst playbook — Ip Reputation Analysis With Shodan. Analyze IP address reputation using the Shodan API to identify open ports, running services, known vulnerabilities, and hosting context for threat intelligence enrichment and incident triage.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "shodan",
+        "ip-reputation",
+        "enrichment",
+        "threat-intelligence",
+        "reconnaissance",
+        "vulnerability",
+        "api",
+        "internet-scanning"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-009",
+        "SIFT-020"
+      ]
+    },
+    {
+      "skill_id": "SKILL-292",
+      "journal_id": "CB-SKL-292",
+      "library_slug": "cb-linux-elf-malware",
+      "name": "linux-elf-malware",
+      "description": "Cold-box analyst playbook — Linux Elf Malware. Analyzes malicious Linux ELF (Executable and Linkable Format) binaries including botnets, cryptominers, ransomware, and rootkits targeting Linux servers, containers, and cloud infrastructure. Covers static analysis, dynamic tracing, and rev",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "Linux",
+        "ELF",
+        "reverse-engineering",
+        "server-malware"
+      ],
+      "case_profiles": [
+        "linux_disk"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-001",
+        "SIFT-002",
+        "SIFT-008",
+        "SIFT-010",
+        "SIFT-014",
+        "SIFT-015",
+        "SIFT-018",
+        "SIFT-035",
+        "SIFT-044",
+        "SIFT-083",
+        "SIFT-178"
+      ]
+    },
+    {
+      "skill_id": "SKILL-293",
+      "journal_id": "CB-SKL-293",
+      "library_slug": "cb-log-source-onboarding-in-siem",
+      "name": "log-source-onboarding-in-siem",
+      "description": "Cold-box analyst playbook — Log Source Onboarding In Siem. Perform structured log source onboarding into SIEM platforms by configuring collectors, parsers, normalization, and validation for complete security visibility.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "soc-operations",
+      "subdomain": "soc-operations",
+      "tags": [
+        "siem",
+        "log-onboarding",
+        "log-management",
+        "data-ingestion",
+        "parsing",
+        "normalization",
+        "soc"
+      ],
+      "case_profiles": [
+        "soc_siem"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-294",
+      "journal_id": "CB-SKL-294",
+      "library_slug": "cb-macro-malware-in-office-documents",
+      "name": "macro-malware-in-office-documents",
+      "description": "Cold-box analyst playbook — Macro Malware In Office Documents. Analyzes malicious VBA macros embedded in Microsoft Office documents (Word, Excel, PowerPoint) to identify download cradles, payload execution, persistence mechanisms, and anti-analysis techniques. Uses olevba, oledump, and VBA deobfuscatio",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "macro",
+        "Office",
+        "VBA",
+        "document-malware"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-009",
+        "SIFT-045",
+        "SIFT-178",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-295",
+      "journal_id": "CB-SKL-295",
+      "library_slug": "cb-malicious-pdf-with-peepdf",
+      "name": "malicious-pdf-with-peepdf",
+      "description": "Cold-box analyst playbook — Malicious Pdf With Peepdf. Perform static analysis of malicious PDF documents using peepdf, pdfid, and pdf-parser to extract embedded JavaScript, shellcode, and suspicious objects.",
+      "tier": "adjacent",
+      "execution_mode": "sift_runnable",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware-analysis",
+        "pdf",
+        "peepdf",
+        "pdfid",
+        "pdf-parser",
+        "static-analysis",
+        "reverse-engineering",
+        "dfir"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": [
+        "SIFT-008"
+      ]
+    },
+    {
+      "skill_id": "SKILL-296",
+      "journal_id": "CB-SKL-296",
+      "library_slug": "cb-malware-behavior-with-cuckoo-sandbox",
+      "name": "malware-behavior-with-cuckoo-sandbox",
+      "description": "Cold-box analyst playbook — Malware Behavior With Cuckoo Sandbox. Executes malware samples in Cuckoo Sandbox to observe runtime behavior including process creation, file system modifications, registry changes, network communications, and API calls. Generates comprehensive behavioral reports for malware cl",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "malware",
+        "dynamic-analysis",
+        "sandbox",
+        "Cuckoo",
+        "behavioral-analysis"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-008",
+        "SIFT-013",
+        "SIFT-023",
+        "SIFT-045",
+        "SIFT-118",
+        "SIFT-179",
+        "SIFT-182"
+      ]
+    },
+    {
+      "skill_id": "SKILL-297",
+      "journal_id": "CB-SKL-297",
+      "library_slug": "cb-malware-persistence-with-autoruns",
+      "name": "malware-persistence-with-autoruns",
+      "description": "Cold-box analyst playbook — Malware Persistence With Autoruns. Use Sysinternals Autoruns to systematically identify and analyze malware persistence mechanisms across registry keys, scheduled tasks, services, drivers, and startup locations on Windows systems.",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "autoruns",
+        "persistence",
+        "malware-analysis",
+        "sysinternals",
+        "windows",
+        "registry",
+        "startup",
+        "incident-response"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-044",
+        "SIFT-100",
+        "SIFT-176",
+        "SIFT-179"
+      ]
+    },
+    {
+      "skill_id": "SKILL-298",
+      "journal_id": "CB-SKL-298",
+      "library_slug": "cb-malware-sandbox-evasion-techniques",
+      "name": "malware-sandbox-evasion-techniques",
+      "description": "Cold-box analyst playbook — Malware Sandbox Evasion Techniques. Detect sandbox evasion techniques in malware samples by analyzing timing checks, VM artifact queries, user interaction detection, and sleep inflation patterns from Cuckoo/AnyRun behavioral reports",
+      "tier": "adjacent",
+      "execution_mode": "partial",
+      "category": "malware-analysis",
+      "subdomain": "malware-analysis",
+      "tags": [
+        "sandbox-evasion",
+        "malware-analysis",
+        "cuckoo",
+        "anyrun",
+        "mitre-attack",
+        "virtualization-detection",
+        "behavioral-analysis"
+      ],
+      "case_profiles": [
+        "malware_analysis"
+      ],
+      "has_script": true,
+      "reference_only": false,
+      "suggested_tool_ids": []
+    },
+    {
+      "skill_id": "SKILL-299",
+      "journal_id": "CB-SKL-299",
+      "library_slug": "cb-man-in-the-middle-attack-simulation",
+      "name": "man-in-the-middle-attack-simulation",
+      "description": "Cold-box analyst playbook — Man In The Middle Attack Simulation. Simulates man-in-the-middle attacks using Ettercap, mitmproxy, and Bettercap in authorized environments to intercept, analyze, and modify network traffic for testing encryption enforcement, certificate validation, and detection capabilities",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "network",
+      "subdomain": "network-security",
+      "tags": [
+        "network-security",
+        "mitm",
+        "bettercap",
+        "ettercap",
+        "mitmproxy"
+      ],
+      "case_profiles": [
+        "network_pcap"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": [
+        "SIFT-006",
+        "SIFT-010",
+        "SIFT-018",
+        "SIFT-117",
+        "SIFT-118",
+        "SIFT-119"
+      ]
+    },
+    {
+      "skill_id": "SKILL-300",
+      "journal_id": "CB-SKL-300",
+      "library_slug": "cb-managing-intelligence-lifecycle",
+      "name": "managing-intelligence-lifecycle",
+      "description": "Cold-box analyst playbook — Managing Intelligence Lifecycle. Manages the end-to-end cyber threat intelligence lifecycle from planning and direction through collection, processing, analysis, dissemination, and feedback to ensure intelligence products meet stakeholder requirements and continuously impr",
+      "tier": "adjacent",
+      "execution_mode": "reference",
+      "category": "threat-intelligence",
+      "subdomain": "threat-intelligence",
+      "tags": [
+        "CTI",
+        "intelligence-lifecycle",
+        "PIR",
+        "NIST-SP-800-150",
+        "threat-intelligence-program",
+        "NIST-CSF"
+      ],
+      "case_profiles": [
+        "threat_intel"
+      ],
+      "has_script": false,
+      "reference_only": true,
+      "suggested_tool_ids": []
     }
   ]
 }
