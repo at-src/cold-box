@@ -9,7 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from cold_box_room.r1.hallway import require_room
+from cold_box_room.r1.hallway import ROOM_2, ROOM_3, require_room, require_room_in
+from cold_box_room.r2.skill_harness import skill_harness_active
 from cold_box_room.r2.audit import append_audit, next_audit_id
 from cold_box_room.r2.errors import ToolExecutionError
 from cold_box_room.r2.output_files import (
@@ -27,7 +28,10 @@ DEFAULT_TIMEOUT = 120
 
 
 def resolve_scratch_path(case_id: str, scratch_relpath: str) -> Path:
-    require_room(case_id, 2)
+    if skill_harness_active():
+        require_room_in(case_id, {ROOM_2, ROOM_3})
+    else:
+        require_room(case_id, ROOM_2)
     root = scratch_dir(case_id).resolve()
     raw = scratch_relpath.strip()
     if Path(raw).is_absolute():

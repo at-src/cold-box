@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cold-box-room/skills/manifest.schema.json",
+  "title": "cold-box-room skill catalog",
+  "type": "object",
+  "required": ["schema", "count", "skills"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "cold_box_room.skills_manifest_v1"
+    },
+    "batch": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Batch number (50 skills per batch)."
+    },
+    "source": {
+      "type": "string",
+      "description": "Provenance note for this manifest slice."
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Must equal skills.length."
+    },
+    "skills": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/skill" }
+    }
+  },
+  "$defs": {
+    "skill": {
+      "type": "object",
+      "required": [
+        "skill_id",
+        "name",
+        "recipe",
+        "category",
+        "description",
+        "tags",
+        "artifact_platforms",
+        "inputs",
+        "outputs",
+        "suggested_tool_ids",
+        "proof"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "skill_id": {
+          "type": "string",
+          "pattern": "^SKILL-[0-9]{3}$",
+          "description": "Stable catalog id passed to run_skill."
+        },
+        "name": {
+          "type": "string",
+          "description": "Short snake_case name."
+        },
+        "recipe": {
+          "type": "string",
+          "pattern": "^recipes/SKILL-[0-9]{3}_[a-z0-9_]+\\.py$",
+          "description": "Recipe path relative to skills/ directory."
+        },
+        "category": {
+          "type": "string",
+          "description": "Group for list_skills filter."
+        },
+        "description": {
+          "type": "string",
+          "description": "Agent-facing summary."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "artifact_platforms": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "inputs": {
+          "type": "object",
+          "required": ["scratch", "params"],
+          "additionalProperties": false,
+          "properties": {
+            "scratch": {
+              "type": "object",
+              "required": ["required", "optional"],
+              "additionalProperties": false,
+              "properties": {
+                "required": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "optional": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            },
+            "params": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["type", "required", "description"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": { "type": "string" },
+                  "required": { "type": "boolean" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "object",
+          "required": ["format", "fields"],
+          "additionalProperties": false,
+          "properties": {
+            "format": {
+              "type": "string",
+              "enum": ["json", "text"]
+            },
+            "fields": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "suggested_tool_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^SIFT-[0-9]{3}$"
+          },
+          "description": "Hints for the agent — not executed by the skill."
+        },
+        "proof": {
+          "type": "object",
+          "required": ["type", "required_fields"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["json_fields", "scratch_ref"]
+            },
+            "required_fields": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

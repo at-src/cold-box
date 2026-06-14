@@ -170,7 +170,7 @@ Rules:
 - Base every step on what Layer 1 actually extracted — cite tool log / scratch, not assumptions.
 - Do not run extractions or analysis scripts here — planning only.
 - Do not defer obvious analysis steps with “will do in Room 3” without writing them as plan steps.
-- Optional catalog browse helps pick approaches; skill choice is locked in during Room 3 execution."""
+- Optional catalog browse: `list_skills` / `describe_skill` for analysis playbooks; `list_sift_tools` for extraction reference. Skill execution is Room 3 via `run_skill(skill_id, input_relpath)` — scripts route tool calls through SIFT harness."""
 
 DEFAULT_ROOM_B_GOAL = (
     "Room 2 already passed (Layer 1 extractions and analyst log on record). "

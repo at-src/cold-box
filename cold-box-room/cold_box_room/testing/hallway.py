@@ -45,3 +45,21 @@ def bootstrap_case_to_room_b(case_id: str) -> dict[str, Any]:
     if current_room(case_id) != "B":
         return promote_to_room_b(case_id)
     return result.get("hallway") or {"room": current_room(case_id), "promoted": True}
+
+
+def bootstrap_case_to_room3(case_id: str) -> dict[str, Any]:
+    """R1 → A → R2 → B (fast pass) → Room 3 for skill execution tests."""
+    from cold_box_room.r1.hallway import promote_to_room3
+    from cold_box_room.room_b import fast_pass_room_b
+
+    bootstrap_case_to_room_b(case_id)
+    if current_room(case_id) != "B":
+        raise RuntimeError(f"expected room B after bootstrap, got {current_room(case_id)}")
+    markdown = f"""# Analysis plan — `{case_id}`
+
+## Step 1 — Bootstrap analysis step
+
+**Reason:** Minimal valid plan for Room 3 skill harness tests.
+"""
+    fast_pass_room_b(case_id, markdown=markdown)
+    return promote_to_room3(case_id)

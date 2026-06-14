@@ -6,13 +6,31 @@ import hashlib
 import os
 from pathlib import Path
 
-from cold_box_room.r1.hallway import require_room
+from cold_box_room.r1.hallway import ROOM_2, ROOM_3, require_room, require_room_in
+from cold_box_room.r2.skill_harness import skill_harness_active
 from cold_box_room.r2.errors import ToolExecutionError
 from cold_box_room.r2.paths import case_sandbox_dir
 
 
+def _require_sandbox_room(case_id: str) -> None:
+    if skill_harness_active():
+        require_room_in(case_id, {ROOM_2, ROOM_3})
+    else:
+        require_room(case_id, ROOM_2)
+
+
+def resolve_sandbox_input_for_skill(case_id: str, input_relpath: str) -> Path:
+    """Resolve sandbox path when skill harness is active (Room 3 allowed)."""
+    _require_sandbox_room(case_id)
+    return _resolve_sandbox_path(case_id, input_relpath)
+
+
 def resolve_sandbox_input(case_id: str, input_relpath: str) -> Path:
-    require_room(case_id, 2)
+    _require_sandbox_room(case_id)
+    return _resolve_sandbox_path(case_id, input_relpath)
+
+
+def _resolve_sandbox_path(case_id: str, input_relpath: str) -> Path:
     sandbox = case_sandbox_dir(case_id).resolve()
     if not sandbox.is_dir():
         raise ToolExecutionError(

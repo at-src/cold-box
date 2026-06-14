@@ -19,10 +19,25 @@ ROOM_B_ALLOWED_TOOLS = frozenset(
     {
         "list_sift_tools",
         "describe_sift_tool",
+        "list_skills",
+        "describe_skill",
         "write_plan_b_md",
         "formalize_plan_b",
         "get_room_b_status",
         "room_b_checkpoint",
+        "read_layer1_tool_log",
+        "read_layer1_analyst_log",
+        "get_layer1_status",
+    }
+)
+
+SKILLS_EXECUTION_TOOLS = frozenset({"run_skill"})
+
+ROOM_3_ALLOWED_TOOLS = frozenset(
+    {
+        "list_skills",
+        "describe_skill",
+        "run_skill",
         "read_layer1_tool_log",
         "read_layer1_analyst_log",
         "get_layer1_status",
@@ -95,7 +110,7 @@ def assert_tool_allowed_in_room(*, tool_name: str, room: str | int) -> None:
         return
 
     if room_label == "B":
-        if tool_name in EXTRACTION_EXECUTION_TOOLS:
+        if tool_name in EXTRACTION_EXECUTION_TOOLS | SKILLS_EXECUTION_TOOLS:
             raise PlanningRoomGuardError(
                 f"{tool_name} blocked in Room B — analysis planning only. "
                 "Write plan_b.md, then formalize to plan_b.py."
@@ -120,9 +135,21 @@ def assert_tool_allowed_in_room(*, tool_name: str, room: str | int) -> None:
         return
 
     if room_label == "3":
-        raise PlanningRoomGuardError(
-            f"{tool_name} blocked — Room 3 analysis execution is not implemented yet."
-        )
+        if tool_name in EXTRACTION_EXECUTION_TOOLS:
+            raise PlanningRoomGuardError(
+                f"{tool_name} blocked in Room 3 — extraction is Room 2. "
+                "Return to Room 2 for run_sift_tool, or use run_skill here."
+            )
+        if tool_name in PLANNING_ONLY_TOOLS_A | PLANNING_ONLY_TOOLS_B:
+            raise PlanningRoomGuardError(
+                f"{tool_name} blocked in Room 3 — planning was Room A/B."
+            )
+        if tool_name not in ROOM_3_ALLOWED_TOOLS:
+            raise PlanningRoomGuardError(
+                f"{tool_name} not available in Room 3. "
+                f"Allowed: {', '.join(sorted(ROOM_3_ALLOWED_TOOLS))}"
+            )
+        return
 
 
 # Backward-compatible alias

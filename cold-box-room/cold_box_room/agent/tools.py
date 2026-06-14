@@ -26,6 +26,92 @@ from cold_box_room.mcp.handlers import (
 from cold_box_room.planning.guard import PlanningRoomGuardError, assert_tool_allowed_in_room
 from cold_box_room.r1.hallway import current_room
 from cold_box_room.r2.sandbox import list_sandbox_files, r2_status
+from cold_box_room.skills.executor import run_skill
+from cold_box_room.skills.registry import describe_skill, list_skills_dict
+
+SKILLS_BROWSE_SCHEMAS: list[dict[str, Any]] = [
+    {
+        "name": "list_skills",
+        "description": "Browse skill catalog by skill_id (SKILL-###) — Layer 2 analysis recipes.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "category": {"type": "string", "default": ""},
+                "tag": {"type": "string", "default": ""},
+            },
+        },
+    },
+    {
+        "name": "describe_skill",
+        "description": (
+            "Full skill contract: inputs, outputs, proof rules, playbook text. "
+            "suggested_tool_ids are hints only — skill does not run tools."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"skill_id": {"type": "string"}},
+            "required": ["skill_id"],
+        },
+    },
+]
+
+ROOM_3_TOOL_SCHEMAS: list[dict[str, Any]] = [
+    *SKILLS_BROWSE_SCHEMAS,
+    {
+        "name": "run_skill",
+        "description": (
+            "Run a ported skill script (library/*/scripts/agent.py) in Room 3. "
+            "Tool calls inside the script route through SIFT harness via skill_runtime. "
+            "Reference-only skills (external APIs) cannot run — browse describe_skill instead."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "skill_id": {"type": "string"},
+                "case_id": {"type": "string"},
+                "input_relpath": {
+                    "type": "string",
+                    "description": "Evidence file inside the R2 sandbox (e.g. disk.E01).",
+                },
+                "journal_id": {"type": "string", "default": ""},
+                "script_args": {"type": "array", "items": {"type": "string"}, "default": []},
+                "purpose": {"type": "string", "default": ""},
+                "why": {"type": "string", "default": ""},
+            },
+            "required": ["skill_id", "case_id", "input_relpath"],
+        },
+    },
+    {
+        "name": "read_layer1_tool_log",
+        "description": "Read Layer 1 harness tool log (extractions + scratch refs).",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "case_id": {"type": "string"},
+                "limit": {"type": "integer", "default": 20},
+            },
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "read_layer1_analyst_log",
+        "description": "Read Layer 1 analyst write-up (findings, self-score, why).",
+        "input_schema": {
+            "type": "object",
+            "properties": {"case_id": {"type": "string"}},
+            "required": ["case_id"],
+        },
+    },
+    {
+        "name": "get_layer1_status",
+        "description": "Layer 1 summary — extraction count and analyst log completeness.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"case_id": {"type": "string"}},
+            "required": ["case_id"],
+        },
+    },
+]
 
 ROOM_A_TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
@@ -118,7 +204,7 @@ ROOM_B_TOOL_SCHEMAS: list[dict[str, Any]] = [
     },
     {
         "name": "list_sift_tools",
-        "description": "Browse tool catalog (interim until skills catalog ships in Room 3).",
+        "description": "Browse SIFT extraction tool catalog (Layer 1 reference while planning analysis).",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -136,6 +222,7 @@ ROOM_B_TOOL_SCHEMAS: list[dict[str, Any]] = [
             "required": ["tool_id"],
         },
     },
+    *SKILLS_BROWSE_SCHEMAS,
     {
         "name": "write_plan_b_md",
         "description": (
@@ -363,6 +450,27 @@ def dispatch_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
         except PlanningRoomGuardError as exc:
             return {"ok": False, "error": str(exc), "case_id": case_id}
 
+    if name == "list_skills":
+        rows = list_skills_dict(
+            category=str(args.get("category") or "") or None,
+            tag=str(args.get("tag") or "") or None,
+        )
+        return {"skills": rows, "count": len(rows)}
+    if name == "describe_skill":
+        return describe_skill(str(args["skill_id"]))
+    if name == "run_skill":
+        script_args = args.get("script_args") or []
+        if not isinstance(script_args, list):
+            script_args = []
+        return run_skill(
+            skill_id=str(args["skill_id"]),
+            case_id=case_id,
+            input_relpath=str(args.get("input_relpath") or ""),
+            journal_id=str(args.get("journal_id") or ""),
+            script_args=[str(a) for a in script_args],
+            purpose=str(args.get("purpose") or ""),
+            why=str(args.get("why") or ""),
+        )
     if name == "list_sandbox_files":
         return {
             "case_id": case_id,

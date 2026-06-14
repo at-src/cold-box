@@ -61,6 +61,15 @@ def require_room(case_id: str, room: str | int) -> None:
         )
 
 
+def require_room_in(case_id: str, rooms: set[str | int]) -> None:
+    allowed = {normalize_room(room) for room in rooms}
+    actual = current_room(case_id)
+    if actual not in allowed:
+        raise StagingError(
+            f"Case {case_id!r} is in room {actual}, required one of {sorted(allowed)}"
+        )
+
+
 def record_r1_check(case_id: str) -> dict[str, Any]:
     check = r1_checkpoint(case_id)
     data = _load(case_id)
