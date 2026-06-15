@@ -487,6 +487,18 @@ def analyze_uefi_bootkit(target_path, target_type="firmware"):
     print("\n[*] Analysis complete.")
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-uefi-bootkit-persistence',
+        main_fn=None,
+    )
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="UEFI bootkit persistence analysis agent for detecting firmware "
@@ -532,6 +544,9 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     print(DISCLAIMER)
 
     if args.list_bootkits:

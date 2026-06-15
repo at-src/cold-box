@@ -157,12 +157,27 @@ def main():
     parser.add_argument("--output", help="Save report to JSON file")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     report = build_hunt_report(args.group)
     if report and args.output:
         with open(args.output, "w") as f:
             json.dump(report, f, indent=2)
         print(f"[+] JSON report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-advanced-persistent-threats',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

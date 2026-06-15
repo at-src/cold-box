@@ -179,10 +179,25 @@ def main():
     parser.add_argument("--output-dir", default="./ssl_tls_assessment")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     os.makedirs(args.output_dir, exist_ok=True)
     agent = SSLTLSAssessmentAgent(output_dir=args.output_dir)
     agent.generate_report(args.targets)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-ssl-tls-security-assessment',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

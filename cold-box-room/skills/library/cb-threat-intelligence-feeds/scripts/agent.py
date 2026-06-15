@@ -154,6 +154,9 @@ def main():
     ], default="full_pipeline")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.action == "discover" and args.taxii_url:
         info = discover_taxii_server(args.taxii_url, args.user, args.password)
         print(json.dumps(info, indent=2))
@@ -179,6 +182,18 @@ def main():
         path = export_stix_bundle(stix_objects, args.output)
         print(f"[+] Normalized {len(stix_objects)} IOCs -> {path}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-threat-intelligence-feeds',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

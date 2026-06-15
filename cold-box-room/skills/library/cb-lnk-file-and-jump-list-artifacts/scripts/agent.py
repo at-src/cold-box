@@ -249,6 +249,41 @@ def scan_lnk_directory(directory):
     return results
 
 
+def analyze_image(image_path, case_dir):
+    """Harness entry — audit disk, parse LNK/JumpList artifact from script_args or path."""
+    from cold_box_room.skills.script_helpers import (
+        artifact_path,
+        audit_artifact_file,
+        audit_disk_image,
+        ensure_case_dir,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    target = artifact_path(image_path)
+    audit_artifact_file(target, case_dir, binary="file")
+
+    if os.path.isfile(target) and target.lower().endswith(".lnk"):
+        parsed = parse_lnk_with_lnkparse3(target) if HAS_LNKPARSE else parse_lnk_header_raw(target)
+        payload = {
+            "target": target,
+            "lnk": parsed,
+            "suspicious": detect_suspicious_lnk(parsed),
+        }
+    elif os.path.isdir(target):
+        payload = {
+            "target": target,
+            "lnk_files": scan_lnk_directory(target),
+            "jump_lists": scan_jump_lists(target),
+        }
+    else:
+        payload = {"target": target, "error": "Pass extracted .lnk file or directory as script_args[0]"}
+
+    write_json_report(case_dir, "lnk_report.json", payload)
+    return payload
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Windows LNK & Jump List Forensics Agent")

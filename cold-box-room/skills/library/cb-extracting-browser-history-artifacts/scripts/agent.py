@@ -193,6 +193,9 @@ def main():
     parser.add_argument("--output", default="browser_report.json")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     os.makedirs(args.output_dir, exist_ok=True)
     report = generate_report(args.chrome_dir, args.firefox_dir, args.output_dir)
     with open(os.path.join(args.output_dir, args.output), "w") as f:
@@ -200,6 +203,18 @@ def main():
     logger.info("Report saved")
     print(json.dumps(report, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-extracting-browser-history-artifacts',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

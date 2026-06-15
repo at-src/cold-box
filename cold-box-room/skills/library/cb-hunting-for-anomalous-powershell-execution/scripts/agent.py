@@ -233,12 +233,15 @@ def run_audit(args):
 
 def main():
     parser = argparse.ArgumentParser(description="PowerShell Script Block Hunting Agent")
-    parser.add_argument("--evtx", required=True,
+    parser.add_argument("--evtx", required=False,
                         help="Path to PowerShell Operational .evtx file")
     parser.add_argument("--max-events", type=int, default=10000,
                         help="Max events to parse (default: 10000)")
     parser.add_argument("--output", help="Save report to JSON file")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     report = run_audit(args)
     if args.output:
@@ -246,6 +249,18 @@ def main():
             json.dump(report, f, indent=2, default=str)
         print(f"\n[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-anomalous-powershell-execution',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

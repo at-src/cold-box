@@ -198,10 +198,13 @@ def generate_report(archives, staging_writes, consolidation, log_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Data Staging Detection Agent (MITRE T1074)")
-    parser.add_argument("--log-file", required=True, help="JSON process/file event log")
+    parser.add_argument("--log-file", required=False, help="JSON process/file event log")
     parser.add_argument("--output", default="data_staging_report.json")
     parser.add_argument("--read-threshold", type=int, default=20, help="Bulk read threshold")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     events = parse_process_logs(args.log_file)
     archives = detect_archive_creation(events)
@@ -216,6 +219,18 @@ def main():
     print(f"[+] Risk score: {report['risk_score']}/100 ({report['risk_level']})")
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-data-staging-before-exfiltration',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

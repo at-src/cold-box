@@ -71,13 +71,16 @@ def generate_report(users, shared, logging_findings, tls):
 
 def main():
     parser = argparse.ArgumentParser(description="PAM Database Access Audit Agent")
-    parser.add_argument("--db-type", required=True, choices=["postgresql", "mysql", "mssql"])
-    parser.add_argument("--host", required=True)
+    parser.add_argument("--db-type", required=False, choices=["postgresql", "mysql", "mssql"])
+    parser.add_argument("--host", required=False)
     parser.add_argument("--port", type=int, default=5432)
-    parser.add_argument("--admin-user", required=True)
-    parser.add_argument("--admin-password", required=True)
+    parser.add_argument("--admin-user", required=False)
+    parser.add_argument("--admin-password", required=False)
     parser.add_argument("--output", default="pam_db_audit_report.json")
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     users = query_db_users(args.db_type, args.host, args.admin_user, args.admin_password)
     shared = audit_shared_accounts(users)
     logging_f = audit_session_logging(args.db_type, args.host, args.admin_user, args.admin_password)
@@ -87,6 +90,18 @@ def main():
         json.dump(report, f, indent=2, default=str)
     logger.info("PAM DB audit: %d users, %d findings", len(users), report["total_findings"])
     print(json.dumps(report, indent=2, default=str))
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-pam-for-database-access',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

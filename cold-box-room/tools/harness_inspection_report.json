@@ -1,0 +1,1581 @@
+{
+  "schema": "cold_box_room.harness_inspection_v2",
+  "verified_at": "2026-06-15T02:23:30.583286+00:00",
+  "counts": {
+    "ok": 136,
+    "fail": 0,
+    "skipped": 80,
+    "unavailable": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "tool_id": "SIFT-002",
+      "name": "readelf",
+      "status": "skipped",
+      "detail": "needs ELF fixture"
+    },
+    {
+      "tool_id": "SIFT-003",
+      "name": "tar",
+      "status": "skipped",
+      "detail": "needs tar archive fixture"
+    },
+    {
+      "tool_id": "SIFT-004",
+      "name": "unzip",
+      "status": "ok",
+      "elapsed_ms": 9.6,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-005",
+      "name": "awk",
+      "status": "ok",
+      "elapsed_ms": 8.8,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-006",
+      "name": "cut",
+      "status": "ok",
+      "elapsed_ms": 6.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-007",
+      "name": "diff",
+      "status": "skipped",
+      "detail": "needs two input files"
+    },
+    {
+      "tool_id": "SIFT-008",
+      "name": "file",
+      "status": "ok",
+      "elapsed_ms": 12.8,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-009",
+      "name": "find",
+      "status": "ok",
+      "elapsed_ms": 2.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-010",
+      "name": "grep",
+      "status": "ok",
+      "elapsed_ms": 6.7,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-011",
+      "name": "head",
+      "status": "ok",
+      "elapsed_ms": 6.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-012",
+      "name": "hexdump",
+      "status": "ok",
+      "elapsed_ms": 6.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-013",
+      "name": "jq",
+      "status": "ok",
+      "elapsed_ms": 1.4,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-014",
+      "name": "ls",
+      "status": "ok",
+      "elapsed_ms": 2.3,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-015",
+      "name": "md5sum",
+      "status": "ok",
+      "elapsed_ms": 6.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-016",
+      "name": "sed",
+      "status": "ok",
+      "elapsed_ms": 6.4,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-017",
+      "name": "sha1sum",
+      "status": "ok",
+      "elapsed_ms": 2.6,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-018",
+      "name": "sha256sum",
+      "status": "ok",
+      "elapsed_ms": 7.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-019",
+      "name": "shasum",
+      "status": "ok",
+      "elapsed_ms": 41.9,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-020",
+      "name": "sort",
+      "status": "ok",
+      "elapsed_ms": 10.4,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-021",
+      "name": "sqlite3",
+      "status": "ok",
+      "elapsed_ms": 3.4,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-022",
+      "name": "stat",
+      "status": "ok",
+      "elapsed_ms": 2.4,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-023",
+      "name": "tail",
+      "status": "ok",
+      "elapsed_ms": 7.9,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-024",
+      "name": "tr",
+      "status": "ok",
+      "elapsed_ms": 2.2,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-025",
+      "name": "uniq",
+      "status": "ok",
+      "elapsed_ms": 7.8,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-026",
+      "name": "wc",
+      "status": "ok",
+      "elapsed_ms": 7.8,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-027",
+      "name": "xxd",
+      "status": "ok",
+      "elapsed_ms": 7.7,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-028",
+      "name": "zcat",
+      "status": "ok",
+      "elapsed_ms": 1.0,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-029",
+      "name": "zgrep",
+      "status": "ok",
+      "elapsed_ms": 1.1,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-030",
+      "name": "7za",
+      "status": "ok",
+      "elapsed_ms": 10.0,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-031",
+      "name": "7zr",
+      "status": "skipped",
+      "detail": "7zr not consistently available \u2014 use 7z/7za"
+    },
+    {
+      "tool_id": "SIFT-032",
+      "name": "bulk_extractor",
+      "status": "ok",
+      "elapsed_ms": 4.6,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-033",
+      "name": "dcfldd",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-034",
+      "name": "dd",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-035",
+      "name": "nm",
+      "status": "ok",
+      "elapsed_ms": 1.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-036",
+      "name": "zip",
+      "status": "ok",
+      "elapsed_ms": 1.1,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-037",
+      "name": "binwalk",
+      "status": "ok",
+      "elapsed_ms": 907.7,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-038",
+      "name": "clamscan",
+      "status": "ok",
+      "elapsed_ms": 4.4,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-039",
+      "name": "densityscout",
+      "status": "ok",
+      "elapsed_ms": 6.9,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-040",
+      "name": "foremost",
+      "status": "ok",
+      "elapsed_ms": 1.0,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-041",
+      "name": "photorec",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-042",
+      "name": "scalpel",
+      "status": "ok",
+      "elapsed_ms": 1.4,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-043",
+      "name": "ssdeep",
+      "status": "ok",
+      "elapsed_ms": 9.2,
+      "exit_code": 0,
+      "detail": "ran"
+    },
+    {
+      "tool_id": "SIFT-044",
+      "name": "strings",
+      "status": "ok",
+      "elapsed_ms": 6.6,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-045",
+      "name": "yara",
+      "status": "ok",
+      "elapsed_ms": 7.0,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-046",
+      "name": "7z",
+      "status": "ok",
+      "elapsed_ms": 10.6,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-047",
+      "name": "autopsy",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-048",
+      "name": "dc3dd",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-049",
+      "name": "docx_font_extractor_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-050",
+      "name": "evtparse_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-051",
+      "name": "evtrpt_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-052",
+      "name": "ewfacquire",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-053",
+      "name": "ewfmount",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-054",
+      "name": "exif2map_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-055",
+      "name": "exiftool",
+      "status": "ok",
+      "elapsed_ms": 108.7,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-056",
+      "name": "fb_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-057",
+      "name": "ff_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-058",
+      "name": "ff_signons_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-059",
+      "name": "file2brl",
+      "status": "ok",
+      "elapsed_ms": 2.8,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-060",
+      "name": "filefrag",
+      "status": "ok",
+      "elapsed_ms": 1.1,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-061",
+      "name": "filesnarf",
+      "status": "ok",
+      "elapsed_ms": 3.3,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-062",
+      "name": "freshclam",
+      "status": "ok",
+      "elapsed_ms": 28.5,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-063",
+      "name": "ftkparse_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-064",
+      "name": "fuser",
+      "status": "ok",
+      "elapsed_ms": 2.3,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-065",
+      "name": "gis4cookie_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-066",
+      "name": "hashdeep",
+      "status": "ok",
+      "elapsed_ms": 1.9,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-067",
+      "name": "idx_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-068",
+      "name": "idxparse_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-069",
+      "name": "jl_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-070",
+      "name": "jobparse_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-071",
+      "name": "json_printer_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-072",
+      "name": "lfle_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-073",
+      "name": "losetup",
+      "status": "ok",
+      "elapsed_ms": 1.3,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-074",
+      "name": "lsof",
+      "status": "ok",
+      "elapsed_ms": 1.8,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-075",
+      "name": "mount",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-076",
+      "name": "parse_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-077",
+      "name": "parsei30_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-078",
+      "name": "parseie_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-079",
+      "name": "pie_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-080",
+      "name": "pref_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-081",
+      "name": "r2",
+      "status": "ok",
+      "elapsed_ms": 21.8,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-082",
+      "name": "rabin2",
+      "status": "ok",
+      "elapsed_ms": 22.1,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-083",
+      "name": "radare2",
+      "status": "ok",
+      "elapsed_ms": 22.0,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-084",
+      "name": "rawie_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-085",
+      "name": "rax2",
+      "status": "ok",
+      "elapsed_ms": 7.2,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-086",
+      "name": "recbin_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-087",
+      "name": "regedit",
+      "status": "skipped",
+      "detail": "interactive or destructive \u2014 manual verify only"
+    },
+    {
+      "tool_id": "SIFT-088",
+      "name": "regedit_stable",
+      "status": "skipped",
+      "detail": "interactive or destructive \u2014 manual verify only"
+    },
+    {
+      "tool_id": "SIFT-089",
+      "name": "regfexport",
+      "status": "ok",
+      "elapsed_ms": 1.3,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-090",
+      "name": "regfinfo",
+      "status": "ok",
+      "elapsed_ms": 1.2,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-091",
+      "name": "regfmount",
+      "status": "ok",
+      "elapsed_ms": 1.3,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-092",
+      "name": "regipy_diff",
+      "status": "ok",
+      "elapsed_ms": 194.0,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-093",
+      "name": "regipy_dump",
+      "status": "ok",
+      "elapsed_ms": 201.9,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-094",
+      "name": "regipy_parse_header",
+      "status": "ok",
+      "elapsed_ms": 181.7,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-095",
+      "name": "regipy_plugins_list",
+      "status": "ok",
+      "elapsed_ms": 174.4,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-096",
+      "name": "regipy_plugins_run",
+      "status": "ok",
+      "elapsed_ms": 173.0,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-097",
+      "name": "regipy_process_transaction_logs",
+      "status": "ok",
+      "elapsed_ms": 173.6,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-098",
+      "name": "regripper",
+      "status": "ok",
+      "elapsed_ms": 56.1,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-099",
+      "name": "regslack_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-100",
+      "name": "regsvr32",
+      "status": "skipped",
+      "detail": "interactive or destructive \u2014 manual verify only"
+    },
+    {
+      "tool_id": "SIFT-101",
+      "name": "regsvr32_stable",
+      "status": "skipped",
+      "detail": "interactive or destructive \u2014 manual verify only"
+    },
+    {
+      "tool_id": "SIFT-102",
+      "name": "regtime_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-103",
+      "name": "rfc_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-104",
+      "name": "rlo_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-105",
+      "name": "shadowconfig",
+      "status": "ok",
+      "elapsed_ms": 1.2,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-106",
+      "name": "sms_grep_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-107",
+      "name": "squirrelgripper_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-108",
+      "name": "testdisk",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-109",
+      "name": "timediff32_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-110",
+      "name": "umount",
+      "status": "ok",
+      "elapsed_ms": 1.6,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-111",
+      "name": "vmail_db_2_html_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-112",
+      "name": "vshadowdebug",
+      "status": "ok",
+      "elapsed_ms": 1.1,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-113",
+      "name": "vshadowinfo",
+      "status": "ok",
+      "elapsed_ms": 1.0,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-114",
+      "name": "vshadowmount",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-115",
+      "name": "ngrep",
+      "status": "ok",
+      "elapsed_ms": 12.9,
+      "exit_code": 1,
+      "detail": "ran"
+    },
+    {
+      "tool_id": "SIFT-116",
+      "name": "tcpdump",
+      "status": "ok",
+      "elapsed_ms": 11.1,
+      "exit_code": 0,
+      "detail": "ran"
+    },
+    {
+      "tool_id": "SIFT-117",
+      "name": "tshark",
+      "status": "ok",
+      "elapsed_ms": 169.5,
+      "exit_code": 1,
+      "detail": "ran"
+    },
+    {
+      "tool_id": "SIFT-118",
+      "name": "wireshark",
+      "status": "skipped",
+      "detail": "GUI wireshark \u2014 use tshark for headless probes"
+    },
+    {
+      "tool_id": "SIFT-120",
+      "name": "affcat",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-121",
+      "name": "affcompare",
+      "status": "ok",
+      "elapsed_ms": 6.4,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-122",
+      "name": "affconvert",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-123",
+      "name": "affcopy",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-124",
+      "name": "affcrypto",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-125",
+      "name": "affdiskprint",
+      "status": "ok",
+      "elapsed_ms": 6.3,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-126",
+      "name": "affinfo",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-127",
+      "name": "affix",
+      "status": "ok",
+      "elapsed_ms": 6.0,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-128",
+      "name": "affrecover",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-129",
+      "name": "affsegment",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-130",
+      "name": "affsign",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-131",
+      "name": "affstats",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-132",
+      "name": "affuse",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-133",
+      "name": "affverify",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-134",
+      "name": "affxml",
+      "status": "ok",
+      "elapsed_ms": 5.8,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-135",
+      "name": "blkcalc",
+      "status": "ok",
+      "elapsed_ms": 6.5,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-136",
+      "name": "blkcat",
+      "status": "ok",
+      "elapsed_ms": 6.5,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-137",
+      "name": "blkid",
+      "status": "ok",
+      "elapsed_ms": 1.4,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-138",
+      "name": "blkls",
+      "status": "ok",
+      "elapsed_ms": 6.5,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-139",
+      "name": "blkstat",
+      "status": "ok",
+      "elapsed_ms": 6.4,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-140",
+      "name": "bodyfile_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-141",
+      "name": "ewfacquirestream",
+      "status": "ok",
+      "elapsed_ms": 1.8,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-142",
+      "name": "ewfdebug",
+      "status": "ok",
+      "elapsed_ms": 1.2,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-143",
+      "name": "ewfexport",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-144",
+      "name": "ewfinfo",
+      "status": "ok",
+      "elapsed_ms": 1.2,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-145",
+      "name": "ewfrecover",
+      "status": "ok",
+      "elapsed_ms": 1.7,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-146",
+      "name": "ewfverify",
+      "status": "ok",
+      "elapsed_ms": 1.6,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-147",
+      "name": "fcat",
+      "status": "ok",
+      "elapsed_ms": 6.4,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-148",
+      "name": "fls",
+      "status": "ok",
+      "elapsed_ms": 21.3,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-149",
+      "name": "fsstat",
+      "status": "ok",
+      "elapsed_ms": 21.2,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-150",
+      "name": "hfind",
+      "status": "ok",
+      "elapsed_ms": 2.3,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-151",
+      "name": "icat",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-152",
+      "name": "ifind",
+      "status": "ok",
+      "elapsed_ms": 7.0,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-153",
+      "name": "img_cat",
+      "status": "ok",
+      "elapsed_ms": 6.4,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-154",
+      "name": "img_stat",
+      "status": "ok",
+      "elapsed_ms": 21.3,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-155",
+      "name": "istat",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-156",
+      "name": "jcat",
+      "status": "ok",
+      "elapsed_ms": 6.9,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-157",
+      "name": "jls",
+      "status": "ok",
+      "elapsed_ms": 6.8,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-158",
+      "name": "jstat",
+      "status": "ok",
+      "elapsed_ms": 63.1,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-159",
+      "name": "mmcat",
+      "status": "ok",
+      "elapsed_ms": 7.0,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-160",
+      "name": "mmls",
+      "status": "skipped",
+      "detail": "needs partitioned image fixture"
+    },
+    {
+      "tool_id": "SIFT-161",
+      "name": "mmstat",
+      "status": "ok",
+      "elapsed_ms": 6.5,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-162",
+      "name": "sigfind",
+      "status": "ok",
+      "elapsed_ms": 6.3,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-163",
+      "name": "sorter",
+      "status": "ok",
+      "elapsed_ms": 8.6,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-164",
+      "name": "tsk_recover",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-165",
+      "name": "xmount",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-167",
+      "name": "log2timeline",
+      "status": "skipped",
+      "detail": "interactive or destructive \u2014 manual verify only"
+    },
+    {
+      "tool_id": "SIFT-168",
+      "name": "mactime",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-169",
+      "name": "pinfo",
+      "status": "ok",
+      "elapsed_ms": 433.7,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-170",
+      "name": "psort",
+      "status": "ok",
+      "elapsed_ms": 521.6,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-171",
+      "name": "tln_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-172",
+      "name": "aeskeyfind",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-173",
+      "name": "vol3",
+      "status": "skipped",
+      "detail": "needs dedicated artifact fixture (AFF/memory) \u2014 not a harness failure"
+    },
+    {
+      "tool_id": "SIFT-187",
+      "name": "amcache",
+      "status": "ok",
+      "elapsed_ms": 58.6,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-188",
+      "name": "AmcacheParser",
+      "status": "ok",
+      "elapsed_ms": 497.9,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-189",
+      "name": "analyzemft",
+      "status": "ok",
+      "elapsed_ms": 123.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-190",
+      "name": "AppCompatCacheParser",
+      "status": "ok",
+      "elapsed_ms": 480.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-191",
+      "name": "bing_bar_parser_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-192",
+      "name": "bstrings",
+      "status": "ok",
+      "elapsed_ms": 456.6,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-193",
+      "name": "dump_mft_entry_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-194",
+      "name": "evtx_dump",
+      "status": "ok",
+      "elapsed_ms": 85.8,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-195",
+      "name": "evtx_dump_chunk_slack",
+      "status": "ok",
+      "elapsed_ms": 78.7,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-196",
+      "name": "evtx_dump_json",
+      "status": "ok",
+      "elapsed_ms": 90.9,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-197",
+      "name": "evtx_eid_record_numbers",
+      "status": "ok",
+      "elapsed_ms": 116.8,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-198",
+      "name": "evtx_extract_record",
+      "status": "ok",
+      "elapsed_ms": 85.8,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-199",
+      "name": "evtx_filter_records",
+      "status": "ok",
+      "elapsed_ms": 101.7,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-200",
+      "name": "evtx_info",
+      "status": "ok",
+      "elapsed_ms": 79.2,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-201",
+      "name": "evtx_record_structure",
+      "status": "ok",
+      "elapsed_ms": 79.0,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-202",
+      "name": "evtx_structure",
+      "status": "ok",
+      "elapsed_ms": 77.8,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-203",
+      "name": "evtx_templates",
+      "status": "ok",
+      "elapsed_ms": 78.4,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-204",
+      "name": "EvtxECmd",
+      "status": "ok",
+      "elapsed_ms": 514.9,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-205",
+      "name": "evtxexport",
+      "status": "ok",
+      "elapsed_ms": 1.5,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-206",
+      "name": "evtxinfo",
+      "status": "ok",
+      "elapsed_ms": 1.1,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-207",
+      "name": "evtxparse_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-208",
+      "name": "extract_mft_record_slack",
+      "status": "ok",
+      "elapsed_ms": 282.0,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-209",
+      "name": "fuse_mft",
+      "status": "ok",
+      "elapsed_ms": 291.5,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-210",
+      "name": "idx_parser",
+      "status": "ok",
+      "elapsed_ms": 32.7,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-211",
+      "name": "jcmd",
+      "status": "ok",
+      "elapsed_ms": 64.2,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-212",
+      "name": "JLECmd",
+      "status": "ok",
+      "elapsed_ms": 511.1,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-213",
+      "name": "LECmd",
+      "status": "ok",
+      "elapsed_ms": 547.0,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-214",
+      "name": "list_mft",
+      "status": "ok",
+      "elapsed_ms": 103.4,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-215",
+      "name": "lnk_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-216",
+      "name": "mft_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-217",
+      "name": "MFTECmd",
+      "status": "ok",
+      "elapsed_ms": 463.8,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-218",
+      "name": "MFTINDX",
+      "status": "ok",
+      "elapsed_ms": 104.2,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-219",
+      "name": "MFTView",
+      "status": "skipped",
+      "detail": "interactive/destructive/special-args \u2014 manual probe only"
+    },
+    {
+      "tool_id": "SIFT-220",
+      "name": "pacmd",
+      "status": "ok",
+      "elapsed_ms": 3.7,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-222",
+      "name": "RBCmd",
+      "status": "ok",
+      "elapsed_ms": 444.7,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-223",
+      "name": "RecentFileCacheParser",
+      "status": "ok",
+      "elapsed_ms": 459.2,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-224",
+      "name": "RECmd",
+      "status": "ok",
+      "elapsed_ms": 463.0,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-225",
+      "name": "samba_log_parser",
+      "status": "ok",
+      "elapsed_ms": 40.0,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-226",
+      "name": "SBECmd",
+      "status": "ok",
+      "elapsed_ms": 492.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-227",
+      "name": "SQLECmd",
+      "status": "ok",
+      "elapsed_ms": 577.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-228",
+      "name": "sqlite_parser_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-230",
+      "name": "tree_mft",
+      "status": "ok",
+      "elapsed_ms": 104.0,
+      "exit_code": 2,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-231",
+      "name": "usnj_pl",
+      "status": "skipped",
+      "detail": "RegRipper/helper plugin \u2014 run via rip.pl -p or with artifact fixture"
+    },
+    {
+      "tool_id": "SIFT-232",
+      "name": "usnjls",
+      "status": "ok",
+      "elapsed_ms": 7.2,
+      "exit_code": 1,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-233",
+      "name": "usnparser",
+      "status": "ok",
+      "elapsed_ms": 38.5,
+      "exit_code": 0,
+      "detail": "ok"
+    },
+    {
+      "tool_id": "SIFT-234",
+      "name": "WxTCmd",
+      "status": "ok",
+      "elapsed_ms": 298.9,
+      "exit_code": 0,
+      "detail": "ok"
+    }
+  ]
+}

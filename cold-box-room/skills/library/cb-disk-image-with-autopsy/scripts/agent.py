@@ -46,7 +46,7 @@ def list_partitions(image_path):
 
 def list_files(image_path, offset, path="/", recursive=False):
     """List files in a partition using fls."""
-    flags = "-r" if recursive else ""
+    flags = "-r -l" if recursive else "-l"
     cmd = f"fls {flags} -o {offset} {image_path}"
     if path != "/":
         cmd += f" -D {path}"
@@ -110,27 +110,34 @@ def get_file_metadata(image_path, offset, inode):
 
 def create_bodyfile(image_path, offset, output_path):
     """Generate a TSK bodyfile for timeline creation."""
-    result = subprocess.run(
+    stdout, _, rc = run_cmd(
         ["fls", "-r", "-m", "/", "-o", str(offset), image_path],
-        capture_output=True, text=True,
-        timeout=120,
+        timeout=600,
     )
-    if result.returncode == 0:
-        with open(output_path, "w") as f:
-            f.write(result.stdout)
-    return result.returncode == 0
+    if rc == 0 and stdout and "|" in stdout.splitlines()[0]:
+        with open(output_path, "w", encoding="utf-8") as handle:
+            handle.write(stdout)
+        return True
+    return False
 
 
 def generate_timeline(bodyfile_path, output_csv, start_date=None, end_date=None):
     """Generate a timeline from a bodyfile using mactime."""
+    if not os.path.isfile(bodyfile_path) or os.path.getsize(bodyfile_path) == 0:
+        return False
+    with open(bodyfile_path, encoding="utf-8", errors="replace") as handle:
+        sample = handle.read(4096)
+    if "|" not in sample:
+        return False
     cmd = ["mactime", "-b", bodyfile_path, "-d"]
     if start_date and end_date:
         cmd.append(f"{start_date}..{end_date}")
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-    if result.returncode == 0:
-        with open(output_csv, "w") as f:
-            f.write(result.stdout)
-    return result.returncode == 0
+    stdout, _, rc = run_cmd(cmd, timeout=120)
+    if rc == 0 and stdout:
+        with open(output_csv, "w", encoding="utf-8") as handle:
+            handle.write(stdout)
+        return True
+    return False
 
 
 def search_keywords(image_path, offset, keyword):
@@ -177,10 +184,9 @@ def analyze_image(image_path, case_dir):
 
             print(f"[*] Creating bodyfile for timeline...")
             bf_path = os.path.join(case_dir, f"bodyfile_{offset}.txt")
-            create_bodyfile(image_path, offset, bf_path)
-
-            tl_path = os.path.join(case_dir, f"timeline_{offset}.csv")
-            generate_timeline(bf_path, tl_path)
+            if create_bodyfile(image_path, offset, bf_path):
+                tl_path = os.path.join(case_dir, f"timeline_{offset}.csv")
+                generate_timeline(bf_path, tl_path)
 
     report_path = os.path.join(case_dir, "analysis_summary.json")
     with open(report_path, "w") as f:

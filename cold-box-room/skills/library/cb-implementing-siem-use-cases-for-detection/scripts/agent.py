@@ -212,6 +212,9 @@ def main():
     parser.add_argument("--output", help="Save report to JSON")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.report:
         report = run_detection_coverage_report()
         if args.output:
@@ -226,6 +229,18 @@ def main():
     else:
         parser.print_help()
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-siem-use-cases-for-detection',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

@@ -142,8 +142,11 @@ def main():
     sub.add_parser("enumerate", help="Enumerate WMI subscriptions via WMIC")
     sub.add_parser("powershell", help="Enumerate via PowerShell Get-WMIObject")
     s = sub.add_parser("sysmon", help="Scan Sysmon EVTX for WMI events (19/20/21)")
-    s.add_argument("--evtx-file", required=True)
+    s.add_argument("--evtx-file", required=False)
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "enumerate":
         result = enumerate_wmi_subscriptions()
     elif args.command == "powershell":
@@ -155,6 +158,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-persistence-via-wmi-subscriptions',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

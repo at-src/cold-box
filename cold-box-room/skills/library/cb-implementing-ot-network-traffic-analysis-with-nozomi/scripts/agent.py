@@ -76,10 +76,13 @@ def generate_report(alerts, sessions, assets, base_url):
 
 def main():
     parser = argparse.ArgumentParser(description="Nozomi Networks OT Traffic Analysis Agent")
-    parser.add_argument("--nozomi-url", required=True, help="Nozomi Guardian URL")
-    parser.add_argument("--token", required=True, help="API bearer token")
+    parser.add_argument("--nozomi-url", required=False, help="Nozomi Guardian URL")
+    parser.add_argument("--token", required=False, help="API bearer token")
     parser.add_argument("--output", default="nozomi_ot_report.json")
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     alerts = get_alerts(args.nozomi_url, args.token)
     sessions = get_sessions(args.nozomi_url, args.token)
     assets = get_assets(args.nozomi_url, args.token)
@@ -88,6 +91,18 @@ def main():
         json.dump(report, f, indent=2, default=str)
     logger.info("Nozomi: %d alerts, %d sessions, %d assets", len(alerts), len(sessions), len(assets))
     print(json.dumps(report, indent=2, default=str))
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-ot-network-traffic-analysis-with-nozomi',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

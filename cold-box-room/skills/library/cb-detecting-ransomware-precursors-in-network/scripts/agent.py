@@ -151,6 +151,9 @@ def main():
     parser.add_argument("--output", "-o", help="Output JSON report path")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     print("[*] Ransomware Precursor Detection Agent")
     report = {"timestamp": datetime.now(timezone.utc).isoformat(), "findings": {}}
 
@@ -188,6 +191,18 @@ def main():
     else:
         print(json.dumps(report, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-ransomware-precursors-in-network',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

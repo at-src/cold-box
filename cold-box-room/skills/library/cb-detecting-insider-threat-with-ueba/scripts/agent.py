@@ -173,6 +173,9 @@ def main():
     parser.add_argument("--output", default="ueba_insider_threat_report.json")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     es = connect_es(args.es_hosts.split(","), args.api_key)
     baselines = build_user_baseline(es, args.index, args.user_field)
     anomalies = score_current_activity(es, args.index, args.user_field, baselines, args.lookback)
@@ -188,6 +191,18 @@ def main():
                 len(baselines), len(anomalies), report["critical_anomalies"])
     print(json.dumps(report, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-insider-threat-with-ueba',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

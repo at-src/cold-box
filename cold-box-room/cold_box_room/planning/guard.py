@@ -41,6 +41,8 @@ ROOM_3_ALLOWED_TOOLS = frozenset(
     {
         "list_skills",
         "describe_skill",
+        "list_sift_tools",
+        "describe_sift_tool",
         "run_skill",
         "read_layer1_tool_log",
         "read_layer1_analyst_log",
@@ -80,11 +82,19 @@ R2_EXECUTION_TOOLS = frozenset(
     }
 )
 
-EXTRACTION_EXECUTION_TOOLS = frozenset(
+LAYER1_DIRECT_TOOLS = frozenset(
     {
         "run_sift_tool",
-        "analyze_scratch",
         "submit_layer1_writeup",
+        "extend_plan_a_step",
+        "apply_plan_a_step_status",
+        "get_plan_a_status",
+    }
+)
+
+EXTRACTION_EXECUTION_TOOLS = LAYER1_DIRECT_TOOLS | frozenset(
+    {
+        "analyze_scratch",
     }
 )
 
@@ -166,10 +176,11 @@ def assert_tool_allowed_in_room(*, tool_name: str, room: str | int) -> None:
         return
 
     if room_label == "3":
-        if tool_name in EXTRACTION_EXECUTION_TOOLS:
+        if tool_name in LAYER1_DIRECT_TOOLS:
             raise PlanningRoomGuardError(
-                f"{tool_name} blocked in Room 3 — extraction is Room 2. "
-                "Use return_to_room to fix extractions, or run_skill here."
+                f"{tool_name} blocked in Room 3 — Layer 1 extraction runs in Room 2 only. "
+                "Call return_to_room(case_id, room='2', reason=...) to add extractions "
+                "(extend_plan_a_step + run_sift_tool), then return_to_room back to 3."
             )
         if tool_name in PLANNING_ONLY_TOOLS_A | PLANNING_ONLY_TOOLS_B:
             raise PlanningRoomGuardError(

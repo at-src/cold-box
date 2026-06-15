@@ -132,15 +132,18 @@ def main():
     sub = parser.add_subparsers(dest="command")
 
     hunt = sub.add_parser("hunt", help="Run LOTC hunts against Elasticsearch")
-    hunt.add_argument("--es-host", required=True, help="Elasticsearch host URL")
+    hunt.add_argument("--es-host", required=False, help="Elasticsearch host URL")
     hunt.add_argument("--index", default="logs-*", help="Index pattern")
     hunt.add_argument("--api-key", help="Elasticsearch API key")
     hunt.add_argument("--hours", type=int, default=24, help="Lookback hours")
 
     dns = sub.add_parser("dns", help="Analyze DNS logs for cloud C2 domains")
-    dns.add_argument("--log-file", required=True, help="Path to DNS query log file")
+    dns.add_argument("--log-file", required=False, help="Path to DNS query log file")
 
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "hunt":
         result = hunt_lotc_elastic(args.es_host, args.index, args.api_key, args.hours)
     elif args.command == "dns":
@@ -150,6 +153,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-living-off-the-cloud-techniques',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

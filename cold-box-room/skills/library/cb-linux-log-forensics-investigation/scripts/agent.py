@@ -157,14 +157,17 @@ def main():
     parser = argparse.ArgumentParser(description="Linux Log Forensics Investigation Agent")
     sub = parser.add_subparsers(dest="command")
     a = sub.add_parser("auth", help="Analyze auth.log")
-    a.add_argument("--file", required=True)
+    a.add_argument("--file", required=False)
     s = sub.add_parser("syslog", help="Analyze syslog")
-    s.add_argument("--file", required=True)
+    s.add_argument("--file", required=False)
     h = sub.add_parser("history", help="Analyze bash history")
-    h.add_argument("--file", required=True)
+    h.add_argument("--file", required=False)
     t = sub.add_parser("timeline", help="Create event timeline")
-    t.add_argument("--files", nargs="+", required=True)
+    t.add_argument("--files", nargs="+", required=False)
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "auth":
         result = analyze_auth_log(args.file)
     elif args.command == "syslog":
@@ -178,6 +181,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-linux-log-forensics-investigation',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

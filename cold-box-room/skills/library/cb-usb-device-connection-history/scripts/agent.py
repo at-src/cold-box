@@ -141,12 +141,15 @@ def export_timeline_csv(timeline, output_path):
 
 def main():
     parser = argparse.ArgumentParser(description="USB Device Connection History Agent")
-    parser.add_argument("--system-hive", required=True, help="Path to SYSTEM registry hive")
+    parser.add_argument("--system-hive", required=False, help="Path to SYSTEM registry hive")
     parser.add_argument("--ntuser", help="Path to NTUSER.DAT hive")
     parser.add_argument("--setupapi-log", help="Path to setupapi.dev.log")
     parser.add_argument("--output-dir", default="./usb_analysis")
     parser.add_argument("--case-id", default="CASE-001")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -181,6 +184,18 @@ def main():
     }
     print(json.dumps(report, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-usb-device-connection-history',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

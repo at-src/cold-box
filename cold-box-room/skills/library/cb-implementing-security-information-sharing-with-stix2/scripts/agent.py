@@ -158,6 +158,9 @@ def main():
     parser.add_argument("--output", "-o", help="Output STIX bundle JSON path")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     print("[*] STIX 2.1 Threat Intelligence Sharing Agent")
     print(f"    stix2 available: {HAS_STIX2}")
     print(f"    taxii2-client available: {HAS_TAXII}")
@@ -200,6 +203,18 @@ def main():
 
     print(json.dumps({"objects": len(bundle.objects), "stix_version": "2.1"}, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-security-information-sharing-with-stix2',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

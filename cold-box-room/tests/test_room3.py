@@ -158,6 +158,8 @@ def test_skill_log_readable():
     log = read_skill_log(case_id)
     assert log["count"] == 1
     assert log["successful_runs"] == 1
+    assert log["by_skill"]["SKILL-034"]["last_outcome"] == "success"
+    assert "reading_guide" in log
 
 
 def test_held_for_later_blocks_complete():

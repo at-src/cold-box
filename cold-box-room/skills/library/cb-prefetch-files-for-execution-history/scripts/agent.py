@@ -165,6 +165,43 @@ def build_execution_timeline(prefetch_results):
     return sorted(timeline, key=lambda x: x["timestamp"])
 
 
+def analyze_image(image_path, case_dir):
+    """Harness entry — audit disk, parse prefetch artifact from script_args or path."""
+    from cold_box_room.skills.script_helpers import (
+        artifact_path,
+        audit_artifact_file,
+        audit_disk_image,
+        ensure_case_dir,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    target = artifact_path(image_path)
+    audit_artifact_file(target, case_dir, binary="file")
+
+    if os.path.isdir(target):
+        results = scan_prefetch_directory(target)
+    elif os.path.isfile(target):
+        results = [{
+            "file": os.path.basename(target),
+            "parsed_name": parse_prefetch_filename(target)[0],
+            "header": parse_prefetch_header(target),
+        }]
+    else:
+        results = []
+
+    payload = {
+        "target": target,
+        "prefetch_count": len(results),
+        "results": results[:50],
+        "suspicious": detect_suspicious_execution(results) if results else [],
+        "timeline": build_execution_timeline(results) if results else [],
+    }
+    write_json_report(case_dir, "prefetch_report.json", payload)
+    return payload
+
+
 def run_pecmd(prefetch_path, output_dir=None):
     """Run Eric Zimmerman's PECmd for comprehensive prefetch parsing."""
     import subprocess

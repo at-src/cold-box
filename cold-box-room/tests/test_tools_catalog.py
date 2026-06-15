@@ -76,8 +76,8 @@ def test_not_tested_tool():
 
 
 def test_unavailable_tool():
-    tool = get_tool("SIFT-037")
-    assert tool.name == "binwalk"
+    tool = get_tool("SIFT-174")
+    assert tool.name == "accesschk"
     assert tool.verification.status == "unavailable"
     assert tool.verification.agent_runnable is False
 
@@ -92,7 +92,7 @@ def test_describe_includes_label():
 def test_list_tools_runnable_excludes_unavailable():
     runnable = list_tools(runnable_only=True)
     ids = {t.tool_id for t in runnable}
-    assert "SIFT-037" not in ids
+    assert "SIFT-174" not in ids
     assert "SIFT-008" in ids
 
 
@@ -130,17 +130,19 @@ def test_batch3_fls():
     assert "INODE" in tool.input.harness_usage
 
 
-def test_batch3_tshark_unavailable():
+def test_batch3_tshark_ok():
     tool = get_tool("SIFT-117")
-    assert tool.verification.status == "unavailable"
-    assert tool.verification.agent_runnable is False
+    assert tool.name == "tshark"
+    assert tool.verification.status == "ok"
+    assert tool.verification.agent_runnable is True
 
 
 def test_batch4_icat():
     tool = get_tool("SIFT-151")
     assert tool.name == "icat"
     assert tool.category == "sleuthkit"
-    assert tool.verification.status == "ok"
+    assert tool.verification.status == "not_tested"
+    assert tool.verification.runnable is True
     assert tool.output.style == "inode_stream"
     assert tool.input.harness_usage
     assert "INODE" in tool.input.harness_usage

@@ -95,9 +95,12 @@ def detect_pth_patterns(events, target_threshold=3):
 
 def main():
     parser = argparse.ArgumentParser(description="Pass-the-Hash Detector")
-    parser.add_argument("--security-log", required=True, help="Windows Security EVTX")
+    parser.add_argument("--security-log", required=False, help="Windows Security EVTX")
     parser.add_argument("--target-threshold", type=int, default=3)
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     events = parse_logon_events(args.security_log)
     findings = detect_pth_patterns(events, args.target_threshold)
     ntlm_count = len(events) if isinstance(events, list) else 0
@@ -108,6 +111,18 @@ def main():
     }
     print(json.dumps(results, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-pass-the-hash-attacks',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

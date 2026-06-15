@@ -119,10 +119,13 @@ def generate_report(data_path: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Diamond Model Intrusion Analysis Agent")
-    parser.add_argument("--data", required=True, help="Path to events JSON")
+    parser.add_argument("--data", required=False, help="Path to events JSON")
     parser.add_argument("--output-dir", default=".")
     parser.add_argument("--output", default="diamond_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     os.makedirs(args.output_dir, exist_ok=True)
     report = generate_report(args.data)
@@ -132,6 +135,18 @@ def main():
     logger.info("Report saved to %s", out_path)
     print(json.dumps(report["statistics"], indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-diamond-model-analysis',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

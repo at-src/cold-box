@@ -155,6 +155,9 @@ def main():
     parser.add_argument("--output", default="rootkit_detection_report.json")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     syscall_hooks, hidden_mods, idt_hooks = [], [], []
     rkhunter_findings, proc_findings = [], []
     source = "none"
@@ -174,6 +177,18 @@ def main():
                 report["total_findings"], report["critical_findings"], report["rootkit_detected"])
     print(json.dumps(report, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-linux-kernel-rootkits',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

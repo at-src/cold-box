@@ -116,10 +116,13 @@ def main():
     sub = parser.add_subparsers(dest="command")
     sub.add_parser("enumerate", help="Enumerate and risk-score scheduled tasks")
     e = sub.add_parser("events", help="Scan Security EVTX for task creation events")
-    e.add_argument("--evtx-file", required=True)
+    e.add_argument("--evtx-file", required=False)
     x = sub.add_parser("export", help="Export task XML for analysis")
-    x.add_argument("--task-name", required=True)
+    x.add_argument("--task-name", required=False)
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "enumerate":
         result = enumerate_tasks()
     elif args.command == "events":
@@ -131,6 +134,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-scheduled-task-persistence',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

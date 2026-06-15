@@ -153,9 +153,12 @@ def generate_forensics_report(memory_file, processes, suspicious_procs, connecti
 
 def main():
     parser = argparse.ArgumentParser(description="Memory Forensics Agent (Volatility 3)")
-    parser.add_argument("--memory-file", required=True, help="Path to memory dump file")
+    parser.add_argument("--memory-file", required=False, help="Path to memory dump file")
     parser.add_argument("--output", default="memory_forensics_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     processes, suspicious = analyze_processes(args.memory_file)
     connections, established = analyze_network_connections(args.memory_file)
@@ -171,6 +174,18 @@ def main():
         json.dump(report, f, indent=2)
     logger.info("Report saved to %s", args.output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-memory-forensics-with-volatility',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

@@ -241,6 +241,50 @@ def generate_report(
     return "\n".join(lines)
 
 
+def analyze_image(image_path, case_dir):
+    """Harness entry — SIFT tools per SKILL.md (img_stat, mmls, fsstat, fls, ewfverify)."""
+    from cold_box_room.skills.script_helpers import (
+        ensure_case_dir,
+        first_ntfs_offset,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    results: dict = {"image": image_path, "tools": {}}
+
+    stdout, _, rc = run_cmd(f"img_stat {image_path}")
+    results["tools"]["img_stat"] = {"exit_code": rc, "preview": stdout.splitlines()[:12]}
+
+    stdout, _, rc = run_cmd(f"mmls {image_path}")
+    offset = first_ntfs_offset(image_path)
+    results["tools"]["mmls"] = {"exit_code": rc, "ntfs_offset": offset}
+
+    stdout, _, rc = run_cmd(f"fsstat -o {offset} {image_path}")
+    results["tools"]["fsstat"] = {"exit_code": rc, "offset": offset}
+
+    if image_path.lower().endswith((".e01", ".ewf", ".ex01")):
+        stdout, _, rc = run_cmd(f"ewfverify {image_path}")
+        results["tools"]["ewfverify"] = {"exit_code": rc, "verified": rc == 0}
+
+    stdout, _, rc = run_cmd(f"fls -o {offset} {image_path}")
+    lines = [ln for ln in stdout.splitlines() if ln.strip()]
+    results["tools"]["fls"] = {
+        "exit_code": rc,
+        "entry_count": len(lines),
+        "sample": lines[:20],
+    }
+
+    write_json_report(case_dir, "disk_forensics_summary.json", results)
+    print(generate_report(
+        {"image_path": image_path, "size_gb": "see img_stat", "md5": "see ewfverify/img_stat"},
+        {"fs_type": "NTFS", "total_size_gb": "see fsstat"},
+        lines[:50],
+        [],
+        [],
+    ))
+    return results
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} <disk_image_path> [mft_path]")

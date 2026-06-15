@@ -139,8 +139,11 @@ def analyze_evtx_for_evasion(filepath):
 
 def main():
     parser = argparse.ArgumentParser(description="Defense Evasion Detector")
-    parser.add_argument("--evtx-file", required=True, help="EVTX file (Sysmon or Security)")
+    parser.add_argument("--evtx-file", required=False, help="EVTX file (Sysmon or Security)")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     findings = analyze_evtx_for_evasion(args.evtx_file)
     if isinstance(findings, dict) and "error" in findings:
@@ -159,6 +162,18 @@ def main():
 
     print(json.dumps(results, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-evasion-techniques-in-endpoint-logs',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

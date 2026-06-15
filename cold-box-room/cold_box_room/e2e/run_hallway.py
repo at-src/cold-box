@@ -123,32 +123,41 @@ def run_hallway_e2e(
         return result
 
     # --- Room A ---
+    room_now = current_room(case_id)
     if run_room_a and not skip_room_a_agent:
-        if current_room(case_id) != "A":
-            if current_room(case_id) == "1":
+        if room_now in {"2", "B", "3"}:
+            result["room_a_agent"] = {"skipped": True, "reused": True, "room": room_now}
+        elif room_now != "A":
+            if room_now == "1":
                 from cold_box_room.r1.hallway import promote_to_room_a
 
                 promote_to_room_a(case_id)
-            elif current_room(case_id) != "A":
-                raise RuntimeError(f"Cannot run Room A agent from room {current_room(case_id)}")
-        preflight_room_a(case_id=case_id)
-        from cold_box_room.agent.engine import run_room_a_agent
+            else:
+                raise RuntimeError(f"Cannot run Room A agent from room {room_now}")
+        if result.get("room_a_agent") is None:
+            preflight_room_a(case_id=case_id)
+            from cold_box_room.agent.engine import run_room_a_agent
 
-        room_a_result = run_room_a_agent(
-            case_id=case_id,
-            goal=result["room_a_goal"],
-            max_turns=room_a_max_turns,
-            model=model,
-        )
-        result["room_a_agent"] = room_a_result
-        if not room_a_result.get("gate_open"):
-            result["status"] = "room_a_failed"
-            result["report"] = collect_case_report(case_id)
-            result["output_dir"] = str(get_records_root() / case_id)
-            return result
+            room_a_result = run_room_a_agent(
+                case_id=case_id,
+                goal=result["room_a_goal"],
+                max_turns=room_a_max_turns,
+                model=model,
+            )
+            result["room_a_agent"] = room_a_result
+            if not room_a_result.get("gate_open"):
+                result["status"] = "room_a_failed"
+                result["report"] = collect_case_report(case_id)
+                result["output_dir"] = str(get_records_root() / case_id)
+                return result
     elif skip_room_a_agent:
-        fast_pass_room_a(case_id)
-        result["room_a_agent"] = {"skipped": True, "gate_open": True}
+        if current_room(case_id) == "A":
+            fast_pass_room_a(case_id)
+        result["room_a_agent"] = {
+            "skipped": True,
+            "gate_open": True,
+            "room": current_room(case_id),
+        }
 
     if current_room(case_id) == "A":
         if not room_a_checkpoint(case_id).get("ready_for_room2"):
@@ -162,56 +171,86 @@ def run_hallway_e2e(
 
     # --- Room 2 (Layer 1) ---
     layer1_result: dict[str, Any] | None = None
+    room_now = current_room(case_id)
+    layer1_already_done = room_now in {"B", "3"}
     if run_layer1 and not skip_layer1_agent:
-        preflight = preflight_agent(case_id=case_id)
-        result["layer1_preflight"] = preflight
-        from cold_box_room.agent.engine import run_layer1_agent
+        if reuse_kitchen and layer1_already_done:
+            result["layer1_agent"] = {
+                "skipped": True,
+                "reused": True,
+                "promoted_to_room_b": True,
+                "room": room_now,
+            }
+        else:
+            preflight = preflight_agent(case_id=case_id)
+            result["layer1_preflight"] = preflight
+            from cold_box_room.agent.engine import run_layer1_agent
 
-        layer1_result = run_layer1_agent(
-            case_id=case_id,
-            goal=result["layer1_goal"],
-            max_turns=layer1_max_turns,
-            model=model,
-        )
+            layer1_result = run_layer1_agent(
+                case_id=case_id,
+                goal=result["layer1_goal"],
+                max_turns=layer1_max_turns,
+                model=model,
+            )
+            result["layer1_agent"] = layer1_result
+            if not layer1_result.get("promoted_to_room_b"):
+                result["status"] = "layer1_failed"
+                result["report"] = collect_case_report(case_id)
+                result["output_dir"] = str(get_records_root() / case_id)
+                return result
+    elif skip_layer1_agent or (reuse_kitchen and layer1_already_done):
+        if not layer1_already_done:
+            from cold_box_room.testing.hallway import bootstrap_case_to_room_b
+
+            bootstrap_case_to_room_b(case_id)
+        layer1_result = {
+            "skipped": True,
+            "promoted_to_room_b": True,
+            "room": current_room(case_id),
+        }
         result["layer1_agent"] = layer1_result
-        if not layer1_result.get("promoted_to_room_b"):
-            result["status"] = "layer1_failed"
-            result["report"] = collect_case_report(case_id)
-            result["output_dir"] = str(get_records_root() / case_id)
-            return result
-    elif skip_layer1_agent:
-        from cold_box_room.testing.hallway import bootstrap_case_to_room_b
 
-        bootstrap_case_to_room_b(case_id)
-        layer1_result = {"skipped": True, "promoted_to_room_b": True, "room": current_room(case_id)}
-        result["layer1_agent"] = layer1_result
-
-    if current_room(case_id) != "B":
+    if current_room(case_id) not in {"B", "3"}:
         result["status"] = "layer1_failed"
         result["report"] = collect_case_report(case_id)
         result["output_dir"] = str(get_records_root() / case_id)
         return result
 
     # --- Room B ---
+    room_now = current_room(case_id)
+    room_b_already_done = room_now == "3"
     if run_room_b and not skip_room_b_agent:
-        preflight_room_b(case_id=case_id)
-        from cold_box_room.agent.engine import run_room_b_agent
+        if reuse_kitchen and room_b_already_done:
+            result["room_b_agent"] = {
+                "skipped": True,
+                "reused": True,
+                "ready_for_room3": True,
+                "room": "3",
+            }
+        else:
+            preflight_room_b(case_id=case_id)
+            from cold_box_room.agent.engine import run_room_b_agent
 
-        room_b_result = run_room_b_agent(
-            case_id=case_id,
-            goal=result["room_b_goal"],
-            max_turns=room_b_max_turns,
-            model=model,
-        )
-        result["room_b_agent"] = room_b_result
-        if not room_b_result.get("ready_for_room3"):
-            result["status"] = "room_b_failed"
-            result["report"] = collect_case_report(case_id)
-            result["output_dir"] = str(get_records_root() / case_id)
-            return result
-    elif skip_room_b_agent:
-        fast_pass_room_b(case_id)
-        result["room_b_agent"] = {"skipped": True, "ready_for_room3": True}
+            room_b_result = run_room_b_agent(
+                case_id=case_id,
+                goal=result["room_b_goal"],
+                max_turns=room_b_max_turns,
+                model=model,
+            )
+            result["room_b_agent"] = room_b_result
+            if not room_b_result.get("ready_for_room3"):
+                result["status"] = "room_b_failed"
+                result["report"] = collect_case_report(case_id)
+                result["output_dir"] = str(get_records_root() / case_id)
+                return result
+    elif skip_room_b_agent or (reuse_kitchen and room_b_already_done):
+        if not room_b_already_done:
+            fast_pass_room_b(case_id)
+        result["room_b_agent"] = {
+            "skipped": True,
+            "ready_for_room3": True,
+            "room": current_room(case_id),
+        }
 
     if current_room(case_id) == "B":
         if not room_b_checkpoint(case_id).get("ready_for_room3"):
@@ -222,24 +261,39 @@ def run_hallway_e2e(
         promote_to_room3(case_id)
 
     # --- Room 3 ---
-    if run_room3 and not skip_room3_agent:
-        preflight_room3(case_id=case_id)
-        from cold_box_room.agent.engine import run_room3_agent
+    from cold_box_room.room_3.checkpoint import room3_checkpoint
 
-        room3_result = run_room3_agent(
-            case_id=case_id,
-            goal=result["room3_goal"],
-            max_turns=room3_max_turns,
-            model=model,
-        )
-        result["room3_agent"] = room3_result
-        if not room3_result.get("layer2_complete"):
-            result["status"] = "room3_failed"
-            result["report"] = collect_case_report(case_id)
-            result["output_dir"] = str(get_records_root() / case_id)
-            return result
-    elif skip_room3_agent:
-        result["room3_agent"] = {"skipped": True}
+    room3_cp = room3_checkpoint(case_id)
+    layer2_already_done = bool(room3_cp.get("layer2_complete"))
+    if run_room3 and not skip_room3_agent:
+        if reuse_kitchen and layer2_already_done:
+            result["room3_agent"] = {
+                "skipped": True,
+                "reused": True,
+                "layer2_complete": True,
+                "room": current_room(case_id),
+            }
+        else:
+            preflight_room3(case_id=case_id)
+            from cold_box_room.agent.engine import run_room3_agent
+
+            room3_result = run_room3_agent(
+                case_id=case_id,
+                goal=result["room3_goal"],
+                max_turns=room3_max_turns,
+                model=model,
+            )
+            result["room3_agent"] = room3_result
+            if not room3_result.get("layer2_complete"):
+                result["status"] = "room3_failed"
+                result["report"] = collect_case_report(case_id)
+                result["output_dir"] = str(get_records_root() / case_id)
+                return result
+    elif skip_room3_agent or (reuse_kitchen and layer2_already_done):
+        result["room3_agent"] = {
+            "skipped": True,
+            "layer2_complete": layer2_already_done,
+        }
 
     report = collect_case_report(case_id)
     result["report"] = report

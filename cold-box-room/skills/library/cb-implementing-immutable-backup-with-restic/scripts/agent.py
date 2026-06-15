@@ -357,7 +357,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Immutable Backup Agent with Restic and S3 Object Lock"
     )
-    parser.add_argument("--repo", required=True, help="Restic repository URL (s3:host/bucket)")
+    parser.add_argument("--repo", required=False, help="Restic repository URL (s3:host/bucket)")
     parser.add_argument("--password-file", help="File containing repository password")
     parser.add_argument("--action", choices=[
         "init", "backup", "verify", "snapshots", "retention", "restore-test",
@@ -374,6 +374,9 @@ def main():
     parser.add_argument("--snapshot", default="latest", help="Snapshot ID for restore test")
     parser.add_argument("--output", default="backup_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     password = None
     if args.password_file and os.path.exists(args.password_file):
@@ -453,6 +456,18 @@ def main():
             json.dump(report, f, indent=2, default=str)
         print(f"  Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-immutable-backup-with-restic',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

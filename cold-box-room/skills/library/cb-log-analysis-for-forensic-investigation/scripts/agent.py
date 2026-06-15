@@ -220,5 +220,17 @@ def main():
     analyzer.generate_forensic_report()
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-log-analysis-for-forensic-investigation',
+        main_fn=main,
+    )
+
 if __name__ == "__main__":
     main()

@@ -197,6 +197,9 @@ def main():
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     findings = []
     devices = list_connected_usb_devices()
 
@@ -231,6 +234,18 @@ def main():
     elif args.verbose:
         print(json.dumps(report, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-usb-device-control-policy',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

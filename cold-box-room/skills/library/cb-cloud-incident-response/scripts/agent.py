@@ -157,13 +157,16 @@ def generate_ir_report(incident_id, username, events, snapshots, containment_act
 
 def main():
     parser = argparse.ArgumentParser(description="Cloud Incident Response Agent")
-    parser.add_argument("--incident-id", required=True, help="Incident ID")
-    parser.add_argument("--username", required=True, help="Compromised IAM username")
+    parser.add_argument("--incident-id", required=False, help="Incident ID")
+    parser.add_argument("--username", required=False, help="Compromised IAM username")
     parser.add_argument("--access-key-id", help="Compromised access key to disable")
     parser.add_argument("--instance-id", help="EC2 instance to isolate")
     parser.add_argument("--forensic-sg", default="sg-forensic-isolate", help="Forensic SG ID")
     parser.add_argument("--output", default="cloud_ir_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     containment = []
 
@@ -188,6 +191,18 @@ def main():
         json.dump(report, f, indent=2)
     logger.info("IR report saved to %s", args.output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-cloud-incident-response',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

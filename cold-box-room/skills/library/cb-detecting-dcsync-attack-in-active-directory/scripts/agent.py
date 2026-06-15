@@ -154,6 +154,9 @@ def main():
                         help="Show PowerShell query for replication permissions")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     results = {"timestamp": datetime.utcnow().isoformat() + "Z"}
 
     dc_accounts = load_dc_accounts(args.dc_accounts)
@@ -175,6 +178,18 @@ def main():
 
     print(json.dumps(results, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-dcsync-attack-in-active-directory',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

@@ -133,17 +133,20 @@ def main():
     parser = argparse.ArgumentParser(description="Zeek Network Traffic Analysis Agent")
     sub = parser.add_subparsers(dest="command")
     c = sub.add_parser("conn", help="Analyze conn.log")
-    c.add_argument("--log", required=True)
+    c.add_argument("--log", required=False)
     d = sub.add_parser("dns", help="Analyze dns.log")
-    d.add_argument("--log", required=True)
+    d.add_argument("--log", required=False)
     h = sub.add_parser("http", help="Analyze http.log")
-    h.add_argument("--log", required=True)
+    h.add_argument("--log", required=False)
     n = sub.add_parser("notice", help="Analyze notice.log")
-    n.add_argument("--log", required=True)
+    n.add_argument("--log", required=False)
     r = sub.add_parser("run", help="Run Zeek on PCAP")
-    r.add_argument("--pcap", required=True)
+    r.add_argument("--pcap", required=False)
     r.add_argument("--output-dir", default="/tmp/zeek_output")
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "conn":
         result = analyze_conn_log(args.log)
     elif args.command == "dns":
@@ -159,6 +162,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-network-traffic-analysis-with-zeek',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

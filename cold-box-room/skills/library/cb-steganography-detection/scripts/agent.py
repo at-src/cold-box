@@ -190,6 +190,18 @@ def print_report(report):
         print(f"\nBinwalk:\n{report['binwalk']['output']}")
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-steganography-detection',
+        main_fn=None,
+    )
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python agent.py <image_file>")

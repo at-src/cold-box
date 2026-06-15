@@ -95,11 +95,9 @@ def load_sandbox_record(case_id: str) -> dict[str, Any]:
 
 
 def r2_status(case_id: str) -> dict[str, Any]:
-    from cold_box_room.r1.hallway import require_room
+    from cold_box_room.r1.hallway import ROOM_2, ROOM_3, current_room, require_room_in
 
-    from cold_box_room.r1.hallway import current_room
-
-    require_room(case_id, 2)
+    require_room_in(case_id, {ROOM_2, ROOM_3})
     record = load_sandbox_record(case_id)
     sandbox = case_sandbox_dir(case_id)
     live_files = list_sandbox_files(case_id)

@@ -151,6 +151,9 @@ def main():
     sub.add_parser("services", help="Enumerate suspicious services")
     sub.add_parser("all", help="Run all persistence hunts")
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "registry":
         result = enumerate_registry_persistence()
     elif args.command == "tasks":
@@ -169,6 +172,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-persistence-mechanisms-in-windows',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

@@ -130,7 +130,7 @@ def generate_report(results_data, case_id):
 
 def main():
     parser = argparse.ArgumentParser(description="NTFS File System Artifact Analysis Agent")
-    parser.add_argument("--image", required=True, help="Path to forensic disk image")
+    parser.add_argument("--image", required=False, help="Path to forensic disk image")
     parser.add_argument("--offset", type=int, default=2048, help="Partition offset in sectors")
     parser.add_argument("--case-id", default="CASE-001", help="Case identifier")
     parser.add_argument("--output-dir", default="./analysis", help="Output directory")
@@ -141,6 +141,9 @@ def main():
     parser.add_argument("--mft-path", help="Path to extracted $MFT file")
     parser.add_argument("--usn-path", help="Path to extracted $UsnJrnl:$J file")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     os.makedirs(args.output_dir, exist_ok=True)
     findings = {}
@@ -169,6 +172,18 @@ def main():
 
     print(generate_report(findings, args.case_id))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-slack-space-and-file-system-artifacts',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

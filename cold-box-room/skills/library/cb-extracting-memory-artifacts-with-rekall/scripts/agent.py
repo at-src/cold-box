@@ -9,12 +9,19 @@ import json
 import argparse
 from datetime import datetime
 
-from rekall import session
-from rekall import plugins
+try:
+    from rekall import session
+    from rekall import plugins
+
+    HAS_REKALL = True
+except ImportError:
+    HAS_REKALL = False
 
 
 def create_session(image_path, profile_path=None):
     """Create a Rekall session for a memory image."""
+    if not HAS_REKALL:
+        raise RuntimeError("rekall is not installed on this Python runtime")
     kwargs = {
         "filename": image_path,
         "autodetect": ["rsds"],
@@ -126,7 +133,7 @@ def analyze_vad(s, target_pid):
 
 def main():
     parser = argparse.ArgumentParser(description="Rekall Memory Forensics Agent")
-    parser.add_argument("--image", required=True, help="Path to memory image")
+    parser.add_argument("--image", required=False, help="Path to memory image")
     parser.add_argument("--profile-path", help="Path to Rekall profiles")
     parser.add_argument("--pid", type=int, help="Target PID for focused analysis")
     parser.add_argument("--output", default="rekall_report.json")
@@ -134,6 +141,9 @@ def main():
         "pslist", "hidden", "malfind", "netscan", "dlls", "full_analysis"
     ], default="full_analysis")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     s = create_session(args.image, args.profile_path)
     report = {"image": args.image, "generated_at": datetime.utcnow().isoformat(),
@@ -168,6 +178,35 @@ def main():
         json.dump(report, f, indent=2, default=str)
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import (
+        audit_disk_image,
+        ensure_case_dir,
+        run_default_analyze_image,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    if not HAS_REKALL:
+        report = {
+            "skill": "cb-extracting-memory-artifacts-with-rekall",
+            "image": image_path,
+            "skipped": True,
+            "reason": "rekall is unavailable on this Python runtime (memory dump analysis only)",
+            "rekall_available": False,
+        }
+        write_json_report(case_dir, "harness_report.json", report)
+        return report
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-extracting-memory-artifacts-with-rekall',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

@@ -98,6 +98,9 @@ def main():
     parser.add_argument("--evtx-file", help="Sysmon or Security EVTX file")
     parser.add_argument("--text-log", help="Text log to scan")
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     results = {"timestamp": datetime.utcnow().isoformat() + "Z", "findings": []}
     if args.evtx_file:
         r = analyze_evtx(args.evtx_file)
@@ -110,6 +113,18 @@ def main():
     results["total_findings"] = len(results["findings"])
     print(json.dumps(results, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-privilege-escalation-attempts',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

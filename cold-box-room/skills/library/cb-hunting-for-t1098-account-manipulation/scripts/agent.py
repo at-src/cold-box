@@ -218,10 +218,25 @@ def main():
                         help="Output directory for hunt report")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     os.makedirs(args.output_dir, exist_ok=True)
     agent = T1098HuntingAgent(args.evtx_file, output_dir=args.output_dir)
     agent.generate_report()
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-t1098-account-manipulation',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

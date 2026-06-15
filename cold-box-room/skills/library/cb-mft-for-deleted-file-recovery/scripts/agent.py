@@ -8,8 +8,10 @@ from cold_box_room.skills.skill_runtime import run_cmd, patched_subprocess as su
 import json
 import struct
 import os
+import sys
 import logging
 import argparse
+from pathlib import Path
 from datetime import datetime, timedelta
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -144,19 +146,109 @@ def generate_report(entries, deleted, findings):
     return report
 
 
-def main():
-    parser = argparse.ArgumentParser(description="MFT Deleted File Recovery Agent")
-    parser.add_argument("--mft-file", required=True, help="Path to extracted $MFT file")
-    parser.add_argument("--output", default="mft_report.json")
-    args = parser.parse_args()
+def _extract_mft_from_image(image_path: str, case_dir: str, offset: int) -> str:
+    from cold_box_room.skills.skill_runtime import get_runtime
 
-    entries = parse_mft_file(args.mft_file)
+    mft_path = os.path.join(case_dir, "mft.bin")
+    result = subprocess.run(
+        ["icat", "-o", str(offset), image_path, "0"],
+        capture_output=True,
+        timeout=180,
+    )
+    data = result.stdout if isinstance(result.stdout, bytes) else b""
+    if not data:
+        last = get_runtime().last_tool_result or {}
+        extracted = last.get("extracted_file") or last.get("scratch_file")
+        if extracted and os.path.isfile(str(extracted)):
+            data = Path(str(extracted)).read_bytes()
+    if result.returncode != 0 or not data:
+        raise RuntimeError(f"icat $MFT failed (exit {result.returncode})")
+    with open(mft_path, "wb") as handle:
+        handle.write(data)
+    return mft_path
+
+
+def _find_scratch_mft(case_dir: str) -> str | None:
+    from cold_box_room.skills.skill_runtime import get_runtime
+
+    roots = [Path(case_dir)]
+    try:
+        roots.append(get_runtime().scratch_root())
+    except Exception:
+        pass
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob("*")):
+            if not path.is_file():
+                continue
+            name = path.name.lower()
+            if name in {"mft.bin", "$mft", "mft"}:
+                return str(path)
+            if "mft" in name and path.stat().st_size > 1024:
+                return str(path)
+    return None
+
+
+def _resolve_mft_path(image_path: str, case_dir: str) -> str:
+    parser = argparse.ArgumentParser(description="MFT Deleted File Recovery Agent")
+    parser.add_argument("--mft-file", help="Path to extracted $MFT file")
+    parser.add_argument("--output", default=os.path.join(case_dir, "mft_report.json"))
+    args, _unknown = parser.parse_known_args()
+    if args.mft_file and os.path.isfile(args.mft_file):
+        return args.mft_file
+    if len(sys.argv) > 2 and os.path.isfile(sys.argv[2]) and sys.argv[2] != image_path:
+        return sys.argv[2]
+    scratch_mft = _find_scratch_mft(case_dir)
+    if scratch_mft:
+        return scratch_mft
+    from cold_box_room.skills.script_helpers import audit_disk_image, first_ntfs_offset
+
+    audit_disk_image(image_path)
+    run_cmd(f"mmls {image_path}")
+    offset = first_ntfs_offset(image_path)
+    return _extract_mft_from_image(image_path, case_dir, offset)
+
+
+def analyze_image(image_path, case_dir):
+    """Harness entry — extract $MFT via icat, parse deleted entries."""
+    from cold_box_room.skills.script_helpers import (
+        audit_disk_image,
+        detect_filesystem,
+        ensure_case_dir,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    fs_type = detect_filesystem(image_path)
+    if fs_type and fs_type != "NTFS":
+        report = {
+            "skipped": True,
+            "reason": f"$MFT analysis requires NTFS; image filesystem is {fs_type}",
+            "filesystem": fs_type,
+            "image": image_path,
+        }
+        write_json_report(case_dir, "mft_report.json", report)
+        return report
+    mft_path = _resolve_mft_path(image_path, case_dir)
+    entries = parse_mft_file(mft_path)
     deleted = find_deleted_files(entries)
     findings = analyze_deleted_files(deleted)
     report = generate_report(entries, deleted, findings)
-    with open(args.output, "w") as f:
-        json.dump(report, f, indent=2, default=str)
-    logger.info("Report saved to %s", args.output)
+    report["mft_file"] = mft_path
+    write_json_report(case_dir, "mft_report.json", report)
+    return report
+
+
+def main():
+    image_path = sys.argv[1] if len(sys.argv) > 1 else ""
+    case_dir = sys.argv[2] if len(sys.argv) > 2 else "."
+    if not image_path:
+        parser = argparse.ArgumentParser(description="MFT Deleted File Recovery Agent")
+        parser.print_help()
+        return
+    analyze_image(image_path, case_dir)
 
 
 if __name__ == "__main__":

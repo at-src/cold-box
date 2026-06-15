@@ -29,6 +29,34 @@ from cold_box_room.r2.sandbox import list_sandbox_files, r2_status
 from cold_box_room.skills.executor import run_skill
 from cold_box_room.skills.registry import describe_skill, list_skills_dict
 
+SIFT_BROWSE_SCHEMAS: list[dict[str, Any]] = [
+    {
+        "name": "list_sift_tools",
+        "description": (
+            "Browse SIFT extraction tool catalog (SIFT-###) — reference only in Room 3. "
+            "To run extraction, return_to_room to Room 2."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "category": {"type": "string", "default": ""},
+                "runnable_only": {"type": "boolean", "default": True},
+            },
+        },
+    },
+    {
+        "name": "describe_sift_tool",
+        "description": (
+            "Full SIFT tool definition — browse only in Room 3; execution is Room 2 via return_to_room."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"tool_id": {"type": "string"}},
+            "required": ["tool_id"],
+        },
+    },
+]
+
 SKILLS_BROWSE_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "list_skills",
@@ -97,13 +125,16 @@ REVISIT_TOOL_SCHEMAS: list[dict[str, Any]] = [
 
 ROOM_3_TOOL_SCHEMAS: list[dict[str, Any]] = [
     *SKILLS_BROWSE_SCHEMAS,
+    *SIFT_BROWSE_SCHEMAS,
     *REVISIT_TOOL_SCHEMAS,
     {
         "name": "run_skill",
         "description": (
             "Run a ported skill script (library/*/scripts/agent.py) in Room 3. "
-            "Tool calls inside the script route through SIFT harness via skill_runtime. "
-            "Reference-only skills (external APIs) cannot run — browse describe_skill instead."
+            "Always returns ok:true when the harness executed the request. "
+            "Check outcome: success (mark plan step), failed (retry — skill still runnable), "
+            "not_runnable (pick another skill). "
+            "A failed row in layer2_skill_log is a failed attempt, not skill removal."
         ),
         "input_schema": {
             "type": "object",
@@ -125,7 +156,12 @@ ROOM_3_TOOL_SCHEMAS: list[dict[str, Any]] = [
     },
     {
         "name": "list_sandbox_files",
-        "description": "List files in the R2 sandbox (same evidence copy from Layer 1).",
+        "description": (
+            "List files in the R2 sandbox (same evidence copy from Layer 1). "
+            "Always returns ok: true when the listing succeeds. "
+            "r2_status_state is 'available' in Room 2/3 or 'not_applicable' elsewhere — "
+            "that is room gating, not tool unavailability."
+        ),
         "input_schema": {
             "type": "object",
             "properties": {"case_id": {"type": "string"}},
@@ -153,7 +189,8 @@ ROOM_3_TOOL_SCHEMAS: list[dict[str, Any]] = [
         "name": "read_layer2_skill_log",
         "description": (
             "Read Layer 2 harness skill log (run_skill executions + audit ids). "
-            "Harness-only — agent never edits this file."
+            "Use outcome (success/failed), not legacy ok alone. "
+            "failed = retry the skill; only not_runnable from run_skill means pick another skill."
         ),
         "input_schema": {
             "type": "object",
@@ -460,7 +497,12 @@ LAYER1_TOOL_SCHEMAS: list[dict[str, Any]] = [
     *REVISIT_TOOL_SCHEMAS,
     {
         "name": "list_sandbox_files",
-        "description": "List files in the R2 sandbox (available in Room 2 only, after Room A gate).",
+        "description": (
+            "List files in the R2 sandbox (same evidence copy from Layer 1). "
+            "Always returns ok: true when the listing succeeds. "
+            "r2_status_state is 'available' in Room 2/3 or 'not_applicable' elsewhere — "
+            "that is room gating, not tool unavailability."
+        ),
         "input_schema": {
             "type": "object",
             "properties": {"case_id": {"type": "string"}},
@@ -645,7 +687,12 @@ def dispatch_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
         try:
             _guard_tool(case_id, name)
         except PlanningRoomGuardError as exc:
-            return {"ok": False, "error": str(exc), "case_id": case_id}
+            return {
+                "ok": True,
+                "outcome": "room_gated",
+                "error": str(exc),
+                "case_id": case_id,
+            }
 
     if name == "list_skills":
         rows = list_skills_dict(
@@ -653,7 +700,14 @@ def dispatch_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
             tag=str(args.get("tag") or "") or None,
             agent_catalog_only=bool(args.get("agent_catalog_only", True)),
         )
-        return {"skills": rows, "count": len(rows)}
+        return {
+            "skills": rows,
+            "count": len(rows),
+            "reading_guide": (
+                "Every skill listed here is agent-runnable. "
+                "A failed prior run_skill attempt does not remove a skill — retry with fixed inputs."
+            ),
+        }
     if name == "describe_skill":
         return describe_skill(str(args["skill_id"]))
     if name == "run_skill":
@@ -675,7 +729,7 @@ def dispatch_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
             plan_step_id=step_id,
         )
     if name == "list_unlocked_rooms":
-        from cold_box_room.r1.hallway import current_room, list_room_revisits, unlocked_rooms
+        from cold_box_room.r1.hallway import list_room_revisits, unlocked_rooms
 
         return {
             "case_id": case_id,
@@ -769,12 +823,24 @@ def dispatch_tool(name: str, args: dict[str, Any]) -> dict[str, Any]:
         except Exception as exc:
             return {"ok": False, "error": str(exc), "case_id": case_id}
     if name == "list_sandbox_files":
-        return {
+        room = current_room(case_id)
+        files = list_sandbox_files(case_id)
+        payload: dict[str, Any] = {
+            "ok": True,
             "case_id": case_id,
-            "room": current_room(case_id),
-            "files": list_sandbox_files(case_id),
-            "status": r2_status(case_id),
+            "room": room,
+            "files": files,
         }
+        try:
+            payload["r2_status"] = r2_status(case_id)
+            payload["r2_status_state"] = "available"
+        except Exception:
+            payload["r2_status_state"] = "not_applicable"
+            payload["r2_status_note"] = (
+                "Sandbox file list succeeded. Full r2_status (materialized_at, "
+                "non_empty_files) is only computed in Room 2 or Room 3 — not a tool failure."
+            )
+        return payload
     if name == "list_sift_tools":
         return handle_list_sift_tools(
             category=str(args.get("category") or ""),

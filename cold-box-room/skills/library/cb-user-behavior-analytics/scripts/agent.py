@@ -213,6 +213,18 @@ def print_report(travel_alerts, offhours_alerts, risk_scores):
             print(f"    - {a}")
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-user-behavior-analytics',
+        main_fn=None,
+    )
+
 if __name__ == "__main__":
     host = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("ES_HOSTS", "https://localhost:9200")
     es = get_es_client(host)

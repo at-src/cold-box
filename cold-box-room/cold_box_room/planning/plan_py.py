@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import ast
-import json
+import pprint
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +13,12 @@ from cold_box_room.planning.paths import plan_var_name
 
 def write_plan_py(path: Path, doc: PlanDocument, *, room: str) -> None:
     var = plan_var_name(room)
-    payload = json.dumps(doc.to_plan_dict(), indent=2, ensure_ascii=False)
+    payload = pprint.pformat(
+        doc.to_plan_dict(),
+        width=120,
+        indent=2,
+        sort_dicts=False,
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         f'"""Room {room.upper()} plan — harness updates step status/proof during execution."""\n\n'

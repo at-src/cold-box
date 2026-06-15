@@ -188,6 +188,9 @@ def main():
     parser.add_argument("--output", default="wmi_persistence_report.json")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     sysmon_events = query_sysmon_wmi_events(args.evtx)
     sysmon_findings = analyze_sysmon_events(sysmon_events)
 
@@ -204,6 +207,18 @@ def main():
                 len(sysmon_events), report["total_findings"], report["critical_findings"])
     print(json.dumps(report, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-wmi-persistence',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

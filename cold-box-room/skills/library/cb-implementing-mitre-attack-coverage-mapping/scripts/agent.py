@@ -150,11 +150,14 @@ def generate_report(rules, technique_rules, unmapped, tactic_coverage, depth):
 
 def main():
     parser = argparse.ArgumentParser(description="MITRE ATT&CK Coverage Mapping Agent")
-    parser.add_argument("--rules", required=True, help="JSON file with detection rules and ATT&CK mappings")
+    parser.add_argument("--rules", required=False, help="JSON file with detection rules and ATT&CK mappings")
     parser.add_argument("--matrix", help="ATT&CK matrix JSON (techniques per tactic)")
     parser.add_argument("--navigator-output", help="Output ATT&CK Navigator layer JSON")
     parser.add_argument("--output", default="attack_coverage_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     rules = load_detection_rules(args.rules)
     attack_matrix = load_attack_matrix(args.matrix) if args.matrix else {t: [] for t in ENTERPRISE_TACTICS}
@@ -175,6 +178,18 @@ def main():
     logger.info("Coverage: %d techniques covered by %d rules", len(technique_rules), len(rules))
     print(json.dumps(report, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-mitre-attack-coverage-mapping',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

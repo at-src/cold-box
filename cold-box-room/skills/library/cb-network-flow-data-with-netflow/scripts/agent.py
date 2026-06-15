@@ -182,11 +182,14 @@ def generate_report(flows, scanners, exfil, beacons, baseline):
 
 def main():
     parser = argparse.ArgumentParser(description="NetFlow Analysis Agent")
-    parser.add_argument("--flow-file", required=True, help="JSON flow data file")
+    parser.add_argument("--flow-file", required=False, help="JSON flow data file")
     parser.add_argument("--byte-threshold", type=int, default=100_000_000)
     parser.add_argument("--scan-threshold", type=int, default=20)
     parser.add_argument("--output", default="netflow_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     flows = load_flow_data(args.flow_file)
     baseline = build_traffic_baseline(flows)
@@ -199,6 +202,18 @@ def main():
         json.dump(report, f, indent=2)
     logger.info("Report saved to %s", args.output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-network-flow-data-with-netflow',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

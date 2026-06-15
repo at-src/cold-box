@@ -138,13 +138,16 @@ def analyze_character_distribution(queries):
 
 def main():
     parser = argparse.ArgumentParser(description="DNS Tunneling Detection Agent")
-    parser.add_argument("--pcap", required=True, help="Path to PCAP file")
+    parser.add_argument("--pcap", required=False, help="Path to PCAP file")
     parser.add_argument("--entropy-threshold", type=float, default=3.8)
     parser.add_argument("--output", default="dns_tunnel_report.json")
     parser.add_argument("--action", choices=[
         "entropy", "length", "txt", "cardinality", "full_analysis"
     ], default="full_analysis")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     report = {"pcap": args.pcap, "generated_at": datetime.utcnow().isoformat(),
               "findings": {}}
@@ -177,6 +180,18 @@ def main():
         json.dump(report, f, indent=2, default=str)
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-dns-tunneling-detection',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

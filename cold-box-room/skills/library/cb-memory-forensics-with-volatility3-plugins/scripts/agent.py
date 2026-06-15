@@ -139,18 +139,21 @@ def main():
     parser = argparse.ArgumentParser(description="Volatility3 Memory Forensics Agent")
     sub = parser.add_subparsers(dest="command")
     p = sub.add_parser("plugin", help="Run specific Volatility3 plugin")
-    p.add_argument("--dump", required=True, help="Memory dump file path")
-    p.add_argument("--name", required=True, help="Plugin name or class", choices=list(VOL3_PLUGINS.keys()))
+    p.add_argument("--dump", required=False, help="Memory dump file path")
+    p.add_argument("--name", required=False, help="Plugin name or class", choices=list(VOL3_PLUGINS.keys()))
     p.add_argument("--args", nargs="*", help="Extra plugin arguments")
     m = sub.add_parser("malproc", help="Detect malicious processes")
-    m.add_argument("--dump", required=True)
+    m.add_argument("--dump", required=False)
     i = sub.add_parser("inject", help="Detect code injection")
-    i.add_argument("--dump", required=True)
+    i.add_argument("--dump", required=False)
     n = sub.add_parser("network", help="Analyze network connections")
-    n.add_argument("--dump", required=True)
+    n.add_argument("--dump", required=False)
     t = sub.add_parser("triage", help="Full memory triage")
-    t.add_argument("--dump", required=True)
+    t.add_argument("--dump", required=False)
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "plugin":
         result = run_vol3_plugin(args.dump, args.name, args.args)
     elif args.command == "malproc":
@@ -166,6 +169,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-memory-forensics-with-volatility3-plugins',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

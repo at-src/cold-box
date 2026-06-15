@@ -104,6 +104,35 @@ def parse_downloads(profile_path):
     return downloads
 
 
+def parse_firefox_places(db_path):
+    """Parse Firefox places.sqlite history."""
+    if not os.path.isfile(db_path):
+        return []
+    entries = []
+    try:
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT p.url, p.title, h.visit_date
+            FROM moz_historyvisits h
+            JOIN moz_places p ON h.place_id = p.id
+            ORDER BY h.visit_date DESC
+            LIMIT 5000
+            """
+        )
+        for url, title, visit_date in cursor.fetchall():
+            entries.append({
+                "url": url,
+                "title": title or "",
+                "visit_time": chrome_time_to_datetime(visit_date) if visit_date else None,
+            })
+        conn.close()
+    except sqlite3.Error as exc:
+        entries.append({"error": str(exc)})
+    return entries
+
+
 def parse_cookies(profile_path):
     """Parse cookies from Cookies database."""
     db_path = os.path.join(profile_path, "Cookies")
@@ -214,6 +243,38 @@ def detect_suspicious_activity(history, downloads):
                 "path": dl.get("target_path"),
             })
     return findings
+
+
+def analyze_image(image_path, case_dir):
+    """Harness entry — audit disk, parse browser SQLite profile from script_args or path."""
+    from cold_box_room.skills.script_helpers import (
+        artifact_path,
+        audit_artifact_file,
+        audit_disk_image,
+        ensure_case_dir,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    target = artifact_path(image_path)
+    audit_artifact_file(target, case_dir, binary="file")
+
+    if os.path.isfile(target) and target.lower().endswith(".sqlite"):
+        history = parse_firefox_places(target) if "places" in os.path.basename(target).lower() else []
+        payload = {
+            "target": target,
+            "history_count": len(history),
+            "history_sample": history[:30],
+        }
+    elif os.path.isdir(target):
+        profiles = find_browser_profiles(target)
+        payload = {"target": target, "profiles": profiles}
+    else:
+        payload = {"target": target, "error": "Pass places.sqlite or browser profile dir as script_args[0]"}
+
+    write_json_report(case_dir, "browser_report.json", payload)
+    return payload
 
 
 if __name__ == "__main__":

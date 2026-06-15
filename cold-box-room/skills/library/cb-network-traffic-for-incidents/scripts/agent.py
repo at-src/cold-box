@@ -170,6 +170,18 @@ def generate_incident_report(pcap_path, beacons, lateral, exfil, dns_queries):
     return report
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-network-traffic-for-incidents',
+        main_fn=None,
+    )
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Network Traffic Incident Analysis Agent")

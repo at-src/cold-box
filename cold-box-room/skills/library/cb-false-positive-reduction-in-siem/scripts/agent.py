@@ -109,15 +109,18 @@ def main():
     parser = argparse.ArgumentParser(description="SIEM False Positive Reduction Agent")
     sub = parser.add_subparsers(dest="command")
     a = sub.add_parser("analyze", help="Analyze alert false positive patterns")
-    a.add_argument("--csv", required=True, help="SIEM alert export CSV")
+    a.add_argument("--csv", required=False, help="SIEM alert export CSV")
     a.add_argument("--threshold", type=float, default=5, help="Min FP rate to flag")
     t = sub.add_parser("tune", help="Generate tuning recommendations")
-    t.add_argument("--csv", required=True)
+    t.add_argument("--csv", required=False)
     s = sub.add_parser("simulate", help="Simulate tuning impact")
-    s.add_argument("--csv", required=True)
+    s.add_argument("--csv", required=False)
     s.add_argument("--disable-rules", nargs="*", default=[])
     s.add_argument("--whitelist-sources", nargs="*", default=[])
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "analyze":
         result = analyze_alerts(args.csv, args.threshold)
     elif args.command == "tune":
@@ -129,6 +132,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-false-positive-reduction-in-siem',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

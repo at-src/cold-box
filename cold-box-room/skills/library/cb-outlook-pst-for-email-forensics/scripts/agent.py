@@ -14,6 +14,7 @@ import sys
 import json
 import hashlib
 import re
+from pathlib import Path
 
 try:
     import pypff
@@ -142,6 +143,46 @@ def generate_report(filepath, folder_data):
             "count": f["message_count"],
         } for f in folder_data],
     }
+
+
+def analyze_image(image_path, case_dir):
+    """Harness entry — PST via pypff when available; DBX/other via strings harness audit."""
+    from cold_box_room.skills.script_helpers import (
+        artifact_path,
+        audit_artifact_file,
+        audit_disk_image,
+        ensure_case_dir,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    target = artifact_path(image_path)
+    audit_artifact_file(target, case_dir, binary="strings")
+
+    payload: dict = {"target": target, "format": Path(target).suffix.lower()}
+    if target.lower().endswith((".pst", ".ost")) and HAS_PYPFF:
+        pst, err = open_pst(target)
+        if err:
+            payload["error"] = err
+        else:
+            root = pst.get_root_folder()
+            folder_data = walk_folders(root)
+            payload.update(generate_report(target, folder_data))
+            pst.close()
+    elif target.lower().endswith(".dbx") or os.path.isfile(target):
+        with open(target, "rb") as handle:
+            raw = handle.read(512_000)
+        text = raw.decode("latin-1", errors="replace")
+        emails = re.findall(r"[\w.+-]+@[\w.-]+\.\w+", text)
+        attachments = re.findall(r'filename="([^"]+)"', text, re.IGNORECASE)
+        payload.update({
+            "email_addresses": sorted(set(emails))[:100],
+            "attachment_names": sorted(set(attachments))[:50],
+            "has_mime_multipart": "multipart/mixed" in text.lower(),
+        })
+    write_json_report(case_dir, "mail_report.json", payload)
+    return payload
 
 
 if __name__ == "__main__":

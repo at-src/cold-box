@@ -138,6 +138,9 @@ def _run_tool_loop(
                         k: result.get(k)
                         for k in (
                             "ok",
+                            "outcome",
+                            "r2_status_state",
+                            "availability",
                             "audit_id",
                             "tool_id",
                             "exit_code",

@@ -136,10 +136,13 @@ def analyze_fronting_pairs(alerts):
 
 def main():
     parser = argparse.ArgumentParser(description="Domain Fronting C2 Traffic Hunter")
-    parser.add_argument("--proxy-log", required=True, help="CSV proxy log with SNI and Host header fields")
+    parser.add_argument("--proxy-log", required=False, help="CSV proxy log with SNI and Host header fields")
     parser.add_argument("--check-certs", action="store_true", help="Fetch TLS certs for top fronting domains")
     parser.add_argument("--output", default="domain_fronting_report.json", help="Output report path")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     records = load_proxy_logs(args.proxy_log)
     print(f"[+] Loaded {len(records)} proxy log entries")
@@ -169,6 +172,18 @@ def main():
     print(f"[+] Top fronting pairs: {len(fronting_pairs)}")
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-domain-fronting-c2-traffic',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

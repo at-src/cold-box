@@ -106,10 +106,13 @@ def generate_report(assessment, containment, recovery):
 
 def main():
     parser = argparse.ArgumentParser(description="OT Incident Response Playbook Agent")
-    parser.add_argument("--incident-type", required=True, choices=list(OT_INCIDENT_TYPES.keys()))
+    parser.add_argument("--incident-type", required=False, choices=list(OT_INCIDENT_TYPES.keys()))
     parser.add_argument("--affected-assets", help="JSON file listing affected assets")
     parser.add_argument("--output", default="ot_ir_playbook.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     assets = []
     if args.affected_assets:
@@ -126,6 +129,18 @@ def main():
                 args.incident_type, assessment["escalated_severity"], assessment["safety_impact"])
     print(json.dumps(report, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-ot-incident-response-playbook',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

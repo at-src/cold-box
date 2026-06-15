@@ -273,12 +273,15 @@ def generate_report(report_type: str, data_path: str, output_dir: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Threat Intelligence Report Generator")
-    parser.add_argument("--type", required=True, choices=list(REPORT_TEMPLATES.keys()),
+    parser.add_argument("--type", required=False, choices=list(REPORT_TEMPLATES.keys()),
                         help="Report type: strategic, operational, tactical, flash")
-    parser.add_argument("--data", required=True, help="Path to JSON data file with report content")
+    parser.add_argument("--data", required=False, help="Path to JSON data file with report content")
     parser.add_argument("--output-dir", default=".", help="Output directory")
     parser.add_argument("--output", default="report_meta.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     os.makedirs(args.output_dir, exist_ok=True)
     result = generate_report(args.type, args.data, args.output_dir)
@@ -288,6 +291,18 @@ def main():
     logger.info("Metadata saved to %s", out_path)
     print(json.dumps(result, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-generating-threat-intelligence-reports',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

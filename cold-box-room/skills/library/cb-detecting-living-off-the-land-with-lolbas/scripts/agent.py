@@ -164,10 +164,13 @@ def build_report(detections, log_path):
 
 def main():
     parser = argparse.ArgumentParser(description="LOLBAS Abuse Detection Agent")
-    parser.add_argument("--log-file", required=True, help="JSON log file with process creation events")
+    parser.add_argument("--log-file", required=False, help="JSON log file with process creation events")
     parser.add_argument("--output", default="lolbas_detections.json", help="Output report path")
     parser.add_argument("--generate-sigma", action="store_true", help="Generate Sigma rules for all LOLBins")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     events = parse_process_events(args.log_file)
     detections = detect_lolbin_abuse(events)
@@ -183,6 +186,18 @@ def main():
     print(f"[+] Analyzed {len(events)} events, found {len(detections)} LOLBin abuse detections")
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-living-off-the-land-with-lolbas',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

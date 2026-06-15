@@ -142,13 +142,16 @@ def extract_unique_machines(results):
 
 def main():
     parser = argparse.ArgumentParser(description="Windows LNK File Forensic Analysis Agent")
-    parser.add_argument("--lnk-dir", required=True, help="Directory containing LNK files")
+    parser.add_argument("--lnk-dir", required=False, help="Directory containing LNK files")
     parser.add_argument("--startup-dir", help="Startup folder to check for persistence")
     parser.add_argument("--output-dir", default="./lnk_analysis")
     parser.add_argument("--action", choices=[
         "parse_all", "removable", "network", "startup", "machines", "full_analysis"
     ], default="full_analysis")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     os.makedirs(args.output_dir, exist_ok=True)
     all_results = parse_lnk_directory(args.lnk_dir)
@@ -183,6 +186,18 @@ def main():
 
     print(json.dumps({"total_lnk": len(all_results), "generated_at": datetime.utcnow().isoformat()}, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-windows-lnk-files-for-artifacts',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

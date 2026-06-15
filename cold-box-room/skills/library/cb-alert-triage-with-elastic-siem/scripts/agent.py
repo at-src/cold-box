@@ -156,7 +156,7 @@ def generate_report(host: str, api_key: str = None, username: str = None,
 
 def main():
     parser = argparse.ArgumentParser(description="Elastic SIEM Alert Triage Agent")
-    parser.add_argument("--host", required=True, help="Elasticsearch URL")
+    parser.add_argument("--host", required=False, help="Elasticsearch URL")
     parser.add_argument("--api-key", help="Elasticsearch API key")
     parser.add_argument("--username", help="Elasticsearch username")
     parser.add_argument("--password", help="Elasticsearch password")
@@ -164,6 +164,9 @@ def main():
     parser.add_argument("--severity", nargs="+", help="Filter by severity levels")
     parser.add_argument("--output", help="Output JSON file path")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     report = generate_report(args.host, args.api_key, args.username,
                              args.password, args.hours, args.severity)
@@ -174,6 +177,18 @@ def main():
     else:
         print(output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-alert-triage-with-elastic-siem',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

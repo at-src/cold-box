@@ -155,11 +155,14 @@ def generate_report(log_path: str, rules_path: str = None,
 
 def main():
     parser = argparse.ArgumentParser(description="AiTM Phishing Detection Agent")
-    parser.add_argument("--logs", required=True, help="Azure AD sign-in logs JSON file")
+    parser.add_argument("--logs", required=False, help="Azure AD sign-in logs JSON file")
     parser.add_argument("--inbox-rules", help="Inbox rules JSON export")
     parser.add_argument("--max-speed", type=float, default=900, help="Max travel speed km/h (default: 900)")
     parser.add_argument("--output", help="Output JSON file path")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     report = generate_report(args.logs, args.inbox_rules, args.max_speed)
     output = json.dumps(report, indent=2)
@@ -169,6 +172,18 @@ def main():
     else:
         print(output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-adversary-in-the-middle-phishing-detection',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

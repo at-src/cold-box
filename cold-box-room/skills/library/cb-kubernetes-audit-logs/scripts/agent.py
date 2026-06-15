@@ -152,12 +152,15 @@ def detect_forbidden_surge(events, threshold=20):
 
 def main():
     parser = argparse.ArgumentParser(description="Kubernetes Audit Log Analyzer")
-    parser.add_argument("--audit-log", required=True, help="Path to audit log file")
+    parser.add_argument("--audit-log", required=False, help="Path to audit log file")
     parser.add_argument("--output", default="k8s_audit_report.json")
     parser.add_argument("--action", choices=[
         "exec", "secrets", "rbac", "privileged", "anonymous", "full_analysis"
     ], default="full_analysis")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     events = parse_audit_log(args.audit_log)
     report = {"log_file": args.audit_log, "total_events": len(events),
@@ -197,6 +200,18 @@ def main():
         json.dump(report, f, indent=2, default=str)
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-kubernetes-audit-logs',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

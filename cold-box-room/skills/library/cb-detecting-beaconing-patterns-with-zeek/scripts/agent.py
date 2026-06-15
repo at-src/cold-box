@@ -151,6 +151,9 @@ def main():
     ], default="full_hunt")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     report = {"generated_at": datetime.utcnow().isoformat(), "findings": {}}
 
     if args.action in ("conn_beacon", "full_hunt") and args.conn_log:
@@ -170,6 +173,18 @@ def main():
         json.dump(report, f, indent=2, default=str)
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-beaconing-patterns-with-zeek',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

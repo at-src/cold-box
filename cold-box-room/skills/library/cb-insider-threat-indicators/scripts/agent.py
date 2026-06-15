@@ -213,6 +213,18 @@ def generate_report(case_id: str, subject: str, data_mv: dict, access: dict, ind
     return "\n".join(lines)
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-insider-threat-indicators',
+        main_fn=None,
+    )
+
 if __name__ == "__main__":
     case_id = sys.argv[1] if len(sys.argv) > 1 else "IT-2024-0001"
     subject_user = sys.argv[2] if len(sys.argv) > 2 else "jsmith"

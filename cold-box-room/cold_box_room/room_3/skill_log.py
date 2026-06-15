@@ -39,7 +39,8 @@ def append_skill_log(
     journal_id: str,
     library_slug: str,
     input_relpath: str,
-    ok: bool,
+    ok: bool | None = None,
+    outcome: str | None = None,
     audit_ids: list[str] | None = None,
     exit_code: int = 0,
     purpose: str = "",
@@ -48,6 +49,8 @@ def append_skill_log(
     plan_step_id: int | None = None,
 ) -> None:
     refs = list(audit_ids or [])
+    resolved_outcome = outcome or ("success" if ok else "failed")
+    resolved_ok = ok if ok is not None else resolved_outcome == "success"
     record: dict[str, Any] = {
         "run_id": run_id,
         "ts": datetime.now(timezone.utc).isoformat(),
@@ -56,7 +59,8 @@ def append_skill_log(
         "journal_id": journal_id,
         "library_slug": library_slug,
         "input_relpath": input_relpath,
-        "ok": ok,
+        "ok": resolved_ok,
+        "outcome": resolved_outcome,
         "exit_code": exit_code,
         "audit_ids": refs,
         "purpose": purpose,
@@ -78,7 +82,12 @@ def append_skill_log(
         "",
         f"- **Journal:** `{journal_id}`",
         f"- **Input:** `{input_relpath}`",
-        f"- **OK:** {ok}",
+        f"- **Outcome:** {resolved_outcome}"
+        + (
+            " — skill still runnable; retry with fixed inputs"
+            if resolved_outcome == "failed"
+            else ""
+        ),
         f"- **Exit code:** {exit_code}",
     ]
     if purpose.strip():
@@ -107,29 +116,82 @@ def iter_skill_log_entries(case_id: str) -> Iterator[dict[str, Any]]:
             yield json.loads(line)
 
 
+def _normalize_log_outcome(row: dict[str, Any]) -> str:
+    outcome = str(row.get("outcome") or "").strip().lower()
+    if outcome in {"success", "failed"}:
+        return outcome
+    return "success" if row.get("ok") else "failed"
+
+
+def _summarize_skill_log(entries: list[dict[str, Any]]) -> dict[str, Any]:
+    by_skill: dict[str, dict[str, Any]] = {}
+    for row in entries:
+        skill_id = str(row.get("skill_id") or "")
+        if not skill_id:
+            continue
+        outcome = _normalize_log_outcome(row)
+        summary = by_skill.setdefault(
+            skill_id,
+            {
+                "attempts": 0,
+                "successes": 0,
+                "failures": 0,
+                "last_outcome": None,
+                "last_success_run_id": None,
+                "runnable": True,
+            },
+        )
+        summary["attempts"] += 1
+        if outcome == "success":
+            summary["successes"] += 1
+            summary["last_success_run_id"] = row.get("run_id")
+        else:
+            summary["failures"] += 1
+        summary["last_outcome"] = outcome
+    return by_skill
+
+
 def read_skill_log(case_id: str, *, limit: int = 20) -> dict[str, Any]:
     entries = list(iter_skill_log_entries(case_id))
     md_path = layer2_skill_log_md_path(case_id)
-    successful = sum(1 for row in entries if row.get("ok"))
+    successful = sum(1 for row in entries if _normalize_log_outcome(row) == "success")
+    enriched = []
+    for row in entries[-limit:]:
+        item = dict(row)
+        item["outcome"] = _normalize_log_outcome(row)
+        item["skill_still_runnable"] = True
+        enriched.append(item)
     return {
         "jsonl_path": str(skill_log_jsonl_path(case_id).resolve()),
         "logbook_path": str(md_path.resolve()),
         "count": len(entries),
         "successful_runs": successful,
-        "entries": entries[-limit:],
+        "failed_attempts": len(entries) - successful,
+        "by_skill": _summarize_skill_log(entries),
+        "reading_guide": (
+            "outcome=failed means that run_skill attempt failed — the skill remains in the "
+            "catalog and is retryable. Check by_skill[skill_id].last_success_run_id or retry "
+            "with corrected script_args / Room 2 extractions. Only run_skill outcome=not_runnable "
+            "means pick a different skill."
+        ),
+        "entries": enriched,
         "logbook_exists": md_path.is_file(),
         "logbook_content": md_path.read_text(encoding="utf-8") if md_path.is_file() else "",
     }
 
 
 def successful_skill_run_ids(case_id: str) -> set[str]:
-    return {str(row["run_id"]) for row in iter_skill_log_entries(case_id) if row.get("ok")}
+    return {
+        str(row["run_id"])
+        for row in iter_skill_log_entries(case_id)
+        if _normalize_log_outcome(row) == "success"
+    }
 
 
 def skill_run_audit_ids(case_id: str) -> set[str]:
     ids: set[str] = set()
     for row in iter_skill_log_entries(case_id):
-        if row.get("ok"):
+        if _normalize_log_outcome(row) == "success":
             for aid in row.get("audit_ids") or []:
                 ids.add(str(aid))
     from cold_box_room.room_3.tool_log import iter_layer2_tool_log_entries

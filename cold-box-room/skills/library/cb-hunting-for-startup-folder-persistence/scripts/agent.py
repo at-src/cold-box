@@ -276,6 +276,9 @@ def main():
     sub.add_parser("full", help="Full persistence threat hunt")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "scan":
         result = scan_startup_folders()
     elif args.command == "registry":
@@ -289,6 +292,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-startup-folder-persistence',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

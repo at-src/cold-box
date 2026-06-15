@@ -1,0 +1,2142 @@
+{
+  "schema": "cold_box_room.skill_inspection_v1",
+  "verified_at": "2026-06-15T02:23:39.077088+00:00",
+  "evidence": "/evidence/unseen-terry-usb/terry-work-usb-2009-12-11.E01",
+  "counts": {
+    "success": 213,
+    "failed": 0,
+    "not_runnable": 0
+  },
+  "results": [
+    {
+      "skill_id": "SKILL-001",
+      "journal_id": "CB-SKL-001",
+      "library_slug": "cb-active-directory-compromise-investigation",
+      "outcome": "success",
+      "elapsed_ms": 32.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-003",
+      "journal_id": "CB-SKL-003",
+      "library_slug": "cb-browser-forensics-with-hindsight",
+      "outcome": "success",
+      "elapsed_ms": 24.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-008",
+      "journal_id": "CB-SKL-008",
+      "library_slug": "cb-building-malware-incident-communication-template",
+      "outcome": "success",
+      "elapsed_ms": 27.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-012",
+      "journal_id": "CB-SKL-012",
+      "library_slug": "cb-cloud-incident-response",
+      "outcome": "success",
+      "elapsed_ms": 23.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-014",
+      "journal_id": "CB-SKL-014",
+      "library_slug": "cb-cloud-storage-access-patterns",
+      "outcome": "success",
+      "elapsed_ms": 24.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-017",
+      "journal_id": "CB-SKL-017",
+      "library_slug": "cb-collecting-volatile-evidence-from-compromised-host",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-018",
+      "journal_id": "CB-SKL-018",
+      "library_slug": "cb-configuring-windows-event-logging-for-detection",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-019",
+      "journal_id": "CB-SKL-019",
+      "library_slug": "cb-containing-active-breach",
+      "outcome": "success",
+      "elapsed_ms": 23.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-020",
+      "journal_id": "CB-SKL-020",
+      "library_slug": "cb-detecting-arp-poisoning-in-network-traffic",
+      "outcome": "success",
+      "elapsed_ms": 664.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-024",
+      "journal_id": "CB-SKL-024",
+      "library_slug": "cb-detecting-golden-ticket-attacks-in-kerberos-logs",
+      "outcome": "success",
+      "elapsed_ms": 36.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-025",
+      "journal_id": "CB-SKL-025",
+      "library_slug": "cb-detecting-living-off-the-land-with-lolbas",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-026",
+      "journal_id": "CB-SKL-026",
+      "library_slug": "cb-detecting-malicious-scheduled-tasks-with-sysmon",
+      "outcome": "success",
+      "elapsed_ms": 26.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-027",
+      "journal_id": "CB-SKL-027",
+      "library_slug": "cb-detecting-ntlm-relay-with-event-correlation",
+      "outcome": "success",
+      "elapsed_ms": 24.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-028",
+      "journal_id": "CB-SKL-028",
+      "library_slug": "cb-detecting-process-injection-techniques",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-029",
+      "journal_id": "CB-SKL-029",
+      "library_slug": "cb-detecting-rdp-brute-force-attacks",
+      "outcome": "success",
+      "elapsed_ms": 24.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-030",
+      "journal_id": "CB-SKL-030",
+      "library_slug": "cb-detecting-rootkit-activity",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-031",
+      "journal_id": "CB-SKL-031",
+      "library_slug": "cb-detecting-t1003-credential-dumping-with-edr",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-032",
+      "journal_id": "CB-SKL-032",
+      "library_slug": "cb-detecting-t1055-process-injection-with-sysmon",
+      "outcome": "success",
+      "elapsed_ms": 22.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-033",
+      "journal_id": "CB-SKL-033",
+      "library_slug": "cb-detecting-wmi-persistence",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-034",
+      "journal_id": "CB-SKL-034",
+      "library_slug": "cb-disk-forensics-investigation",
+      "outcome": "success",
+      "elapsed_ms": 7977.0,
+      "audit_count": 6,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-035",
+      "journal_id": "CB-SKL-035",
+      "library_slug": "cb-disk-image-with-autopsy",
+      "outcome": "success",
+      "elapsed_ms": 59.9,
+      "audit_count": 2,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-036",
+      "journal_id": "CB-SKL-036",
+      "library_slug": "cb-disk-image-with-dd-and-dcfldd",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-037",
+      "journal_id": "CB-SKL-037",
+      "library_slug": "cb-docker-container-forensics",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-038",
+      "journal_id": "CB-SKL-038",
+      "library_slug": "cb-email-headers-for-phishing-investigation",
+      "outcome": "success",
+      "elapsed_ms": 27.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-039",
+      "journal_id": "CB-SKL-039",
+      "library_slug": "cb-endpoint-forensics-investigation",
+      "outcome": "success",
+      "elapsed_ms": 24.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-040",
+      "journal_id": "CB-SKL-040",
+      "library_slug": "cb-eradicating-malware-from-infected-systems",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-041",
+      "journal_id": "CB-SKL-041",
+      "library_slug": "cb-extracting-browser-history-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-042",
+      "journal_id": "CB-SKL-042",
+      "library_slug": "cb-extracting-credentials-from-memory-dump",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-043",
+      "journal_id": "CB-SKL-043",
+      "library_slug": "cb-extracting-memory-artifacts-with-rekall",
+      "outcome": "success",
+      "elapsed_ms": 22.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-044",
+      "journal_id": "CB-SKL-044",
+      "library_slug": "cb-extracting-windows-event-logs-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 24.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-045",
+      "journal_id": "CB-SKL-045",
+      "library_slug": "cb-file-carving-with-foremost",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-046",
+      "journal_id": "CB-SKL-046",
+      "library_slug": "cb-heap-spray-exploitation",
+      "outcome": "success",
+      "elapsed_ms": 973.1,
+      "audit_count": 3,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-047",
+      "journal_id": "CB-SKL-047",
+      "library_slug": "cb-hunting-for-anomalous-powershell-execution",
+      "outcome": "success",
+      "elapsed_ms": 30.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-048",
+      "journal_id": "CB-SKL-048",
+      "library_slug": "cb-hunting-for-cobalt-strike-beacons",
+      "outcome": "success",
+      "elapsed_ms": 23.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-049",
+      "journal_id": "CB-SKL-049",
+      "library_slug": "cb-hunting-for-dcom-lateral-movement",
+      "outcome": "success",
+      "elapsed_ms": 24.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-050",
+      "journal_id": "CB-SKL-050",
+      "library_slug": "cb-hunting-for-defense-evasion-via-timestomping",
+      "outcome": "success",
+      "elapsed_ms": 1475.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-052",
+      "journal_id": "CB-SKL-052",
+      "library_slug": "cb-hunting-for-lateral-movement-via-wmi",
+      "outcome": "success",
+      "elapsed_ms": 24.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-053",
+      "journal_id": "CB-SKL-053",
+      "library_slug": "cb-hunting-for-process-injection-techniques",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-054",
+      "journal_id": "CB-SKL-054",
+      "library_slug": "cb-hunting-for-registry-run-key-persistence",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-055",
+      "journal_id": "CB-SKL-055",
+      "library_slug": "cb-hunting-for-t1098-account-manipulation",
+      "outcome": "success",
+      "elapsed_ms": 24.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-056",
+      "journal_id": "CB-SKL-056",
+      "library_slug": "cb-hunting-for-unusual-service-installations",
+      "outcome": "success",
+      "elapsed_ms": 24.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-057",
+      "journal_id": "CB-SKL-057",
+      "library_slug": "cb-implementing-log-integrity-with-blockchain",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-059",
+      "journal_id": "CB-SKL-059",
+      "library_slug": "cb-implementing-ot-incident-response-playbook",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-065",
+      "journal_id": "CB-SKL-065",
+      "library_slug": "cb-insider-threat-indicators",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-066",
+      "journal_id": "CB-SKL-066",
+      "library_slug": "cb-insider-threat-investigation",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-068",
+      "journal_id": "CB-SKL-068",
+      "library_slug": "cb-kubernetes-audit-logs",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-069",
+      "journal_id": "CB-SKL-069",
+      "library_slug": "cb-lateral-movement-detection",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-070",
+      "journal_id": "CB-SKL-070",
+      "library_slug": "cb-linux-audit-logs-for-intrusion",
+      "outcome": "success",
+      "elapsed_ms": 24.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-071",
+      "journal_id": "CB-SKL-071",
+      "library_slug": "cb-linux-kernel-rootkits",
+      "outcome": "success",
+      "elapsed_ms": 27.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-072",
+      "journal_id": "CB-SKL-072",
+      "library_slug": "cb-linux-log-forensics-investigation",
+      "outcome": "success",
+      "elapsed_ms": 27.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-073",
+      "journal_id": "CB-SKL-073",
+      "library_slug": "cb-linux-system-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 25.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-074",
+      "journal_id": "CB-SKL-074",
+      "library_slug": "cb-lnk-file-and-jump-list-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 31.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-075",
+      "journal_id": "CB-SKL-075",
+      "library_slug": "cb-log-analysis-for-forensic-investigation",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-079",
+      "journal_id": "CB-SKL-079",
+      "library_slug": "cb-malware-ioc-extraction",
+      "outcome": "success",
+      "elapsed_ms": 29.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-080",
+      "journal_id": "CB-SKL-080",
+      "library_slug": "cb-malware-persistence-investigation",
+      "outcome": "success",
+      "elapsed_ms": 24.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-081",
+      "journal_id": "CB-SKL-081",
+      "library_slug": "cb-malware-triage-with-yara",
+      "outcome": "success",
+      "elapsed_ms": 24.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-082",
+      "journal_id": "CB-SKL-082",
+      "library_slug": "cb-mapping-mitre-attack-techniques",
+      "outcome": "success",
+      "elapsed_ms": 463.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-083",
+      "journal_id": "CB-SKL-083",
+      "library_slug": "cb-memory-dumps-with-volatility",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-084",
+      "journal_id": "CB-SKL-084",
+      "library_slug": "cb-memory-forensics-with-lime-and-volatility",
+      "outcome": "success",
+      "elapsed_ms": 24.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-085",
+      "journal_id": "CB-SKL-085",
+      "library_slug": "cb-memory-forensics-with-volatility",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-086",
+      "journal_id": "CB-SKL-086",
+      "library_slug": "cb-memory-forensics-with-volatility3",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-087",
+      "journal_id": "CB-SKL-087",
+      "library_slug": "cb-memory-forensics-with-volatility3-plugins",
+      "outcome": "success",
+      "elapsed_ms": 24.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-088",
+      "journal_id": "CB-SKL-088",
+      "library_slug": "cb-mft-for-deleted-file-recovery",
+      "outcome": "success",
+      "elapsed_ms": 62.8,
+      "audit_count": 2,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-089",
+      "journal_id": "CB-SKL-089",
+      "library_slug": "cb-mobile-device-forensics-with-cellebrite",
+      "outcome": "success",
+      "elapsed_ms": 26.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-092",
+      "journal_id": "CB-SKL-092",
+      "library_slug": "cb-network-packets-with-scapy",
+      "outcome": "success",
+      "elapsed_ms": 27.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-093",
+      "journal_id": "CB-SKL-093",
+      "library_slug": "cb-network-traffic-analysis-with-tshark",
+      "outcome": "success",
+      "elapsed_ms": 26.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-094",
+      "journal_id": "CB-SKL-094",
+      "library_slug": "cb-network-traffic-analysis-with-zeek",
+      "outcome": "success",
+      "elapsed_ms": 28.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-095",
+      "journal_id": "CB-SKL-095",
+      "library_slug": "cb-network-traffic-for-incidents",
+      "outcome": "success",
+      "elapsed_ms": 29.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-098",
+      "journal_id": "CB-SKL-098",
+      "library_slug": "cb-outlook-pst-for-email-forensics",
+      "outcome": "success",
+      "elapsed_ms": 76.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-100",
+      "journal_id": "CB-SKL-100",
+      "library_slug": "cb-post-incident-lessons-learned",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-101",
+      "journal_id": "CB-SKL-101",
+      "library_slug": "cb-powershell-empire-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 24.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-102",
+      "journal_id": "CB-SKL-102",
+      "library_slug": "cb-powershell-script-block-logging",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-103",
+      "journal_id": "CB-SKL-103",
+      "library_slug": "cb-prefetch-files-for-execution-history",
+      "outcome": "success",
+      "elapsed_ms": 46.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-105",
+      "journal_id": "CB-SKL-105",
+      "library_slug": "cb-recovering-deleted-files-with-photorec",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-107",
+      "journal_id": "CB-SKL-107",
+      "library_slug": "cb-slack-space-and-file-system-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-108",
+      "journal_id": "CB-SKL-108",
+      "library_slug": "cb-sqlite-database-forensics",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-109",
+      "journal_id": "CB-SKL-109",
+      "library_slug": "cb-steganography-detection",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-110",
+      "journal_id": "CB-SKL-110",
+      "library_slug": "cb-testing-ransomware-recovery-procedures",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-111",
+      "journal_id": "CB-SKL-111",
+      "library_slug": "cb-threat-hunting-with-elastic-siem",
+      "outcome": "success",
+      "elapsed_ms": 284.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-112",
+      "journal_id": "CB-SKL-112",
+      "library_slug": "cb-threat-hunting-with-yara-rules",
+      "outcome": "success",
+      "elapsed_ms": 147.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-113",
+      "journal_id": "CB-SKL-113",
+      "library_slug": "cb-timeline-reconstruction-with-plaso",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-115",
+      "journal_id": "CB-SKL-115",
+      "library_slug": "cb-triaging-security-incident-with-ir-playbook",
+      "outcome": "success",
+      "elapsed_ms": 26.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-116",
+      "journal_id": "CB-SKL-116",
+      "library_slug": "cb-usb-device-connection-history",
+      "outcome": "success",
+      "elapsed_ms": 60.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-117",
+      "journal_id": "CB-SKL-117",
+      "library_slug": "cb-windows-amcache-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 40.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-118",
+      "journal_id": "CB-SKL-118",
+      "library_slug": "cb-windows-artifact-analysis-with-eric-zimmerman-tools",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-120",
+      "journal_id": "CB-SKL-120",
+      "library_slug": "cb-windows-lnk-files-for-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-121",
+      "journal_id": "CB-SKL-121",
+      "library_slug": "cb-windows-prefetch-with-python",
+      "outcome": "success",
+      "elapsed_ms": 24.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-122",
+      "journal_id": "CB-SKL-122",
+      "library_slug": "cb-windows-registry-for-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 23.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-123",
+      "journal_id": "CB-SKL-123",
+      "library_slug": "cb-windows-shellbag-artifacts",
+      "outcome": "success",
+      "elapsed_ms": 23.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-124",
+      "journal_id": "CB-SKL-124",
+      "library_slug": "cb-yara-rule-development-for-detection",
+      "outcome": "success",
+      "elapsed_ms": 25.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-125",
+      "journal_id": "CB-SKL-125",
+      "library_slug": "cb-adversary-in-the-middle-phishing-detection",
+      "outcome": "success",
+      "elapsed_ms": 27.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-127",
+      "journal_id": "CB-SKL-127",
+      "library_slug": "cb-alert-triage-with-elastic-siem",
+      "outcome": "success",
+      "elapsed_ms": 25.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-131",
+      "journal_id": "CB-SKL-131",
+      "library_slug": "cb-authenticated-scan-with-openvas",
+      "outcome": "success",
+      "elapsed_ms": 43.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-135",
+      "journal_id": "CB-SKL-135",
+      "library_slug": "cb-bandwidth-throttling-attack-simulation",
+      "outcome": "success",
+      "elapsed_ms": 40.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-136",
+      "journal_id": "CB-SKL-136",
+      "library_slug": "cb-bootkit-and-rootkit-samples",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-138",
+      "journal_id": "CB-SKL-138",
+      "library_slug": "cb-building-attack-pattern-library-from-cti-reports",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-144",
+      "journal_id": "CB-SKL-144",
+      "library_slug": "cb-building-soc-escalation-matrix",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-151",
+      "journal_id": "CB-SKL-151",
+      "library_slug": "cb-building-threat-intelligence-platform",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-152",
+      "journal_id": "CB-SKL-152",
+      "library_slug": "cb-campaign-attribution-evidence",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-159",
+      "journal_id": "CB-SKL-159",
+      "library_slug": "cb-configuring-snort-ids-for-intrusion-detection",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-160",
+      "journal_id": "CB-SKL-160",
+      "library_slug": "cb-configuring-suricata-for-network-monitoring",
+      "outcome": "success",
+      "elapsed_ms": 23.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-167",
+      "journal_id": "CB-SKL-167",
+      "library_slug": "cb-deobfuscating-powershell-obfuscated-malware",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-169",
+      "journal_id": "CB-SKL-169",
+      "library_slug": "cb-deploying-decoy-files-for-ransomware-detection",
+      "outcome": "success",
+      "elapsed_ms": 23.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-170",
+      "journal_id": "CB-SKL-170",
+      "library_slug": "cb-deploying-edr-agent-with-crowdstrike",
+      "outcome": "success",
+      "elapsed_ms": 23.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-172",
+      "journal_id": "CB-SKL-172",
+      "library_slug": "cb-detecting-anomalous-authentication-patterns",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-176",
+      "journal_id": "CB-SKL-176",
+      "library_slug": "cb-detecting-beaconing-patterns-with-zeek",
+      "outcome": "success",
+      "elapsed_ms": 198.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-177",
+      "journal_id": "CB-SKL-177",
+      "library_slug": "cb-detecting-command-and-control-over-dns",
+      "outcome": "success",
+      "elapsed_ms": 1123.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-178",
+      "journal_id": "CB-SKL-178",
+      "library_slug": "cb-detecting-compromised-cloud-credentials",
+      "outcome": "success",
+      "elapsed_ms": 23.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-179",
+      "journal_id": "CB-SKL-179",
+      "library_slug": "cb-detecting-container-escape-attempts",
+      "outcome": "success",
+      "elapsed_ms": 24.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-180",
+      "journal_id": "CB-SKL-180",
+      "library_slug": "cb-detecting-cryptomining-in-cloud",
+      "outcome": "success",
+      "elapsed_ms": 25.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-181",
+      "journal_id": "CB-SKL-181",
+      "library_slug": "cb-detecting-dcsync-attack-in-active-directory",
+      "outcome": "success",
+      "elapsed_ms": 27.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-182",
+      "journal_id": "CB-SKL-182",
+      "library_slug": "cb-detecting-dll-sideloading-attacks",
+      "outcome": "success",
+      "elapsed_ms": 27.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-183",
+      "journal_id": "CB-SKL-183",
+      "library_slug": "cb-detecting-dns-exfiltration-with-dns-query-analysis",
+      "outcome": "success",
+      "elapsed_ms": 27.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-185",
+      "journal_id": "CB-SKL-185",
+      "library_slug": "cb-detecting-evasion-techniques-in-endpoint-logs",
+      "outcome": "success",
+      "elapsed_ms": 27.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-187",
+      "journal_id": "CB-SKL-187",
+      "library_slug": "cb-detecting-fileless-attacks-on-endpoints",
+      "outcome": "success",
+      "elapsed_ms": 26.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-188",
+      "journal_id": "CB-SKL-188",
+      "library_slug": "cb-detecting-fileless-malware-techniques",
+      "outcome": "success",
+      "elapsed_ms": 27.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-190",
+      "journal_id": "CB-SKL-190",
+      "library_slug": "cb-detecting-insider-data-exfiltration-via-dlp",
+      "outcome": "success",
+      "elapsed_ms": 25.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-191",
+      "journal_id": "CB-SKL-191",
+      "library_slug": "cb-detecting-insider-threat-behaviors",
+      "outcome": "success",
+      "elapsed_ms": 23.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-192",
+      "journal_id": "CB-SKL-192",
+      "library_slug": "cb-detecting-insider-threat-with-ueba",
+      "outcome": "success",
+      "elapsed_ms": 24.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-194",
+      "journal_id": "CB-SKL-194",
+      "library_slug": "cb-detecting-lateral-movement-in-network",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-196",
+      "journal_id": "CB-SKL-196",
+      "library_slug": "cb-detecting-lateral-movement-with-zeek",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-197",
+      "journal_id": "CB-SKL-197",
+      "library_slug": "cb-detecting-mimikatz-execution-patterns",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-198",
+      "journal_id": "CB-SKL-198",
+      "library_slug": "cb-detecting-network-anomalies-with-zeek",
+      "outcome": "success",
+      "elapsed_ms": 23.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-199",
+      "journal_id": "CB-SKL-199",
+      "library_slug": "cb-detecting-network-scanning-with-ids-signatures",
+      "outcome": "success",
+      "elapsed_ms": 27.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-200",
+      "journal_id": "CB-SKL-200",
+      "library_slug": "cb-detecting-pass-the-hash-attacks",
+      "outcome": "success",
+      "elapsed_ms": 28.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-202",
+      "journal_id": "CB-SKL-202",
+      "library_slug": "cb-detecting-port-scanning-with-fail2ban",
+      "outcome": "success",
+      "elapsed_ms": 26.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-203",
+      "journal_id": "CB-SKL-203",
+      "library_slug": "cb-detecting-privilege-escalation-attempts",
+      "outcome": "success",
+      "elapsed_ms": 41.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-204",
+      "journal_id": "CB-SKL-204",
+      "library_slug": "cb-detecting-process-hollowing-technique",
+      "outcome": "success",
+      "elapsed_ms": 26.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-205",
+      "journal_id": "CB-SKL-205",
+      "library_slug": "cb-detecting-ransomware-encryption-behavior",
+      "outcome": "success",
+      "elapsed_ms": 24.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-206",
+      "journal_id": "CB-SKL-206",
+      "library_slug": "cb-detecting-ransomware-precursors-in-network",
+      "outcome": "success",
+      "elapsed_ms": 23.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-207",
+      "journal_id": "CB-SKL-207",
+      "library_slug": "cb-detecting-service-account-abuse",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-208",
+      "journal_id": "CB-SKL-208",
+      "library_slug": "cb-detecting-suspicious-powershell-execution",
+      "outcome": "success",
+      "elapsed_ms": 23.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-209",
+      "journal_id": "CB-SKL-209",
+      "library_slug": "cb-detecting-t1548-abuse-elevation-control-mechanism",
+      "outcome": "success",
+      "elapsed_ms": 25.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-211",
+      "journal_id": "CB-SKL-211",
+      "library_slug": "cb-dns-enumeration-and-zone-transfer",
+      "outcome": "success",
+      "elapsed_ms": 52.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-212",
+      "journal_id": "CB-SKL-212",
+      "library_slug": "cb-dns-logs-for-exfiltration",
+      "outcome": "success",
+      "elapsed_ms": 24.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-213",
+      "journal_id": "CB-SKL-213",
+      "library_slug": "cb-dns-tunneling-detection",
+      "outcome": "success",
+      "elapsed_ms": 27.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-218",
+      "journal_id": "CB-SKL-218",
+      "library_slug": "cb-exploiting-ipv6-vulnerabilities",
+      "outcome": "success",
+      "elapsed_ms": 26.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-219",
+      "journal_id": "CB-SKL-219",
+      "library_slug": "cb-exploiting-kerberoasting-with-impacket",
+      "outcome": "success",
+      "elapsed_ms": 26.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-220",
+      "journal_id": "CB-SKL-220",
+      "library_slug": "cb-extracting-config-from-agent-tesla-rat",
+      "outcome": "success",
+      "elapsed_ms": 2681.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-222",
+      "journal_id": "CB-SKL-222",
+      "library_slug": "cb-false-positive-reduction-in-siem",
+      "outcome": "success",
+      "elapsed_ms": 24.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-223",
+      "journal_id": "CB-SKL-223",
+      "library_slug": "cb-firmware-malware-analysis",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-224",
+      "journal_id": "CB-SKL-224",
+      "library_slug": "cb-generating-threat-intelligence-reports",
+      "outcome": "success",
+      "elapsed_ms": 46.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-225",
+      "journal_id": "CB-SKL-225",
+      "library_slug": "cb-golang-malware-with-ghidra",
+      "outcome": "success",
+      "elapsed_ms": 24.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-226",
+      "journal_id": "CB-SKL-226",
+      "library_slug": "cb-hunting-advanced-persistent-threats",
+      "outcome": "success",
+      "elapsed_ms": 274.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-227",
+      "journal_id": "CB-SKL-227",
+      "library_slug": "cb-hunting-credential-stuffing-attacks",
+      "outcome": "success",
+      "elapsed_ms": 24.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-228",
+      "journal_id": "CB-SKL-228",
+      "library_slug": "cb-hunting-for-beaconing-with-frequency-analysis",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-230",
+      "journal_id": "CB-SKL-230",
+      "library_slug": "cb-hunting-for-data-exfiltration-indicators",
+      "outcome": "success",
+      "elapsed_ms": 28.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-231",
+      "journal_id": "CB-SKL-231",
+      "library_slug": "cb-hunting-for-data-staging-before-exfiltration",
+      "outcome": "success",
+      "elapsed_ms": 29.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-233",
+      "journal_id": "CB-SKL-233",
+      "library_slug": "cb-hunting-for-dns-tunneling-with-zeek",
+      "outcome": "success",
+      "elapsed_ms": 41.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-234",
+      "journal_id": "CB-SKL-234",
+      "library_slug": "cb-hunting-for-domain-fronting-c2-traffic",
+      "outcome": "success",
+      "elapsed_ms": 26.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-235",
+      "journal_id": "CB-SKL-235",
+      "library_slug": "cb-hunting-for-living-off-the-cloud-techniques",
+      "outcome": "success",
+      "elapsed_ms": 27.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-236",
+      "journal_id": "CB-SKL-236",
+      "library_slug": "cb-hunting-for-living-off-the-land-binaries",
+      "outcome": "success",
+      "elapsed_ms": 25.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-237",
+      "journal_id": "CB-SKL-237",
+      "library_slug": "cb-hunting-for-lolbins-execution-in-endpoint-logs",
+      "outcome": "success",
+      "elapsed_ms": 26.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-238",
+      "journal_id": "CB-SKL-238",
+      "library_slug": "cb-hunting-for-ntlm-relay-attacks",
+      "outcome": "success",
+      "elapsed_ms": 41.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-239",
+      "journal_id": "CB-SKL-239",
+      "library_slug": "cb-hunting-for-persistence-mechanisms-in-windows",
+      "outcome": "success",
+      "elapsed_ms": 24.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-240",
+      "journal_id": "CB-SKL-240",
+      "library_slug": "cb-hunting-for-persistence-via-wmi-subscriptions",
+      "outcome": "success",
+      "elapsed_ms": 24.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-241",
+      "journal_id": "CB-SKL-241",
+      "library_slug": "cb-hunting-for-registry-persistence-mechanisms",
+      "outcome": "success",
+      "elapsed_ms": 24.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-242",
+      "journal_id": "CB-SKL-242",
+      "library_slug": "cb-hunting-for-scheduled-task-persistence",
+      "outcome": "success",
+      "elapsed_ms": 24.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-243",
+      "journal_id": "CB-SKL-243",
+      "library_slug": "cb-hunting-for-shadow-copy-deletion",
+      "outcome": "success",
+      "elapsed_ms": 24.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-244",
+      "journal_id": "CB-SKL-244",
+      "library_slug": "cb-hunting-for-spearphishing-indicators",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-245",
+      "journal_id": "CB-SKL-245",
+      "library_slug": "cb-hunting-for-startup-folder-persistence",
+      "outcome": "success",
+      "elapsed_ms": 28.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-246",
+      "journal_id": "CB-SKL-246",
+      "library_slug": "cb-hunting-for-supply-chain-compromise",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-247",
+      "journal_id": "CB-SKL-247",
+      "library_slug": "cb-hunting-for-suspicious-scheduled-tasks",
+      "outcome": "success",
+      "elapsed_ms": 24.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-248",
+      "journal_id": "CB-SKL-248",
+      "library_slug": "cb-hunting-for-unusual-network-connections",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-249",
+      "journal_id": "CB-SKL-249",
+      "library_slug": "cb-hunting-for-webshell-activity",
+      "outcome": "success",
+      "elapsed_ms": 23.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-252",
+      "journal_id": "CB-SKL-252",
+      "library_slug": "cb-implementing-api-key-security-controls",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-258",
+      "journal_id": "CB-SKL-258",
+      "library_slug": "cb-implementing-diamond-model-analysis",
+      "outcome": "success",
+      "elapsed_ms": 24.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-261",
+      "journal_id": "CB-SKL-261",
+      "library_slug": "cb-implementing-endpoint-dlp-controls",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-262",
+      "journal_id": "CB-SKL-262",
+      "library_slug": "cb-implementing-google-workspace-phishing-protection",
+      "outcome": "success",
+      "elapsed_ms": 24.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-263",
+      "journal_id": "CB-SKL-263",
+      "library_slug": "cb-implementing-hardware-security-key-authentication",
+      "outcome": "success",
+      "elapsed_ms": 135.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-264",
+      "journal_id": "CB-SKL-264",
+      "library_slug": "cb-implementing-hashicorp-vault-dynamic-secrets",
+      "outcome": "success",
+      "elapsed_ms": 40.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-265",
+      "journal_id": "CB-SKL-265",
+      "library_slug": "cb-implementing-honeypot-for-ransomware-detection",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-267",
+      "journal_id": "CB-SKL-267",
+      "library_slug": "cb-implementing-immutable-backup-with-restic",
+      "outcome": "success",
+      "elapsed_ms": 24.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-269",
+      "journal_id": "CB-SKL-269",
+      "library_slug": "cb-implementing-mitre-attack-coverage-mapping",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-270",
+      "journal_id": "CB-SKL-270",
+      "library_slug": "cb-implementing-network-deception-with-honeypots",
+      "outcome": "success",
+      "elapsed_ms": 23.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-271",
+      "journal_id": "CB-SKL-271",
+      "library_slug": "cb-implementing-network-intrusion-prevention-with-suricata",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-272",
+      "journal_id": "CB-SKL-272",
+      "library_slug": "cb-implementing-network-traffic-baselining",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-273",
+      "journal_id": "CB-SKL-273",
+      "library_slug": "cb-implementing-next-generation-firewall-with-palo-alto",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-274",
+      "journal_id": "CB-SKL-274",
+      "library_slug": "cb-implementing-ot-network-traffic-analysis-with-nozomi",
+      "outcome": "success",
+      "elapsed_ms": 23.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-275",
+      "journal_id": "CB-SKL-275",
+      "library_slug": "cb-implementing-pam-for-database-access",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-279",
+      "journal_id": "CB-SKL-279",
+      "library_slug": "cb-implementing-ransomware-kill-switch-detection",
+      "outcome": "success",
+      "elapsed_ms": 23.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-280",
+      "journal_id": "CB-SKL-280",
+      "library_slug": "cb-implementing-security-information-sharing-with-stix2",
+      "outcome": "success",
+      "elapsed_ms": 24.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-281",
+      "journal_id": "CB-SKL-281",
+      "library_slug": "cb-implementing-siem-use-case-tuning",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-282",
+      "journal_id": "CB-SKL-282",
+      "library_slug": "cb-implementing-siem-use-cases-for-detection",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-285",
+      "journal_id": "CB-SKL-285",
+      "library_slug": "cb-implementing-syslog-centralization-with-rsyslog",
+      "outcome": "success",
+      "elapsed_ms": 28.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-288",
+      "journal_id": "CB-SKL-288",
+      "library_slug": "cb-implementing-threat-modeling-with-mitre-attack",
+      "outcome": "success",
+      "elapsed_ms": 23.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-289",
+      "journal_id": "CB-SKL-289",
+      "library_slug": "cb-implementing-usb-device-control-policy",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-290",
+      "journal_id": "CB-SKL-290",
+      "library_slug": "cb-indicator-lifecycle-management",
+      "outcome": "success",
+      "elapsed_ms": 24.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-292",
+      "journal_id": "CB-SKL-292",
+      "library_slug": "cb-linux-elf-malware",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-294",
+      "journal_id": "CB-SKL-294",
+      "library_slug": "cb-macro-malware-in-office-documents",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-295",
+      "journal_id": "CB-SKL-295",
+      "library_slug": "cb-malicious-pdf-with-peepdf",
+      "outcome": "success",
+      "elapsed_ms": 169.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-298",
+      "journal_id": "CB-SKL-298",
+      "library_slug": "cb-malware-sandbox-evasion-techniques",
+      "outcome": "success",
+      "elapsed_ms": 23.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-302",
+      "journal_id": "CB-SKL-302",
+      "library_slug": "cb-network-covert-channels-in-malware",
+      "outcome": "success",
+      "elapsed_ms": 23.3,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-303",
+      "journal_id": "CB-SKL-303",
+      "library_slug": "cb-network-flow-data-with-netflow",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-305",
+      "journal_id": "CB-SKL-305",
+      "library_slug": "cb-packed-malware-with-upx-unpacker",
+      "outcome": "success",
+      "elapsed_ms": 26.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-306",
+      "journal_id": "CB-SKL-306",
+      "library_slug": "cb-packet-injection-attack",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-308",
+      "journal_id": "CB-SKL-308",
+      "library_slug": "cb-pdf-malware-with-pdfid",
+      "outcome": "success",
+      "elapsed_ms": 23.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-309",
+      "journal_id": "CB-SKL-309",
+      "library_slug": "cb-persistence-mechanisms-in-linux",
+      "outcome": "success",
+      "elapsed_ms": 23.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-311",
+      "journal_id": "CB-SKL-311",
+      "library_slug": "cb-privilege-escalation-assessment",
+      "outcome": "success",
+      "elapsed_ms": 23.2,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-312",
+      "journal_id": "CB-SKL-312",
+      "library_slug": "cb-processing-stix-taxii-feeds",
+      "outcome": "success",
+      "elapsed_ms": 22.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-314",
+      "journal_id": "CB-SKL-314",
+      "library_slug": "cb-ransomware-encryption-mechanisms",
+      "outcome": "success",
+      "elapsed_ms": 22.9,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-319",
+      "journal_id": "CB-SKL-319",
+      "library_slug": "cb-recovering-from-ransomware-attack",
+      "outcome": "success",
+      "elapsed_ms": 23.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-320",
+      "journal_id": "CB-SKL-320",
+      "library_slug": "cb-reverse-engineering-dotnet-malware-with-dnspy",
+      "outcome": "success",
+      "elapsed_ms": 24.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-321",
+      "journal_id": "CB-SKL-321",
+      "library_slug": "cb-reverse-engineering-rust-malware",
+      "outcome": "success",
+      "elapsed_ms": 1179.5,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-322",
+      "journal_id": "CB-SKL-322",
+      "library_slug": "cb-scanning-network-with-nmap-advanced",
+      "outcome": "success",
+      "elapsed_ms": 25.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-325",
+      "journal_id": "CB-SKL-325",
+      "library_slug": "cb-ssl-tls-security-assessment",
+      "outcome": "success",
+      "elapsed_ms": 23.7,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-326",
+      "journal_id": "CB-SKL-326",
+      "library_slug": "cb-static-malware-analysis-with-pe-studio",
+      "outcome": "success",
+      "elapsed_ms": 22.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-329",
+      "journal_id": "CB-SKL-329",
+      "library_slug": "cb-threat-actor-ttps-with-mitre-navigator",
+      "outcome": "success",
+      "elapsed_ms": 23.6,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-330",
+      "journal_id": "CB-SKL-330",
+      "library_slug": "cb-threat-intelligence-feeds",
+      "outcome": "success",
+      "elapsed_ms": 24.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-332",
+      "journal_id": "CB-SKL-332",
+      "library_slug": "cb-threat-landscape-assessment-for-sector",
+      "outcome": "success",
+      "elapsed_ms": 6192.0,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-337",
+      "journal_id": "CB-SKL-337",
+      "library_slug": "cb-typosquatting-domains-with-dnstwist",
+      "outcome": "success",
+      "elapsed_ms": 23.4,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-338",
+      "journal_id": "CB-SKL-338",
+      "library_slug": "cb-uefi-bootkit-persistence",
+      "outcome": "success",
+      "elapsed_ms": 23.1,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    },
+    {
+      "skill_id": "SKILL-339",
+      "journal_id": "CB-SKL-339",
+      "library_slug": "cb-user-behavior-analytics",
+      "outcome": "success",
+      "elapsed_ms": 22.8,
+      "audit_count": 1,
+      "error": "",
+      "traceback": ""
+    }
+  ]
+}

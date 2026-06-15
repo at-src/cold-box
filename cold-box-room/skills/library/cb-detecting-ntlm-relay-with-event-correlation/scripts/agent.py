@@ -329,7 +329,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="NTLM Relay Detection Agent (T1557.001)"
     )
-    parser.add_argument("--evtx", required=True, help="Path to Windows Security .evtx file")
+    parser.add_argument("--evtx", required=False, help="Path to Windows Security .evtx file")
     parser.add_argument("--inventory", help="CSV file with hostname,ip_address columns for mismatch detection")
     parser.add_argument("--output", "-o", default="ntlm_relay_report.json",
                         help="Output JSON report path (default: ntlm_relay_report.json)")
@@ -341,6 +341,9 @@ def main():
                         help="Audit local SMB/NTLM signing configuration (Windows only)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable debug logging")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
@@ -375,6 +378,18 @@ def main():
 
     generate_report(all_findings, smb_audit, args.output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-ntlm-relay-with-event-correlation',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

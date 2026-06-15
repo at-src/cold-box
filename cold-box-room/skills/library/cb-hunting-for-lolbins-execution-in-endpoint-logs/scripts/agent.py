@@ -110,12 +110,15 @@ def main():
     parser = argparse.ArgumentParser(description="Hunt for LOLBin execution in endpoint logs")
     sub = parser.add_subparsers(dest="command")
     c = sub.add_parser("csv", help="Scan CSV-exported endpoint logs")
-    c.add_argument("--file", required=True, help="CSV log file path")
+    c.add_argument("--file", required=False, help="CSV log file path")
     c.add_argument("--process-col", default="Image", help="Column name for process path")
     c.add_argument("--cmdline-col", default="CommandLine", help="Column name for command line")
     e = sub.add_parser("evtx", help="Scan Sysmon EVTX log")
-    e.add_argument("--file", required=True, help="EVTX file path")
+    e.add_argument("--file", required=False, help="EVTX file path")
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "csv":
         result = scan_csv_logs(args.file, args.process_col, args.cmdline_col)
     elif args.command == "evtx":
@@ -125,6 +128,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-lolbins-execution-in-endpoint-logs',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

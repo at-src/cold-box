@@ -211,9 +211,12 @@ def generate_report(log_path: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="AD Compromise Investigation Agent")
-    parser.add_argument("--log", required=True, help="Path to JSON-exported Windows Security event log")
+    parser.add_argument("--log", required=False, help="Path to JSON-exported Windows Security event log")
     parser.add_argument("--output", help="Output JSON file path")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     report = generate_report(args.log)
     output = json.dumps(report, indent=2)
@@ -223,6 +226,18 @@ def main():
     else:
         print(output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-active-directory-compromise-investigation',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

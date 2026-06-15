@@ -201,4 +201,9 @@ def describe_skill(skill_id: str) -> dict[str, Any]:
     payload = rec.to_describe_dict(playbook=body)
     payload["frontmatter"] = meta
     payload["tool_hints"] = extract_tool_hints(body)
+    payload["agent_runnable"] = is_agent_runnable(rec)
+    payload["run_skill_note"] = (
+        "A prior failed attempt in layer2_skill_log does not remove this skill from the catalog. "
+        "outcome=failed means retry; outcome=not_runnable from run_skill means pick another skill."
+    )
     return payload

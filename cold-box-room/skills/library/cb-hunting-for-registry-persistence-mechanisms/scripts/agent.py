@@ -137,8 +137,11 @@ def main():
                    help="Categories to scan (default: all)")
     s.add_argument("--save-baseline", help="Save scan as baseline JSON file")
     c = sub.add_parser("compare", help="Compare against baseline")
-    c.add_argument("--baseline", required=True, help="Baseline JSON file")
+    c.add_argument("--baseline", required=False, help="Baseline JSON file")
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "scan":
         result = scan_persistence_keys(args.categories)
         if args.save_baseline:
@@ -151,6 +154,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-registry-persistence-mechanisms',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

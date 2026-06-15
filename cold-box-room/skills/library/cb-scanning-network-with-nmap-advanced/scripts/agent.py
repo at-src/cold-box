@@ -129,6 +129,9 @@ def main():
     parser.add_argument("-o", "--output", default=".", help="Output directory for reports")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     os.makedirs(args.output, exist_ok=True)
     scanner = nmap.PortScanner()
     print(f"[*] Nmap version: {scanner.nmap_version()}")
@@ -154,6 +157,18 @@ def main():
     total_open = sum(len(p) for p in port_results.values())
     print(f"\n[*] Scan complete: {len(hosts)} hosts, {total_open} open ports, {len(vulnerabilities)} vulns found")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-scanning-network-with-nmap-advanced',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

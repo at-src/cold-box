@@ -203,11 +203,14 @@ def generate_report(pcap_path, protocols, top_talkers, dns_queries, dns_tunnelin
 
 def main():
     parser = argparse.ArgumentParser(description="Network Traffic Analysis Agent (tshark/pyshark)")
-    parser.add_argument("--pcap", required=True, help="PCAP or PCAPNG file to analyze")
+    parser.add_argument("--pcap", required=False, help="PCAP or PCAPNG file to analyze")
     parser.add_argument("--output", default="traffic_analysis_report.json")
     parser.add_argument("--top-n", type=int, default=20, help="Top N talkers to report")
     parser.add_argument("--scan-threshold", type=int, default=20, help="Port scan detection threshold")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     print(f"[*] Analyzing: {args.pcap}")
     protocols = get_protocol_stats(args.pcap)
@@ -226,6 +229,18 @@ def main():
     print(f"[+] Port scans: {len(port_scans)} | DNS tunneling alerts: {len(dns_tunneling)}")
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-network-traffic-analysis-with-tshark',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

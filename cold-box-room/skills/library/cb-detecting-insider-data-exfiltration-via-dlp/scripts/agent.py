@@ -144,12 +144,15 @@ def detect_usb_activity(df):
 
 def main():
     parser = argparse.ArgumentParser(description="Insider Data Exfiltration Detection Agent")
-    parser.add_argument("--log-file", required=True, help="Activity log file")
+    parser.add_argument("--log-file", required=False, help="Activity log file")
     parser.add_argument("--output", default="dlp_exfiltration_report.json")
     parser.add_argument("--action", choices=[
         "volume", "off_hours", "bulk", "sensitive", "full_analysis"
     ], default="full_analysis")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     df = load_activity_logs(args.log_file)
     report = {"generated_at": datetime.utcnow().isoformat(), "total_events": len(df),
@@ -180,6 +183,18 @@ def main():
         json.dump(report, f, indent=2, default=str)
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-insider-data-exfiltration-via-dlp',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

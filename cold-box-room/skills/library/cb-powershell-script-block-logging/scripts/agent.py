@@ -169,9 +169,12 @@ def generate_report(scripts, all_findings):
 
 def main():
     parser = argparse.ArgumentParser(description="PowerShell Script Block Logging Analyzer")
-    parser.add_argument("--evtx-file", required=True, help="Path to PowerShell Operational EVTX")
+    parser.add_argument("--evtx-file", required=False, help="Path to PowerShell Operational EVTX")
     parser.add_argument("--output", default="ps_analysis.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     blocks = parse_evtx_4104(args.evtx_file)
     scripts = reconstruct_scripts(blocks)
@@ -194,6 +197,18 @@ def main():
         json.dump(report, f, indent=2)
     logger.info("Report saved to %s", args.output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-powershell-script-block-logging',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

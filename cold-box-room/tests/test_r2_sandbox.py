@@ -53,14 +53,34 @@ def test_r1_staging_stays_sealed_after_r2_promotion():
     assert sandbox_file.read_bytes() == b"touched-in-sandbox"
 
 
-def test_r2_status_requires_room2():
+def test_r2_status_requires_room2_or_3():
     staging = case_staging_dir("case-c")
     staging.mkdir(parents=True)
     (staging / "x").write_bytes(b"1")
     intake_case("case-c")
 
-    with pytest.raises(StagingError, match="required room 2"):
+    with pytest.raises(StagingError, match="required one of"):
         r2_status("case-c")
+
+
+def test_r2_status_works_in_room3():
+    from cold_box_room.testing.hallway import bootstrap_case_to_room3
+
+    staging = case_staging_dir("case-room3")
+    staging.mkdir(parents=True)
+    (staging / "disk.E01").write_bytes(b"abc")
+    intake_case("case-room3")
+    bootstrap_case_to_room3("case-room3")
+
+    from cold_box_room.r2.paths import case_sandbox_dir
+
+    sb = case_sandbox_dir("case-room3")
+    sb.mkdir(parents=True, exist_ok=True)
+    (sb / "disk.E01").write_bytes(b"abc")
+
+    status = r2_status("case-room3")
+    assert status["room"] == "3"
+    assert status["file_count"] >= 1
 
 
 def test_materialize_without_promotion_record():

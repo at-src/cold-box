@@ -49,6 +49,7 @@ _POLICY = {
         "egrep": {"-e"},
         "fgrep": {"-e"},
         "zgrep": {"-e"},
+        "strings": {"-e"},
     },
     "tool_blocked_flags": {
         "find": {

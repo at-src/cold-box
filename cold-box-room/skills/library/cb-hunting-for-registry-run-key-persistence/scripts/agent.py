@@ -216,7 +216,7 @@ def generate_report(input_path):
 
 def main():
     ap = argparse.ArgumentParser(description="Registry Run Key Persistence Hunter")
-    ap.add_argument("--input", required=True, help="Input JSON with Sysmon events or registry snapshot")
+    ap.add_argument("--input", required=False, help="Input JSON with Sysmon events or registry snapshot")
     ap.add_argument("--output", help="Output JSON report path")
     args = ap.parse_args()
     report = generate_report(args.input)
@@ -227,6 +227,18 @@ def main():
     else:
         print(out)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-registry-run-key-persistence',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

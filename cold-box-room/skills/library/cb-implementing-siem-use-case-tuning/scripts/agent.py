@@ -155,11 +155,14 @@ def generate_tuning_report(metrics, whitelist, thresholds):
 
 def main():
     parser = argparse.ArgumentParser(description="SIEM Use Case Tuning Agent")
-    parser.add_argument("--alert-csv", required=True, help="CSV export of SIEM alerts with disposition data")
+    parser.add_argument("--alert-csv", required=False, help="CSV export of SIEM alerts with disposition data")
     parser.add_argument("--fp-threshold", type=float, default=0.8, help="FP ratio threshold for whitelist candidates")
     parser.add_argument("--top-rules", type=int, default=5, help="Number of top rules to compute thresholds for")
     parser.add_argument("--output", default="tuning_report.json", help="Output report path")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     alerts = load_alert_data(args.alert_csv)
     print(f"[+] Loaded {len(alerts)} alerts from {args.alert_csv}")
@@ -183,6 +186,18 @@ def main():
     print(f"[+] Overall FP rate: {report['summary']['overall_fp_rate']:.1%}")
     print(f"[+] Projected alert reduction from whitelisting: {report['summary']['projected_alert_reduction']}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-siem-use-case-tuning',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

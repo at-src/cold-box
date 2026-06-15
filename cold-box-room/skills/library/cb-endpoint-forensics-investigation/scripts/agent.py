@@ -146,8 +146,11 @@ def main():
     sub.add_parser("network", help="Collect network connections")
     sub.add_parser("autoruns", help="Collect autorun/persistence entries")
     h = sub.add_parser("hash", help="Hash a file for evidence")
-    h.add_argument("--file", required=True)
+    h.add_argument("--file", required=False)
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "triage":
         result = full_triage()
     elif args.command == "processes":
@@ -163,6 +166,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-endpoint-forensics-investigation',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

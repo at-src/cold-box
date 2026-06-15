@@ -330,6 +330,9 @@ def main():
     parser.add_argument("--output", "-o", default="-", help="Output file (default: stdout)")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     results = run_hunt(args)
     output = json.dumps(results, indent=2, default=str)
 
@@ -340,6 +343,18 @@ def main():
             f.write(output)
         print(f"Hunt report written to {args.output}", file=sys.stderr)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-ntlm-relay-attacks',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

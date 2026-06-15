@@ -139,9 +139,12 @@ def calculate_risk_score(user_findings):
 
 def main():
     parser = argparse.ArgumentParser(description="Insider Threat Behavior Detector")
-    parser.add_argument("--activity-log", required=True, help="User activity log (JSON lines or CSV)")
+    parser.add_argument("--activity-log", required=False, help="User activity log (JSON lines or CSV)")
     parser.add_argument("--download-threshold", type=int, default=50)
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     events = parse_activity_log(args.activity_log)
     all_findings = []
@@ -167,6 +170,18 @@ def main():
     }
     print(json.dumps(results, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-insider-threat-behaviors',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

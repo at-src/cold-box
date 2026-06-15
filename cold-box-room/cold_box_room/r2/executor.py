@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from cold_box_room.r2.audit import append_audit, next_audit_id
+from cold_box_room.r2.audit import append_audit, find_prior_success, next_audit_id
 from cold_box_room.r2.errors import ToolExecutionError
 from cold_box_room.r2.output_files import (
     MAX_SCRATCH_FILE_BYTES,
@@ -38,6 +38,24 @@ DEFAULT_TIMEOUT = 600
 ICAT_MAX_BYTES = int(os.environ.get("COLD_BOX_ICAT_MAX_BYTES", str(20 * 1024 * 1024)))
 ICAT_ISTAT_TIMEOUT = int(os.environ.get("COLD_BOX_ICAT_ISTAT_TIMEOUT", "90"))
 INODE_PLACEHOLDER = "@@"
+# Pattern/search tools take flags + pattern before the input file path.
+_INPUT_LAST_BINARIES = frozenset(
+    {
+        "grep",
+        "egrep",
+        "fgrep",
+        "awk",
+        "sed",
+        "cut",
+        "7z",
+        "7za",
+        "7zr",
+        "unzip",
+        "tshark",
+        "tcpdump",
+        "ngrep",
+    }
+)
 
 
 def _read_pipe(pipe, chunks: list[bytes], limit: int, total: list[int]) -> None:
@@ -64,22 +82,25 @@ def _execute(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        stdin=subprocess.DEVNULL,
         cwd=str(cwd),
         shell=False,
     )
     truncated = False
     if stdout_file is not None:
-        assert proc.stdout is not None
-        _, truncated = stream_pipe_to_file(
-            proc.stdout,
-            stdout_file,
-            max_bytes=MAX_SCRATCH_FILE_BYTES,
-        )
-        if truncated and proc.poll() is None:
-            proc.kill()
+        truncated_holder: list[bool] = [False]
+
+        def _stream_stdout() -> None:
+            assert proc.stdout is not None
+            _, truncated_holder[0] = stream_pipe_to_file(
+                proc.stdout,
+                stdout_file,
+                max_bytes=MAX_SCRATCH_FILE_BYTES,
+            )
+
+        reader = threading.Thread(target=_stream_stdout, daemon=True)
+        reader.start()
         stderr_chunks: list[bytes] = []
-        if proc.stderr:
-            stderr_chunks.append(proc.stderr.read(MAX_OUTPUT_BYTES // 4))
     else:
         stdout_chunks: list[bytes] = []
         stderr_chunks: list[bytes] = []
@@ -104,6 +125,18 @@ def _execute(
         proc.kill()
         proc.wait(timeout=5)
         raise ToolExecutionError(f"Timed out after {timeout}s") from exc
+
+    if stdout_file is not None:
+        reader.join(timeout=5)
+        truncated = truncated_holder[0]
+        if truncated and proc.poll() is None:
+            proc.kill()
+            proc.wait(timeout=5)
+        if proc.stderr:
+            stderr_chunks.append(proc.stderr.read(MAX_OUTPUT_BYTES // 4))
+    else:
+        # stdout/stderr already drained in threads above
+        pass
 
     elapsed = time.monotonic() - start
     stderr = b"".join(stderr_chunks).decode("utf-8", errors="replace")
@@ -227,6 +260,7 @@ def _execute_icat_capped(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        stdin=subprocess.DEVNULL,
         cwd=str(cwd),
         shell=False,
     )
@@ -285,6 +319,11 @@ def _sleuthkit_failure_hint(tool: ToolRecord, extra_args: list[str]) -> str | No
     if tool.category != "sleuthkit" or tool.input.style != "positional":
         return None
     if tool.name == "fls":
+        if "-m" in extra_args:
+            return (
+                "fls -m failed — generate a mactime bodyfile with a mount point after -m. "
+                'Use extra_args like ["-o", "63", "-r", "-m", "/"].'
+            )
         return (
             "fls failed — list a directory inode after the image. "
             'Use extra_args like ["-o", "63", "-l", "23117"].'
@@ -301,9 +340,8 @@ def _sleuthkit_failure_hint(tool: ToolRecord, extra_args: list[str]) -> str | No
 def _split_sleuthkit_args(extra_args: list[str]) -> tuple[list[str], list[str]]:
     flags: list[str] = []
     trailing: list[str] = []
-    flags_without_value = frozenset(
-        {"-l", "-d", "-D", "-p", "-r", "-F", "-m", "-u", "-f", "-s"}
-    )
+    # `-m` takes a mount-point argument (e.g. `/` or `C:`) for bodyfile generation.
+    flags_without_value = frozenset({"-l", "-d", "-D", "-p", "-r", "-F", "-u", "-f", "-s"})
     i = 0
     while i < len(extra_args):
         arg = extra_args[i]
@@ -330,6 +368,8 @@ def _build_command(
     tool: ToolRecord,
     input_path: Path,
     extra_args: list[str],
+    *,
+    scratch_root: Path | None = None,
 ) -> list[str]:
     binary = _resolve_binary(tool.binary)
     if is_denied(Path(binary).name):
@@ -338,6 +378,27 @@ def _build_command(
     if tool.category == "sleuthkit" and tool.input.style == "positional":
         args = _normalize_sleuthkit_extra_args(args)
     cmd = [binary]
+    if tool.name == "mactime" and scratch_root is not None:
+        from cold_box_room.r2.mactime_utils import (
+            MactimeBodyfileError,
+            mactime_bodyfile_from_extra,
+        )
+
+        try:
+            bodyfile, remaining = mactime_bodyfile_from_extra(args, scratch_root=scratch_root)
+        except MactimeBodyfileError as exc:
+            raise ToolExecutionError(str(exc)) from exc
+        if bodyfile is None:
+            raise ToolExecutionError(
+                "mactime requires `-b` pointing to a scratch bodyfile from `fls -m` "
+                "(pipe-delimited). Do not pass the disk image as -b."
+            )
+        cmd.extend([tool.input.flag or "-b", str(bodyfile), *remaining])
+        return cmd
+    if tool.name == "mactime":
+        raise ToolExecutionError(
+            "mactime must receive `-b` scratch bodyfile from `fls -m`, not the disk image"
+        )
     if tool.input.style == "flag" and tool.input.flag:
         cmd.extend([tool.input.flag, str(input_path)])
         cmd.extend(args)
@@ -347,8 +408,12 @@ def _build_command(
         cmd.append(str(input_path))
         cmd.extend(trailing)
     elif tool.input.style == "positional":
-        cmd.append(str(input_path))
-        cmd.extend(args)
+        if tool.name in _INPUT_LAST_BINARIES:
+            cmd.extend(args)
+            cmd.append(str(input_path))
+        else:
+            cmd.append(str(input_path))
+            cmd.extend(args)
     else:
         cmd.extend(args)
     return cmd
@@ -477,9 +542,55 @@ def run_sift_tool(
     input_path = resolve_sandbox_input(case_id, input_relpath)
     input_sha256 = sha256_file(input_path)
 
+    if tool.name == "ewfverify":
+        prior = find_prior_success(
+            case_id,
+            tool_name="ewfverify",
+            input_sha256=input_sha256,
+        )
+        if prior is not None:
+            elapsed_ms = 0.0
+            audit_id = next_audit_id()
+            preview = str(prior.get("stdout_preview") or "ewfverify skipped — prior success at same hash")
+            _log_run(
+                case_id=case_id,
+                audit_id=audit_id,
+                tool=tool,
+                purpose=purpose,
+                why=why,
+                cmd=["ewfverify", "(cached)", str(input_path)],
+                input_relpath=input_relpath,
+                input_sha256=input_sha256,
+                exit_code=0,
+                elapsed_ms=elapsed_ms,
+                output_files=list(prior.get("output_files") or []),
+                stdout_preview=preview,
+            )
+            return {
+                "ok": True,
+                "audit_id": audit_id,
+                "tool_id": tool.tool_id,
+                "tool_name": tool.name,
+                "case_id": case_id,
+                "exit_code": 0,
+                "elapsed_seconds": 0.0,
+                "stdout_preview": preview,
+                "cached_from_audit_id": prior.get("audit_id"),
+                "scratch_file": str(
+                    (prior.get("output_files") or [""])[0]
+                ),
+            }
+
     if tool.output.style == "scratch_dir_trailing":
         pass  # output dir already appended in prepare_harness_output_args
-    cmd = _build_command(tool, input_path, extra)
+    if tool.name == "ewfexport" and not any(
+        arg in {"-o", "-t", "-f"} or str(arg).startswith("-o")
+        for arg in extra
+    ):
+        raise ToolExecutionError(
+            "ewfexport requires -o <scratch output>; refusing unbounded export to stdout"
+        )
+    cmd = _build_command(tool, input_path, extra, scratch_root=scratch)
     stdout_file = out_root / "stdout.txt"
     start = time.monotonic()
     stream_out: Path | None = None

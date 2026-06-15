@@ -189,13 +189,16 @@ def run_threat_model(industry, existing_detections=None):
 
 def main():
     parser = argparse.ArgumentParser(description="Threat Modeling with MITRE ATT&CK Agent")
-    parser.add_argument("--industry", required=True,
+    parser.add_argument("--industry", required=False,
                         choices=list(INDUSTRY_THREAT_ACTORS.keys()),
                         help="Industry for threat profile")
     parser.add_argument("--detections", nargs="*", help="List of detected technique IDs")
     parser.add_argument("--navigator", help="Export ATT&CK Navigator layer to JSON file")
     parser.add_argument("--output", help="Save full report to JSON")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     result = run_threat_model(args.industry, args.detections)
     if result and args.navigator:
@@ -208,6 +211,18 @@ def main():
             json.dump(result, f, indent=2, default=str)
         print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-threat-modeling-with-mitre-attack',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

@@ -181,6 +181,9 @@ def main():
     parser.add_argument("--output", default="s3_access_report.json")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     events = query_cloudtrail_s3_events(args.bucket, args.hours_back)
     baseline = build_access_baseline(events)
     known_ips = set(baseline.get("known_ips", []))
@@ -198,6 +201,18 @@ def main():
         json.dump(report, f, indent=2, default=str)
     logger.info("Report saved to %s", args.output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-cloud-storage-access-patterns',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

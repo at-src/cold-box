@@ -152,12 +152,15 @@ def detect_port_scan(records, threshold=20):
 
 def main():
     parser = argparse.ArgumentParser(description="Network Packet Analysis Agent (Scapy)")
-    parser.add_argument("--pcap", required=True, help="Path to pcap/pcapng file")
+    parser.add_argument("--pcap", required=False, help="Path to pcap/pcapng file")
     parser.add_argument("--syn-threshold", type=int, default=100, help="SYN flood detection threshold")
     parser.add_argument("--dns-length", type=int, default=50, help="DNS tunneling subdomain length threshold")
     parser.add_argument("--scan-threshold", type=int, default=20, help="Port scan unique ports threshold")
     parser.add_argument("--output", default="packet_analysis_report.json", help="Output report path")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     packets = load_pcap(args.pcap)
     records = extract_packet_info(packets)
@@ -187,6 +190,18 @@ def main():
     print(f"[+] Port scan detections: {len(scan_alerts)}")
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-network-packets-with-scapy',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

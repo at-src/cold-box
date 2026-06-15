@@ -195,9 +195,12 @@ def generate_report(events, thread_detections, access_detections, injection_grap
 
 def main():
     parser = argparse.ArgumentParser(description="Process Injection Detection Agent (T1055)")
-    parser.add_argument("--log-file", required=True, help="Sysmon JSON event log file")
+    parser.add_argument("--log-file", required=False, help="Sysmon JSON event log file")
     parser.add_argument("--output", default="process_injection_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     events = parse_sysmon_events(args.log_file)
     thread_detections = detect_remote_thread_injection(events["create_remote_thread"])
@@ -213,6 +216,18 @@ def main():
     print(f"[+] Total injections detected: {total}")
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-process-injection-techniques',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

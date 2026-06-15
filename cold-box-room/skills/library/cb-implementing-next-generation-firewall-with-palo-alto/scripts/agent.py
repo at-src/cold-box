@@ -93,10 +93,13 @@ def generate_report(rules, findings, appid, health):
 
 def main():
     parser = argparse.ArgumentParser(description="Palo Alto NGFW Audit Agent")
-    parser.add_argument("--firewall", required=True, help="Firewall IP/hostname")
-    parser.add_argument("--api-key", required=True, help="PAN-OS API key")
+    parser.add_argument("--firewall", required=False, help="Firewall IP/hostname")
+    parser.add_argument("--api-key", required=False, help="PAN-OS API key")
     parser.add_argument("--output", default="panos_ngfw_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     health = check_system_health(args.firewall, args.api_key)
     rules = get_security_rules(args.firewall, args.api_key)
@@ -109,6 +112,18 @@ def main():
                 len(rules), appid["coverage_percent"], len(findings))
     print(json.dumps(report, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-next-generation-firewall-with-palo-alto',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

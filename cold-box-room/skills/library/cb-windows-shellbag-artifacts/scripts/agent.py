@@ -17,6 +17,8 @@ import hashlib
 import datetime
 from collections import defaultdict
 
+HAS_REGISTRY = False
+HAS_REGIPY = False
 try:
     import Registry
     HAS_REGISTRY = True
@@ -24,10 +26,8 @@ except ImportError:
     try:
         from regipy.registry import RegistryHive
         HAS_REGIPY = True
-        HAS_REGISTRY = False
     except ImportError:
-        HAS_REGISTRY = False
-        HAS_REGIPY = False
+        pass
 
 
 SHELLBAG_PATHS = {
@@ -157,6 +157,32 @@ def detect_suspicious_paths(shellbag_entries):
                 })
                 break
     return findings
+
+
+def analyze_image(image_path, case_dir):
+    """Harness entry — audit disk, parse ShellBag hive from script_args or path."""
+    from cold_box_room.skills.script_helpers import (
+        artifact_path,
+        audit_artifact_file,
+        audit_disk_image,
+        ensure_case_dir,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    target = artifact_path(image_path)
+    audit_artifact_file(target, case_dir, binary="strings")
+
+    entries = analyze_shellbags_regipy(target) if os.path.isfile(target) else []
+    payload = {
+        "target": target,
+        "shellbag_entries": entries[:200],
+        "suspicious_paths": detect_suspicious_paths(entries),
+        "entry_count": len(entries),
+    }
+    write_json_report(case_dir, "shellbag_report.json", payload)
+    return payload
 
 
 if __name__ == '__main__':

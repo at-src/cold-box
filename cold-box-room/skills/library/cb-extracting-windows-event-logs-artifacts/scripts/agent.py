@@ -20,8 +20,10 @@ logger = logging.getLogger(__name__)
 
 try:
     from evtx import PyEvtxParser
+    HAS_EVTX = True
 except ImportError:
-    sys.exit("evtx required: pip install evtx")
+    PyEvtxParser = None
+    HAS_EVTX = False
 
 CRITICAL_EVENT_IDS = {
     "1102": "Audit Log Cleared",
@@ -56,6 +58,9 @@ SUSPICIOUS_PROCESSES = [
 
 def parse_evtx_file(evtx_path: str) -> List[dict]:
     """Parse an EVTX file and return list of event records."""
+    if not HAS_EVTX:
+        logger.warning("python-evtx not installed — skipping EVTX parse for %s", evtx_path)
+        return []
     if not os.path.isfile(evtx_path):
         logger.warning("EVTX file not found: %s", evtx_path)
         return []
@@ -251,32 +256,138 @@ def analyze_evtx(evtx_paths: List[str], output_dir: str) -> dict:
     return report
 
 
+def audit_legacy_evt_artifact(artifact_path: str, case_dir: str) -> dict:
+    """Best-effort audit for Windows XP .Evt binaries when EVTX parser is unavailable."""
+    from cold_box_room.skills.script_helpers import audit_artifact_file
+
+    audited = audit_artifact_file(artifact_path, case_dir, binary="file") or audit_artifact_file(
+        artifact_path, case_dir, binary="strings"
+    )
+    return {
+        "path": artifact_path,
+        "format": "legacy_evt",
+        "audited": audited,
+        "note": "Windows XP .Evt requires legacy parsers; strings/file audit only.",
+    }
+
+
+def _harness_artifact_paths(image_path: str) -> list[str]:
+    """Scratch-local files passed via harness script_args (not the disk image)."""
+    paths: list[str] = []
+    image_abs = os.path.abspath(image_path)
+    if len(sys.argv) > 2:
+        for arg in sys.argv[2:]:
+            if os.path.isfile(arg) and os.path.abspath(arg) != image_abs:
+                paths.append(arg)
+    return paths
+
+
+def analyze_image(image_path, case_dir):
+    """Harness entry — EVTX parse when available; legacy .Evt gets strings/file audit."""
+    from cold_box_room.skills.script_helpers import (
+        audit_disk_image,
+        ensure_case_dir,
+        write_json_report,
+    )
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    artifacts = _harness_artifact_paths(image_path)
+    payload: dict = {
+        "skill": "cb-extracting-windows-event-logs-artifacts",
+        "image": image_path,
+        "artifacts": artifacts,
+        "evtx_available": HAS_EVTX,
+    }
+
+    if artifacts:
+        legacy_reports = [audit_legacy_evt_artifact(path, case_dir) for path in artifacts]
+        payload["legacy_evt_audit"] = legacy_reports
+        payload["summary"] = {
+            "files_analyzed": artifacts,
+            "format": "legacy_evt",
+            "evtx_parser": "unavailable" if not HAS_EVTX else "skipped_for_legacy",
+            "audited_count": sum(1 for row in legacy_reports if row.get("audited")),
+            "recommendation": "Layer 1 icat extracts audited via strings/file; full XP .Evt parse needs evtparse.",
+        }
+        write_json_report(case_dir, "evtx_report.json", payload)
+        print(json.dumps(payload["summary"], indent=2, default=str))
+        return payload
+
+    target = image_path
+    if str(target).lower().endswith(".evtx") and os.path.isfile(str(target)):
+        report = analyze_evtx([str(target)], case_dir)
+        payload.update(report)
+        write_json_report(case_dir, "evtx_report.json", payload)
+        print(json.dumps(report.get("summary", {}), indent=2, default=str))
+        return payload
+
+    payload["summary"] = {
+        "files_analyzed": [],
+        "note": "No EVTX/EVT artifact path supplied — pass extracted log via script_args.",
+    }
+    write_json_report(case_dir, "evtx_report.json", payload)
+    print(json.dumps(payload["summary"], indent=2, default=str))
+    return payload
+
+
 def main():
     parser = argparse.ArgumentParser(description="Windows Event Log Artifact Extraction Agent")
     parser.add_argument("--evtx-dir", default="", help="Directory containing EVTX files")
     parser.add_argument("--evtx-files", nargs="*", default=[], help="Specific EVTX files to parse")
+    parser.add_argument("--evt-files", nargs="*", default=[], help="Legacy Windows XP .Evt files")
     parser.add_argument("--output-dir", default=".", help="Output directory")
     parser.add_argument("--output", default="evtx_report.json")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     os.makedirs(args.output_dir, exist_ok=True)
     evtx_paths = list(args.evtx_files)
+    evt_paths = list(args.evt_files)
     if args.evtx_dir and os.path.isdir(args.evtx_dir):
         for f in os.listdir(args.evtx_dir):
-            if f.lower().endswith(".evtx"):
+            lower = f.lower()
+            if lower.endswith(".evtx"):
                 evtx_paths.append(os.path.join(args.evtx_dir, f))
+            elif lower.endswith(".evt"):
+                evt_paths.append(os.path.join(args.evtx_dir, f))
 
-    if not evtx_paths:
-        logger.error("No EVTX files specified")
-        sys.exit(1)
+    if not evtx_paths and not evt_paths:
+        logger.warning("No EVTX/EVT files specified — writing empty summary")
+        report = {
+            "analysis_date": datetime.utcnow().isoformat(),
+            "files_analyzed": [],
+            "summary": {"total_records": 0, "note": "No log files specified"},
+            "findings": {},
+        }
+    elif evtx_paths and HAS_EVTX:
+        report = analyze_evtx(evtx_paths, args.output_dir)
+        if evt_paths:
+            report.setdefault("legacy_evt_audit", []).extend(
+                audit_legacy_evt_artifact(path, args.output_dir) for path in evt_paths
+            )
+    else:
+        report = {
+            "analysis_date": datetime.utcnow().isoformat(),
+            "files_analyzed": evt_paths or evtx_paths,
+            "summary": {
+                "total_records": 0,
+                "format": "legacy_evt" if evt_paths else "evtx_unavailable",
+                "note": "EVTX parser unavailable or only legacy .Evt supplied",
+            },
+            "legacy_evt_audit": [
+                audit_legacy_evt_artifact(path, args.output_dir) for path in evt_paths
+            ],
+            "findings": {},
+        }
 
-    report = analyze_evtx(evtx_paths, args.output_dir)
     out_path = os.path.join(args.output_dir, args.output)
     with open(out_path, "w") as f:
         json.dump(report, f, indent=2, default=str)
     logger.info("Report saved to %s", out_path)
-    print(json.dumps(report["summary"], indent=2, default=str))
-
+    print(json.dumps(report.get("summary", report), indent=2, default=str))
 
 if __name__ == "__main__":
     main()

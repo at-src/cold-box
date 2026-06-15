@@ -64,6 +64,7 @@ def run_skill_script(
     argv = list(script_args or [])
     old_argv = sys.argv[:]
     sys.argv = [str(script), str(evidence), *argv]
+    entry_ran = False
     try:
         with activate(runtime):
             spec = importlib.util.spec_from_file_location(
@@ -78,8 +79,31 @@ def run_skill_script(
             if hasattr(module, "analyze_image"):
                 work = runtime.ensure_work_dir()
                 module.analyze_image(str(evidence), str(work))
+                entry_ran = True
             elif hasattr(module, "main"):
-                module.main()
+                try:
+                    module.main()
+                    entry_ran = True
+                except SystemExit as exc:
+                    code = exc.code if exc.code is not None else 0
+                    if code not in (0, None):
+                        raise SkillRuntimeError(
+                            f"Skill script exited with code {code}"
+                        ) from exc
+            elif hasattr(module, "run"):
+                work = runtime.ensure_work_dir()
+                module.run(str(evidence), str(work))
+                entry_ran = True
+    except SystemExit as exc:
+        code = exc.code if exc.code is not None else 0
+        return {
+            "ok": False,
+            "error": f"Skill script exited with code {code}",
+            "skill_id": row.skill_id,
+            "journal_id": jid,
+            "library_slug": slug,
+            "audit_ids": runtime.audit_ids,
+        }
     except Exception as exc:
         tb = traceback.format_exc(limit=8)
         return {
@@ -93,6 +117,19 @@ def run_skill_script(
         }
     finally:
         sys.argv = old_argv
+
+    if not entry_ran:
+        return {
+            "ok": False,
+            "error": (
+                "Skill script has no harness entry point "
+                "(expected analyze_image, main, or run)."
+            ),
+            "skill_id": row.skill_id,
+            "journal_id": jid,
+            "library_slug": slug,
+            "audit_ids": runtime.audit_ids,
+        }
 
     return {
         "ok": True,

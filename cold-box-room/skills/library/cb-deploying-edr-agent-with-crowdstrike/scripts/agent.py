@@ -12,9 +12,10 @@ from datetime import datetime
 
 try:
     from falconpy import Hosts, Detections
+
+    HAS_FALCONPY = True
 except ImportError:
-    print("Install: pip install crowdstrike-falconpy")
-    sys.exit(1)
+    HAS_FALCONPY = False
 
 
 def list_hosts(client_id, client_secret, filter_query=None):
@@ -82,6 +83,14 @@ def check_sensor_versions(hosts_data):
 
 def run_audit(client_id, client_secret):
     """Execute CrowdStrike EDR audit."""
+    if not HAS_FALCONPY:
+        return {
+            "skipped": True,
+            "reason": "crowdstrike-falconpy not installed; API credentials required for live audit",
+            "hosts": 0,
+            "versions": {},
+            "detections": [],
+        }
     print(f"\n{'='*60}")
     print(f"  CROWDSTRIKE EDR DEPLOYMENT AUDIT")
     print(f"  Generated: {datetime.utcnow().isoformat()} UTC")
@@ -107,11 +116,14 @@ def run_audit(client_id, client_secret):
 
 def main():
     parser = argparse.ArgumentParser(description="CrowdStrike EDR Agent")
-    parser.add_argument("--client-id", required=True, help="CrowdStrike API client ID")
-    parser.add_argument("--client-secret", required=True, help="CrowdStrike API client secret")
+    parser.add_argument("--client-id", required=False, help="CrowdStrike API client ID")
+    parser.add_argument("--client-secret", required=False, help="CrowdStrike API client secret")
     parser.add_argument("--audit", action="store_true", help="Run full audit")
     parser.add_argument("--output", help="Save report to JSON file")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     if args.audit:
         report = run_audit(args.client_id, args.client_secret)
@@ -122,6 +134,26 @@ def main():
     else:
         parser.print_help()
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import ensure_case_dir, audit_disk_image, write_json_report
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    report = {
+        "skill": "cb-deploying-edr-agent-with-crowdstrike",
+        "image": image_path,
+        "falconpy_available": HAS_FALCONPY,
+        "note": "CrowdStrike API audit requires credentials; disk image audited only",
+        "audit": {
+            "skipped": True,
+            "reason": "Harness run — provide --client-id/--client-secret for live Falcon API audit",
+        },
+    }
+    write_json_report(case_dir, "harness_report.json", report)
+    return report
 
 if __name__ == "__main__":
     main()

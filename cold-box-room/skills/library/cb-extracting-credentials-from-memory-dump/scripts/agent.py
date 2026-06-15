@@ -226,10 +226,13 @@ def generate_report(dump_path: str, output_dir: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Memory Dump Credential Extraction Agent")
-    parser.add_argument("--dump", required=True, help="Path to memory dump file")
+    parser.add_argument("--dump", required=False, help="Path to memory dump file")
     parser.add_argument("--output-dir", default=".", help="Output directory")
     parser.add_argument("--output", default="credential_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     report = generate_report(args.dump, args.output_dir)
     out_path = os.path.join(args.output_dir, args.output)
@@ -238,6 +241,18 @@ def main():
     logger.info("Report saved to %s", out_path)
     print(json.dumps(report, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-extracting-credentials-from-memory-dump',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

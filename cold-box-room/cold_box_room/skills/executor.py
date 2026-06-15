@@ -29,11 +29,20 @@ def run_skill(
     try:
         rec = get_skill(skill_id)
     except SkillCatalogError as exc:
-        return {"ok": False, "error": str(exc), "case_id": case_id}
+        return {
+            "ok": False,
+            "outcome": "error",
+            "runnable": False,
+            "error": str(exc),
+            "case_id": case_id,
+        }
 
     if rec.reference_only or not rec.has_script:
         return {
-            "ok": False,
+            "ok": True,
+            "outcome": "not_runnable",
+            "runnable": False,
+            "availability": "reference_only",
             "error": (
                 f"Skill {rec.skill_id!r} is reference-only — browse describe_skill "
                 "for the playbook; use run_sift_tool in Room 2 for extraction."
@@ -45,7 +54,10 @@ def run_skill(
 
     if not is_agent_runnable(rec):
         return {
-            "ok": False,
+            "ok": True,
+            "outcome": "not_runnable",
+            "runnable": False,
+            "availability": "catalog_excluded",
             "error": (
                 f"Skill {rec.skill_id!r} is excluded from the agent catalog "
                 f"(execution_mode={rec.execution_mode!r}). Pick a fully SIFT-mapped skill."
@@ -59,6 +71,8 @@ def run_skill(
     if not rel:
         return {
             "ok": False,
+            "outcome": "error",
+            "runnable": True,
             "error": "input_relpath must name a file inside the R2 sandbox",
             "case_id": case_id,
             "skill_id": rec.skill_id,
@@ -75,7 +89,9 @@ def run_skill(
     )
     ok = bool(result.get("ok"))
     audit_ids = list(result.get("audit_ids") or [])
-    exit_code = 0 if ok else 1
+    success = ok and bool(audit_ids)
+    outcome = "success" if success else "failed"
+    exit_code = 0 if success else 1
     append_skill_log(
         case_id=case_id,
         run_id=run_id,
@@ -83,7 +99,8 @@ def run_skill(
         journal_id=result.get("journal_id") or rec.journal_id,
         library_slug=rec.library_slug,
         input_relpath=rel,
-        ok=ok and bool(audit_ids),
+        outcome=outcome,
+        ok=success,
         audit_ids=audit_ids,
         exit_code=exit_code,
         purpose=purpose.strip(),
@@ -92,15 +109,38 @@ def run_skill(
         plan_step_id=plan_step_id,
     )
 
-    result["case_id"] = case_id
-    result["run_id"] = run_id
+    response: dict[str, Any] = {
+        "ok": True,
+        "outcome": outcome,
+        "runnable": True,
+        "retryable": outcome == "failed",
+        "case_id": case_id,
+        "run_id": run_id,
+        "skill_id": rec.skill_id,
+        "journal_id": result.get("journal_id") or rec.journal_id,
+        "library_slug": rec.library_slug,
+        "audit_ids": audit_ids,
+        "audit_count": len(audit_ids),
+        "work_dir": result.get("work_dir") or "",
+    }
     if purpose.strip():
-        result["purpose"] = purpose.strip()
+        response["purpose"] = purpose.strip()
     if why.strip():
-        result["why"] = why.strip()
+        response["why"] = why.strip()
     if plan_step_id is not None:
-        result["plan_step_id"] = plan_step_id
-    if ok and not audit_ids:
-        result["ok"] = False
-        result["error"] = "Skill script finished without harness tool runs — cannot mark plan step passed."
-    return result
+        response["plan_step_id"] = plan_step_id
+    if success:
+        response["message"] = result.get("message") or (
+            f"Skill script finished — {len(audit_ids)} harness tool run(s) logged."
+        )
+    else:
+        err = str(result.get("error") or "").strip()
+        if ok and not audit_ids:
+            err = "Skill script finished without harness tool runs — cannot mark plan step passed."
+        response["error"] = err
+        response["hint"] = (
+            "This attempt failed; the skill is still available in the catalog. "
+            "Retry run_skill with corrected script_args or return_to_room to Room 2 "
+            "for missing extractions, then run_skill again."
+        )
+    return response

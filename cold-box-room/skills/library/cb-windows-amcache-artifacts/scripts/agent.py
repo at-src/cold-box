@@ -21,10 +21,10 @@ except ImportError:
     HAS_REGIPY = False
 
 
-AMCACHE_FILE_KEY = "Root\InventoryApplicationFile"
-AMCACHE_APP_KEY = "Root\InventoryApplication"
-AMCACHE_DEVICE_KEY = "Root\InventoryDevicePnp"
-AMCACHE_DRIVER_KEY = "Root\InventoryDriverBinary"
+AMCACHE_FILE_KEY = r"Root\InventoryApplicationFile"
+AMCACHE_APP_KEY = r"Root\InventoryApplication"
+AMCACHE_DEVICE_KEY = r"Root\InventoryDevicePnp"
+AMCACHE_DRIVER_KEY = r"Root\InventoryDriverBinary"
 
 SUSPICIOUS_PATHS = [
     "\\temp\\", "\\tmp\\", "\\appdata\\local\\temp",
@@ -121,6 +121,9 @@ def main():
     parser.add_argument("--output", "-o", help="Output JSON report path")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     print("[*] Amcache.hve Forensic Analysis Agent")
     print(f"    regipy available: {HAS_REGIPY}")
 
@@ -163,6 +166,18 @@ def main():
     print(json.dumps({"file_entries": report.get("file_entries", 0),
                        "suspicious": report.get("suspicious_count", 0)}, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-windows-amcache-artifacts',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

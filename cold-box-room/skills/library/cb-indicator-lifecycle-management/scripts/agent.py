@@ -140,18 +140,21 @@ def main():
     parser = argparse.ArgumentParser(description="IOC Lifecycle Management Agent")
     sub = parser.add_subparsers(dest="command")
     e = sub.add_parser("extract", help="Extract IOCs from text")
-    e.add_argument("--file", required=True)
+    e.add_argument("--file", required=False)
     i = sub.add_parser("ingest", help="Ingest IOC feed CSV")
-    i.add_argument("--csv", required=True)
+    i.add_argument("--csv", required=False)
     x = sub.add_parser("expire", help="Check IOC expiration")
-    x.add_argument("--csv", required=True)
+    x.add_argument("--csv", required=False)
     x.add_argument("--ttl", type=int, default=90, help="TTL in days")
     d = sub.add_parser("dedup", help="Deduplicate IOCs")
-    d.add_argument("--csv", required=True)
+    d.add_argument("--csv", required=False)
     r = sub.add_parser("report", help="Full lifecycle report")
-    r.add_argument("--csv", required=True)
+    r.add_argument("--csv", required=False)
     r.add_argument("--ttl", type=int, default=90)
     args = parser.parse_args()
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.command == "extract":
         result = extract_iocs(args.file)
     elif args.command == "ingest":
@@ -167,6 +170,18 @@ def main():
         return
     print(json.dumps(result, indent=2, default=str))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-indicator-lifecycle-management',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

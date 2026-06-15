@@ -145,12 +145,15 @@ def detect_sender_spoofing(emails):
 
 def main():
     parser = argparse.ArgumentParser(description="Spearphishing Indicator Hunter")
-    parser.add_argument("--email-log", required=True, help="JSON lines email log")
+    parser.add_argument("--email-log", required=False, help="JSON lines email log")
     parser.add_argument("--output", default="spearphishing_hunt_report.json")
     parser.add_argument("--action", choices=[
         "attachments", "urls", "urgency", "spoofing", "full_analysis"
     ], default="full_analysis")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     emails = load_email_logs(args.email_log)
     report = {"generated_at": datetime.utcnow().isoformat(), "total_emails": len(emails),
@@ -181,6 +184,18 @@ def main():
         json.dump(report, f, indent=2, default=str)
     print(f"[+] Report saved to {args.output}")
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-hunting-for-spearphishing-indicators',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

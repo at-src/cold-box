@@ -133,6 +133,9 @@ def main():
     parser.add_argument("--output", help="Save report to JSON file")
     args = parser.parse_args()
 
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
+
     if args.audit:
         report = run_audit()
         if args.output:
@@ -142,6 +145,18 @@ def main():
     else:
         parser.print_help()
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-configuring-windows-event-logging-for-detection',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

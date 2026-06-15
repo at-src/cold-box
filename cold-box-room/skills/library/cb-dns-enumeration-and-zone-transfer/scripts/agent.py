@@ -218,6 +218,18 @@ def generate_report(
     return "\n".join(lines)
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-dns-enumeration-and-zone-transfer',
+        main_fn=None,
+    )
+
 if __name__ == "__main__":
     print("[!] DNS ENUMERATION — AUTHORIZED TESTING ONLY\n")
 

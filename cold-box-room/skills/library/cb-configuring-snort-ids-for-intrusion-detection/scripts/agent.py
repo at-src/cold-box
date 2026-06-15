@@ -17,7 +17,7 @@ SNORT_BIN = os.environ.get("SNORT_BIN", "/usr/local/bin/snort")
 SNORT_CONF = os.environ.get("SNORT_CONF", "/usr/local/etc/snort/snort.lua")
 RULES_DIR = os.environ.get("SNORT_RULES_DIR", "/usr/local/etc/snort/rules")
 LOG_DIR = os.environ.get("SNORT_LOG_DIR", "/var/log/snort")
-DAQ_DIR = os.environ.get("SNORT_DAQ_DIR", DAQ_DIR)
+DAQ_DIR = os.environ.get("SNORT_DAQ_DIR", "/usr/local/lib/daq")
 
 
 def check_snort_installed():
@@ -186,6 +186,18 @@ def generate_report():
     }
     return report
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-configuring-snort-ids-for-intrusion-detection',
+        main_fn=None,
+    )
 
 if __name__ == "__main__":
     action = sys.argv[1] if len(sys.argv) > 1 else "report"

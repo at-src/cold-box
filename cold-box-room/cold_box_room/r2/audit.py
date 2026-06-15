@@ -14,6 +14,31 @@ def audit_log_path(case_id: str):
     return case_records_dir(case_id) / "audit.jsonl"
 
 
+def find_prior_success(
+    case_id: str,
+    *,
+    tool_name: str,
+    input_sha256: str,
+) -> dict[str, Any] | None:
+    """Return the most recent successful audit row for the same tool + evidence hash."""
+    path = audit_log_path(case_id)
+    if not path.is_file() or not input_sha256:
+        return None
+    for line in reversed(path.read_text(encoding="utf-8").splitlines()):
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if row.get("tool_name") != tool_name:
+            continue
+        if row.get("input_sha256") != input_sha256:
+            continue
+        exit_code = row.get("exit_code")
+        if exit_code is None or int(exit_code) != 0:
+            continue
+        return row
+    return None
+
+
 def next_audit_id() -> str:
     return f"CB-{uuid.uuid4().hex[:12]}"
 

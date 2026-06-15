@@ -187,6 +187,18 @@ def generate_phishing_indicators(headers, auth, hops, url_mismatches, attachment
     return indicators
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-email-headers-for-phishing-investigation',
+        main_fn=None,
+    )
+
 if __name__ == "__main__":
     print("=" * 60)
     print("Email Header Phishing Analysis Agent")

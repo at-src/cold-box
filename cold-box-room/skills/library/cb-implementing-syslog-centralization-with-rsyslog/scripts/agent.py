@@ -198,8 +198,8 @@ def generate_report(server_config, client_configs, deployments, tls_valid):
 
 def main():
     parser = argparse.ArgumentParser(description="Rsyslog Centralization Agent")
-    parser.add_argument("--server-ip", required=True, help="Syslog server IP")
-    parser.add_argument("--clients", required=True, help="Comma-separated client IPs")
+    parser.add_argument("--server-ip", required=False, help="Syslog server IP")
+    parser.add_argument("--clients", required=False, help="Comma-separated client IPs")
     parser.add_argument("--ca-cert", default="/etc/rsyslog.d/ca.pem")
     parser.add_argument("--server-cert", default="/etc/rsyslog.d/server-cert.pem")
     parser.add_argument("--server-key", default="/etc/rsyslog.d/server-key.pem")
@@ -208,6 +208,9 @@ def main():
     parser.add_argument("--config-dir", default="./rsyslog_configs")
     parser.add_argument("--output", default="syslog_report.json")
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     clients = [c.strip() for c in args.clients.split(",")]
     import os
@@ -244,6 +247,18 @@ def main():
         json.dump(report, f, indent=2)
     logger.info("Report saved to %s", args.output)
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-implementing-syslog-centralization-with-rsyslog',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

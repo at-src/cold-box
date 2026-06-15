@@ -128,7 +128,7 @@ def main():
     parser.add_argument("--output", "-o", help="Output JSON report")
     parser.add_argument("--max-events", type=int, default=500)
     parser.add_argument("--verbose", "-v", action="store_true")
-    args = parser.parse_args()
+    args, _unknown = parser.parse_known_args()
 
     print("[*] T1055 Process Injection Detection Agent (Sysmon)")
     report = {"timestamp": datetime.now(timezone.utc).isoformat(), "findings": {}}
@@ -154,6 +154,29 @@ def main():
         print(f"[*] Report saved to {args.output}")
     else:
         print(json.dumps(report, indent=2))
+
+
+def analyze_image(image_path, case_dir):
+    """Harness entry — audit disk image; Sysmon EVTX analysis needs Windows logs."""
+    from cold_box_room.skills.script_helpers import ensure_case_dir, audit_disk_image, write_json_report
+
+    ensure_case_dir(case_dir)
+    audit_disk_image(image_path)
+    report = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "image": image_path,
+        "platform": sys.platform,
+        "note": "Sysmon telemetry requires Windows EVTX; disk image audited only",
+        "findings": {},
+    }
+    if sys.platform == "win32":
+        report["findings"] = {
+            "process_access": analyze_process_access(),
+            "remote_threads": analyze_create_remote_thread(),
+            "suspicious_loads": analyze_image_loads(),
+        }
+    write_json_report(case_dir, "sysmon_t1055_report.json", report)
+    return report
 
 
 if __name__ == "__main__":

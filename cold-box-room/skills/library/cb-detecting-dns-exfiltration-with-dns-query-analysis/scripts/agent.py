@@ -147,11 +147,14 @@ def analyze_queries(queries):
 def main():
     global ENTROPY_THRESHOLD, SUBDOMAIN_LENGTH_THRESHOLD
     parser = argparse.ArgumentParser(description="DNS Exfiltration Detector")
-    parser.add_argument("--dns-log", required=True, help="DNS log file (Zeek or text)")
+    parser.add_argument("--dns-log", required=False, help="DNS log file (Zeek or text)")
     parser.add_argument("--format", choices=["zeek", "text"], default="zeek")
     parser.add_argument("--entropy-threshold", type=float, default=ENTROPY_THRESHOLD)
     parser.add_argument("--length-threshold", type=int, default=SUBDOMAIN_LENGTH_THRESHOLD)
     args = parser.parse_args()
+
+    from cold_box_room.skills.script_helpers import patch_args_from_harness
+    patch_args_from_harness(args)
 
     ENTROPY_THRESHOLD = args.entropy_threshold
     SUBDOMAIN_LENGTH_THRESHOLD = args.length_threshold
@@ -167,6 +170,18 @@ def main():
     }
     print(json.dumps(results, indent=2))
 
+
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-detecting-dns-exfiltration-with-dns-query-analysis',
+        main_fn=main,
+    )
 
 if __name__ == "__main__":
     main()

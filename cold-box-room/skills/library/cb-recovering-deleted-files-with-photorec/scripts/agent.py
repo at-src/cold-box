@@ -193,6 +193,18 @@ def print_report(results):
             print(f"  {cat_name:15s}: {count} files")
 
 
+
+# cold-box harness entry
+def analyze_image(image_path, case_dir):
+    from cold_box_room.skills.script_helpers import run_default_analyze_image
+
+    return run_default_analyze_image(
+        image_path,
+        case_dir,
+        skill_slug='cb-recovering-deleted-files-with-photorec',
+        main_fn=None,
+    )
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python agent.py <disk_image> <output_dir> [file_types]")

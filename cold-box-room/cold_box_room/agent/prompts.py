@@ -124,7 +124,14 @@ Rules:
 - input_relpath is relative to the sandbox root.
 - Run extractions only through the provided tools — never invent shell commands.
 - purpose and why are required on every tool call.
-- Reserve turns for plan step resolution and submit — do not explore endlessly without marking steps and writing up."""
+- Reserve turns for plan step resolution and submit — do not explore endlessly without marking steps and writing up.
+
+**SIFT quick reference (NTFS E01):**
+- Partition offset is usually `-o 63` in `extra_args`.
+- Directory listing: `fls` with `-o 63 -l <inode>` — root inode is typically `5`.
+- Timeline bodyfile: `fls -r -m / -o 63` (mount `/` immediately after `-m`, before the image path).
+- `mactime -b` input must be a bodyfile scratch path from `fls -m`, never the disk image.
+- `ewfverify` is skipped automatically when the same image hash was already verified in this case."""
 
 DEFAULT_LAYER1_GOAL = (
     "Room A already passed (extraction plan formalized; sandbox is ready). "
@@ -190,6 +197,7 @@ ROOM_3_HALLWAY_CONTEXT = f"""\
 **Room 3 (you are here — Layer 2 analysis execution)**
 - Read Layer 1 tool log + analyst log first — base analysis on what was actually extracted.
 - Execute `plan_b.py` via `run_skill` — scripts route SIFT calls through the harness.
+- Browse `list_sift_tools` / `describe_sift_tool` for reference (Room 2 unlocked). **Do not** call `run_sift_tool` here — use `return_to_room` → Room 2 for new extractions.
 - Harness appends each skill run to `layer2_skill_log.md` and nested SIFT runs to `layer2_tool_log.md` (both harness-only).
 - Your write-up goes to `layer2_analyst_log.md` via submit_layer2_writeup only.
 - If you discover a mistake (wrong extraction, wrong plan step, missing artifact): call `return_to_room` to **Room A, 2, or B** (Room 1 is locked — sealed R1 table), fix it, then `return_to_room` back to **3** and document the fix in **corrections** on submit."""
@@ -228,10 +236,12 @@ Your opening context is the Layer 1 analyst log (findings, why, self-score) plus
 {ROOM_3_PROMOTION_GATES}
 
 Rules:
-- `list_skills` shows only fully runnable skills (partial/reference excluded).
+- `list_skills` shows only fully runnable skills (partial/reference excluded) — all are available to run.
 - Pick skills per plan step in Room 3 — not in plan_b.md text.
 - purpose and why on every run_skill call.
-- Honest corrections: if you revisit an earlier room, say what you got wrong."""
+- Honest corrections: if you revisit an earlier room, say what you got wrong.
+- Skills that need pre-extracted bytes (EVT, MFT, icat outputs) take `script_args` with scratch-relative paths from the Layer 1 tool log — pass inode `-o 63` context via those paths, not raw image-only invocation when the skill expects extracts.
+- **run_skill response semantics:** `ok:true` means the harness ran your request. `outcome:success` → mark plan step passed. `outcome:failed` → **retry the same skill** (fix script_args or return_to_room for extractions) — do not abandon the skill. `outcome:not_runnable` → pick a different skill. Same for `read_layer2_skill_log`: `outcome:failed` is a failed attempt, not “skill unavailable”."""
 
 DEFAULT_ROOM_3_GOAL = (
     "Room B already passed (plan_b.py formalized). Read Layer 1 analyst log and tool log, "
