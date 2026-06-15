@@ -1,0 +1,37 @@
+{
+  "schema": "cold_box_room.accuracy_benchmark_v1",
+  "id": "dfrws2008",
+  "title": "DFRWS 2008 Linux memory + pcap fusion",
+  "evidence_paths": [
+    "/evidence/dfrws2008/evidence/response_data/challenge.mem",
+    "/evidence/dfrws2008/evidence/response_data/suspect.pcap"
+  ],
+  "source": "/evidence/dfrws2008/details/README.md",
+  "note": "Multi-artifact case — hallway E2E currently intakes one path; use for Layer-1 tool/skill probes or future multi-intake runs.",
+  "checks": [
+    {
+      "id": "linux_memory",
+      "label": "Linux memory dump analyzed",
+      "patterns": ["challenge.mem", "linux memory", "volatility", "vol3", "pslist", "psscan"],
+      "required": true
+    },
+    {
+      "id": "pcap",
+      "label": "Network capture analyzed",
+      "patterns": ["suspect.pcap", "pcap", "tshark", "tcpdump", "network traffic"],
+      "required": true
+    },
+    {
+      "id": "collaboration",
+      "label": "Outside collaboration evidence",
+      "patterns": ["collaboration", "outside party", "exfil", "zip", "http cookie"],
+      "required": true
+    },
+    {
+      "id": "gedit_mc",
+      "label": "User artifact trails (gedit/mc)",
+      "patterns": ["gedit", "mc history", "matthew geiger"],
+      "required": false
+    }
+  ]
+}

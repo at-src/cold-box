@@ -1,0 +1,59 @@
+{
+  "schema": "cold_box_room.accuracy_benchmark_v1",
+  "id": "ndlc_leakage_pc",
+  "title": "NIST CFReDS 2015 Data Leakage PC",
+  "scope": "pc_image_only",
+  "evidence_path": "/evidence/nist-ndlc/images/cfreds_2015_data_leakage_pc.E01",
+  "evidence_dir": "/evidence/nist-ndlc/images",
+  "required_staging_files": [
+    "cfreds_2015_data_leakage_pc.E01",
+    "cfreds_2015_data_leakage_pc.E02",
+    "cfreds_2015_data_leakage_pc.E03",
+    "cfreds_2015_data_leakage_pc.E04"
+  ],
+  "optional_staging_files": [
+    "cfreds_2015_data_leakage_rm#1.E01",
+    "cfreds_2015_data_leakage_rm#2.E01",
+    "cfreds_2015_data_leakage_rm#3.E01"
+  ],
+  "source": "/evidence/ground-truth/leakage-answers.pdf",
+  "checks": [
+    {
+      "id": "host_informant",
+      "label": "Suspect host INFORMANT-PC",
+      "patterns": ["informant-pc", "informant pc", "informant_pc", "registered owner", "iaman informant", "iaman.informant"],
+      "required": true
+    },
+    {
+      "id": "os_win7",
+      "label": "Windows 7 Ultimate",
+      "patterns": ["windows 7", "7601", "6.1"],
+      "required": true
+    },
+    {
+      "id": "ntfs",
+      "label": "NTFS partitions",
+      "patterns": ["ntfs"],
+      "required": true
+    },
+    {
+      "id": "leakage",
+      "label": "Data leakage scenario",
+      "patterns": ["data leak", "leakage", "exfil", "confidential", "removable media", "usb", "spy.conspirator", "google drive", "icloud", "ccleaner", "eraser"],
+      "required": true
+    },
+    {
+      "id": "pc_md5",
+      "label": "PC image MD5",
+      "patterns": ["a49d1254c873808c58e6f1bcd60b5bde"],
+      "required": false
+    },
+    {
+      "id": "timezone",
+      "label": "Eastern timezone",
+      "patterns": ["eastern time", "utc-05", "utc-5"],
+      "required": false,
+      "requires_staging_files": ["cfreds_2015_data_leakage_rm#1.E01"]
+    }
+  ]
+}

@@ -531,7 +531,11 @@ LAYER1_TOOL_SCHEMAS: list[dict[str, Any]] = [
     },
     {
         "name": "run_sift_tool",
-        "description": "Run catalog tool on sandbox evidence; output goes to scratch + tool log.",
+        "description": (
+            "Run catalog tool on sandbox evidence; output goes to scratch + tool log. "
+            "Call describe_sift_tool first for execution_profile/agent_guidance on heavy tools "
+            "(blkls, ewfexport, tsk_recover). Prefer lighter alternatives unless only that tool can answer."
+        ),
         "input_schema": {
             "type": "object",
             "properties": {

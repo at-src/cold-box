@@ -107,8 +107,10 @@ def deliver_to_room_a(
 ) -> dict[str, Any]:
     """Kitchen — R1 intake, seal, check, promote to Room A (no sandbox yet)."""
     src = (evidence_path or DEFAULT_JO_E01).expanduser().resolve()
-    if not src.is_file():
+    if not src.exists():
         raise FileNotFoundError(f"Evidence not found: {src}")
+    if not src.is_file() and not src.is_dir():
+        raise FileNotFoundError(f"Evidence path is not a file or directory: {src}")
 
     intake = intake_case(case_id, source=src, link_only=link_only)
     check = record_r1_check(case_id)

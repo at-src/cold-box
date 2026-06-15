@@ -89,6 +89,7 @@ def _execute(
     truncated = False
     if stdout_file is not None:
         truncated_holder: list[bool] = [False]
+        stderr_chunks: list[bytes] = []
 
         def _stream_stdout() -> None:
             assert proc.stdout is not None
@@ -98,9 +99,32 @@ def _execute(
                 max_bytes=MAX_SCRATCH_FILE_BYTES,
             )
 
+        def _drain_stderr() -> None:
+            assert proc.stderr is not None
+            _read_pipe(proc.stderr, stderr_chunks, MAX_OUTPUT_BYTES // 4, [0])
+
         reader = threading.Thread(target=_stream_stdout, daemon=True)
         reader.start()
-        stderr_chunks: list[bytes] = []
+        stderr_thread = threading.Thread(target=_drain_stderr, daemon=True)
+        stderr_thread.start()
+
+        deadline = start + timeout
+        while proc.poll() is None:
+            if truncated_holder[0]:
+                proc.kill()
+                break
+            if time.monotonic() >= deadline:
+                proc.kill()
+                proc.wait(timeout=5)
+                raise ToolExecutionError(f"Timed out after {timeout}s")
+            time.sleep(0.2)
+
+        reader.join(timeout=5)
+        stderr_thread.join(timeout=5)
+        truncated = truncated_holder[0]
+        if proc.poll() is None:
+            proc.kill()
+            proc.wait(timeout=5)
     else:
         stdout_chunks: list[bytes] = []
         stderr_chunks: list[bytes] = []
@@ -119,30 +143,29 @@ def _execute(
         stderr_thread.join(timeout=5)
         truncated = total[0] >= MAX_OUTPUT_BYTES
 
-    try:
-        proc.wait(timeout=timeout)
-    except subprocess.TimeoutExpired as exc:
-        proc.kill()
-        proc.wait(timeout=5)
-        raise ToolExecutionError(f"Timed out after {timeout}s") from exc
-
-    if stdout_file is not None:
-        reader.join(timeout=5)
-        truncated = truncated_holder[0]
-        if truncated and proc.poll() is None:
+    if stdout_file is None:
+        try:
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired as exc:
             proc.kill()
             proc.wait(timeout=5)
-        if proc.stderr:
-            stderr_chunks.append(proc.stderr.read(MAX_OUTPUT_BYTES // 4))
+            raise ToolExecutionError(f"Timed out after {timeout}s") from exc
     else:
+        proc.wait(timeout=5)
+
+    if stdout_file is None:
         # stdout/stderr already drained in threads above
         pass
+    elif proc.stderr and proc.poll() is not None:
+        tail = proc.stderr.read(MAX_OUTPUT_BYTES // 4)
+        if tail:
+            stderr_chunks.append(tail)
 
     elapsed = time.monotonic() - start
     stderr = b"".join(stderr_chunks).decode("utf-8", errors="replace")
     if stdout_file is not None:
         return {
-            "exit_code": proc.returncode,
+            "exit_code": proc.returncode if proc.returncode is not None else -9,
             "stdout": "",
             "stderr": stderr,
             "elapsed_seconds": round(elapsed, 2),
@@ -702,4 +725,18 @@ def run_sift_tool(
         hint = _sleuthkit_failure_hint(tool, extra)
         if hint:
             payload["harness_hint"] = hint
+    if result.get("truncated"):
+        from cold_box_room.tools.agent_guidance import enrich_tool_dict
+
+        guidance = enrich_tool_dict({"name": tool.name}).get("agent_guidance")
+        if guidance:
+            payload["harness_hint"] = (
+                f"Output truncated at scratch cap ({MAX_SCRATCH_FILE_BYTES} bytes). "
+                f"{guidance}"
+            )
+        else:
+            payload["harness_hint"] = (
+                f"Output truncated at scratch cap ({MAX_SCRATCH_FILE_BYTES} bytes). "
+                "Narrow the query or use a lighter tool."
+            )
     return payload

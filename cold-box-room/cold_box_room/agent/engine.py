@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import json
+import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Any
 
@@ -46,6 +49,97 @@ from cold_box_room.r2.tool_log import read_tool_log
 
 SUBMIT_ONLY_SCHEMA = [t for t in LAYER1_TOOL_SCHEMAS if t["name"] == "submit_layer1_writeup"]
 SUBMIT_LAYER2_SCHEMA = [t for t in ROOM_3_TOOL_SCHEMAS if t["name"] == "submit_layer2_writeup"]
+
+_OUTPUT_SUMMARY_KEYS = (
+    "ok",
+    "outcome",
+    "r2_status_state",
+    "availability",
+    "audit_id",
+    "tool_id",
+    "exit_code",
+    "promoted",
+    "gate_open",
+    "ready_for_room2",
+    "ready_for_room3",
+    "ready_for_complete",
+    "complete",
+    "run_id",
+    "room",
+    "error",
+    "blocked_reasons",
+    "scratch_file",
+    "step_id",
+)
+
+
+def _normalize_tool_args(name: str, args: dict[str, Any], case_id: str) -> dict[str, Any]:
+    if "case_id" not in args and case_id:
+        args = {**args, "case_id": case_id}
+    if name == "submit_layer1_writeup" and "self_score" in args:
+        from cold_box_room.r2.analyst_log import normalize_self_score
+
+        try:
+            args = {**args, "self_score": normalize_self_score(args["self_score"])}
+        except Exception:
+            pass
+    if name == "submit_layer2_writeup" and "self_score" in args:
+        from cold_box_room.r2.analyst_log import normalize_self_score
+
+        try:
+            args = {**args, "self_score": normalize_self_score(args["self_score"])}
+        except Exception:
+            pass
+    return args
+
+
+def _dispatch_one_tool(
+    *,
+    block: Any,
+    turn: int,
+    case_id: str,
+) -> tuple[Any, dict[str, Any]]:
+    name = block.name
+    args = block.input if isinstance(block.input, dict) else {}
+    args = _normalize_tool_args(name, args, case_id)
+    try:
+        result = dispatch_tool(name, args)
+    except Exception as exc:
+        result = {"ok": False, "error": str(exc), "case_id": case_id}
+    _log_event(
+        case_id,
+        {
+            "type": "tool",
+            "turn": turn,
+            "tool": name,
+            "input": args,
+            "output_summary": {k: result.get(k) for k in _OUTPUT_SUMMARY_KEYS if k in result},
+        },
+    )
+    return block, result
+
+
+def _dispatch_tool_blocks(
+    *,
+    tool_uses: list[Any],
+    turn: int,
+    case_id: str,
+) -> list[tuple[Any, dict[str, Any]]]:
+    """Run independent tool calls in parallel; preserve request order in results."""
+    if len(tool_uses) <= 1:
+        return [_dispatch_one_tool(block=tool_uses[0], turn=turn, case_id=case_id)] if tool_uses else []
+
+    indexed = list(enumerate(tool_uses))
+    results: dict[int, tuple[Any, dict[str, Any]]] = {}
+    with ThreadPoolExecutor(max_workers=min(len(tool_uses), 8)) as pool:
+        futures = {
+            pool.submit(_dispatch_one_tool, block=block, turn=turn, case_id=case_id): idx
+            for idx, block in indexed
+        }
+        for future in as_completed(futures):
+            idx = futures[future]
+            results[idx] = future.result()
+    return [results[i] for i in range(len(tool_uses))]
 
 
 def _run_tool_loop(
@@ -103,64 +197,13 @@ def _run_tool_loop(
         messages.append({"role": "assistant", "content": response.content})
         tool_results: list[dict[str, Any]] = []
 
-        for block in tool_uses:
+        for block, result in _dispatch_tool_blocks(
+            tool_uses=tool_uses,
+            turn=turn,
+            case_id=case_id,
+        ):
             name = block.name
-            args = block.input if isinstance(block.input, dict) else {}
-            if "case_id" not in args and case_id:
-                args = {**args, "case_id": case_id}
-            if name == "submit_layer1_writeup" and "self_score" in args:
-                from cold_box_room.r2.analyst_log import normalize_self_score
-
-                try:
-                    args = {**args, "self_score": normalize_self_score(args["self_score"])}
-                except Exception:
-                    pass
-            if name == "submit_layer2_writeup" and "self_score" in args:
-                from cold_box_room.r2.analyst_log import normalize_self_score
-
-                try:
-                    args = {**args, "self_score": normalize_self_score(args["self_score"])}
-                except Exception:
-                    pass
-            try:
-                result = dispatch_tool(name, args)
-            except Exception as exc:
-                result = {"ok": False, "error": str(exc), "case_id": case_id}
             tool_calls += 1
-            _log_event(
-                case_id,
-                {
-                    "type": "tool",
-                    "turn": turn,
-                    "tool": name,
-                    "input": args,
-                    "output_summary": {
-                        k: result.get(k)
-                        for k in (
-                            "ok",
-                            "outcome",
-                            "r2_status_state",
-                            "availability",
-                            "audit_id",
-                            "tool_id",
-                            "exit_code",
-                            "promoted",
-                            "gate_open",
-                            "ready_for_room2",
-                            "ready_for_room3",
-                            "ready_for_complete",
-                            "complete",
-                            "run_id",
-                            "room",
-                            "error",
-                            "blocked_reasons",
-                            "scratch_file",
-                            "step_id",
-                        )
-                        if k in result
-                    },
-                },
-            )
             last_result = result
             if stop_on == "promoted" and name == "submit_layer1_writeup" and result.get("promoted"):
                 promoted = True

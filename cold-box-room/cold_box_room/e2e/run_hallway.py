@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +25,7 @@ from cold_box_room.e2e.run_layer1 import (
     preflight_room_a,
 )
 from cold_box_room.r1.hallway import current_room, promote_to_room2, promote_to_room3
-from cold_box_room.r1.paths import get_records_root
+from cold_box_room.r1.paths import get_records_root, REPO_ROOT
 from cold_box_room.r2.sandbox import list_sandbox_files
 from cold_box_room.room_a import fast_pass_room_a, room_a_checkpoint
 from cold_box_room.room_b import fast_pass_room_b, room_b_checkpoint
@@ -67,10 +69,10 @@ def run_hallway_e2e(
     layer1_goal: str | None = None,
     room_b_goal: str | None = None,
     room3_goal: str | None = None,
-    room_a_max_turns: int = 15,
-    layer1_max_turns: int = 45,
-    room_b_max_turns: int = 15,
-    room3_max_turns: int = 30,
+    room_a_max_turns: int = 25,
+    layer1_max_turns: int = 60,
+    room_b_max_turns: int = 25,
+    room3_max_turns: int = 45,
     run_agents: bool = True,
     run_room_a: bool = True,
     run_layer1: bool = True,
@@ -315,10 +317,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--layer1-goal", default="")
     parser.add_argument("--room-b-goal", default="")
     parser.add_argument("--room3-goal", default="")
-    parser.add_argument("--room-a-max-turns", type=int, default=15)
-    parser.add_argument("--layer1-max-turns", type=int, default=45)
-    parser.add_argument("--room-b-max-turns", type=int, default=15)
-    parser.add_argument("--room3-max-turns", type=int, default=30)
+    parser.add_argument("--room-a-max-turns", type=int, default=25)
+    parser.add_argument("--layer1-max-turns", type=int, default=60)
+    parser.add_argument("--room-b-max-turns", type=int, default=25)
+    parser.add_argument("--room3-max-turns", type=int, default=45)
+    parser.add_argument(
+        "--benchmark",
+        default="",
+        help="Score against ground-truth benchmark id when run completes (e.g. terry_usb)",
+    )
     parser.add_argument("--model", default="")
     parser.add_argument(
         "--kitchen-only",
@@ -352,6 +359,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    started_at = datetime.now(timezone.utc).isoformat()
+    t0 = time.monotonic()
     out = run_hallway_e2e(
         run_id=args.run_id,
         case_id=args.case_id or None,
@@ -372,6 +381,34 @@ def main(argv: list[str] | None = None) -> int:
         model=args.model or None,
         reuse_kitchen=args.reuse_kitchen,
     )
+    finished_at = datetime.now(timezone.utc).isoformat()
+    wall = time.monotonic() - t0
+    out["timing"] = {
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "wall_clock_seconds": round(wall, 1),
+        "wall_clock_minutes": round(wall / 60.0, 2),
+    }
+    if args.benchmark:
+        from cold_box_room.e2e.accuracy import score_case_accuracy, write_accuracy_report
+
+        accuracy = score_case_accuracy(
+            case_id=out.get("case_id") or args.run_id,
+            benchmark_id=args.benchmark,
+            run_id=args.run_id,
+            hallway_status=str(out.get("status") or ""),
+            wall_clock_seconds=wall,
+            started_at=started_at,
+            finished_at=finished_at,
+        )
+        acc_path = REPO_ROOT / "e2e-runs" / f"{args.run_id}-accuracy.json"
+        write_accuracy_report(accuracy, acc_path)
+        out["accuracy"] = accuracy
+        out["accuracy_report"] = str(acc_path)
+        (REPO_ROOT / "e2e-runs" / "LATEST_RUN.txt").write_text(
+            f"RUN_ID={args.run_id}\nBENCHMARK={args.benchmark}\nSTATUS={out.get('status')}\n",
+            encoding="utf-8",
+        )
     print(json.dumps(out, indent=2))
     if args.kitchen_only:
         return 0

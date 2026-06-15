@@ -1,0 +1,45 @@
+{
+  "schema": "cold_box_room.accuracy_benchmark_v1",
+  "id": "terry_usb",
+  "title": "Terry work USB (unseen holdout)",
+  "evidence_path": "/evidence/unseen-terry-usb/terry-work-usb-2009-12-11.E01",
+  "evidence_sha256": "1600fe2bdfb2bec0b006aa9d1c0ce6d3ad0b6666141a333bf830af7800fb9230",
+  "checks": [
+    {
+      "id": "ewf_e01",
+      "label": "EWF/E01 image format",
+      "patterns": ["ewf", "e01", "encase", "expert witness"],
+      "required": true
+    },
+    {
+      "id": "fat32",
+      "label": "FAT32 filesystem",
+      "patterns": ["fat32", "fat 32", "0x0b", "win95 fat"],
+      "required": true
+    },
+    {
+      "id": "volume_label",
+      "label": "TERRYS WORK volume label",
+      "patterns": ["terrys work", "terry's work", "terry work"],
+      "required": true
+    },
+    {
+      "id": "keylogger",
+      "label": "Keylogger / R54402.EXE",
+      "patterns": ["keylogger", "r54402", "advanced keylogger", "webauto.py"],
+      "required": true
+    },
+    {
+      "id": "md5",
+      "label": "Image MD5 hash",
+      "patterns": ["e07f26954b23db1a44dfd28ecd717da9"],
+      "required": false
+    },
+    {
+      "id": "offset_63",
+      "label": "Partition offset 63",
+      "patterns": ["-o 63", "offset 63", "sector 63", "0000000063"],
+      "required": false
+    }
+  ]
+}

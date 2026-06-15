@@ -3,44 +3,126 @@
 from __future__ import annotations
 
 import ast
-import pprint
+import contextlib
+import fcntl
+import json
+import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Iterator
 
 from cold_box_room.planning.models import PlanDocument, PlanStep
 from cold_box_room.planning.paths import plan_var_name
 
+_PLAN_HEADER = '"""Room {room} plan — harness updates step status/proof during execution."""'
 
-def write_plan_py(path: Path, doc: PlanDocument, *, room: str) -> None:
-    var = plan_var_name(room)
-    payload = pprint.pformat(
-        doc.to_plan_dict(),
-        width=120,
-        indent=2,
-        sort_dicts=False,
-    )
+
+@contextlib.contextmanager
+def _plan_py_lock(path: Path, *, exclusive: bool) -> Iterator[None]:
+    """Serialize plan file reads/writes — parallel apply_plan_* must not race."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        f'"""Room {room.upper()} plan — harness updates step status/proof during execution."""\n\n'
-        f"{var} = {payload}\n",
-        encoding="utf-8",
-    )
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    with open(lock_path, "a+", encoding="utf-8") as lock_file:
+        fcntl.flock(
+            lock_file.fileno(),
+            fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH,
+        )
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
-def load_plan_py(path: Path, *, room: str) -> PlanDocument:
-    if not path.is_file():
-        raise FileNotFoundError(f"missing {path}")
+def _json_literal(node: ast.AST) -> str:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.JoinedStr):
+        raise ValueError("plan payload must be a plain string literal")
+    raise ValueError(f"unsupported plan payload literal: {type(node).__name__}")
+
+
+def _payload_from_assign_value(node: ast.AST) -> dict[str, Any]:
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+        if (
+            node.func.attr == "loads"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "json"
+            and node.args
+        ):
+            payload = json.loads(_json_literal(node.args[0]))
+            if not isinstance(payload, dict):
+                raise ValueError("json.loads plan payload must be a dict")
+            return payload
+    value = ast.literal_eval(node)
+    if not isinstance(value, dict):
+        raise ValueError("plan payload must be a dict")
+    return value
+
+
+def _read_plan_payload(path: Path, *, room: str) -> dict[str, Any]:
     var = plan_var_name(room)
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     for node in tree.body:
         if isinstance(node, ast.Assign):
             for target in node.targets:
                 if isinstance(target, ast.Name) and target.id == var:
-                    value = ast.literal_eval(node.value)
-                    if not isinstance(value, dict):
-                        raise ValueError(f"{var} must be a dict")
-                    return PlanDocument.from_plan_dict(value, room=room)
-    raise ValueError(f"{path} must define {var} = {{...}}")
+                    return _payload_from_assign_value(node.value)
+    raise ValueError(f"{path} must define {var} = json.loads(...) or a dict literal")
+
+
+def _load_unlocked(path: Path, *, room: str) -> PlanDocument:
+    try:
+        payload = _read_plan_payload(path, room=room)
+    except (SyntaxError, ValueError, json.JSONDecodeError) as exc:
+        backup = path.with_suffix(path.suffix + ".bak")
+        if backup.is_file():
+            try:
+                payload = _read_plan_payload(backup, room=room)
+            except (SyntaxError, ValueError, json.JSONDecodeError):
+                raise exc
+        else:
+            raise
+    return PlanDocument.from_plan_dict(payload, room=room)
+
+
+def _write_unlocked(path: Path, doc: PlanDocument, *, room: str) -> None:
+    var = plan_var_name(room)
+    payload = json.dumps(doc.to_plan_dict(), indent=2, ensure_ascii=False)
+    body = (
+        f"{_PLAN_HEADER.format(room=room.upper())}\n\n"
+        "import json\n\n"
+        f"{var} = json.loads({json.dumps(payload)})\n"
+    )
+    if path.is_file():
+        shutil.copy2(path, path.with_suffix(path.suffix + ".bak"))
+    path.write_text(body, encoding="utf-8")
+
+
+def write_plan_py(path: Path, doc: PlanDocument, *, room: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with _plan_py_lock(path, exclusive=True):
+        _write_unlocked(path, doc, room=room)
+
+
+def load_plan_py(path: Path, *, room: str) -> PlanDocument:
+    if not path.is_file():
+        raise FileNotFoundError(f"missing {path}")
+    with _plan_py_lock(path, exclusive=False):
+        return _load_unlocked(path, room=room)
+
+
+def mutate_plan_py(
+    path: Path,
+    *,
+    room: str,
+    mutate: Callable[[PlanDocument], PlanDocument],
+) -> PlanDocument:
+    """Load → mutate → save under one exclusive lock (safe for parallel tool dispatch)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with _plan_py_lock(path, exclusive=True):
+        doc = _load_unlocked(path, room=room)
+        updated = mutate(doc)
+        _write_unlocked(path, updated, room=room)
+        return updated
 
 
 def validate_plan_structure(doc: PlanDocument) -> list[str]:
@@ -123,42 +205,44 @@ def update_step_in_plan(
     step_id: int,
     **updates: Any,
 ) -> PlanDocument:
-    doc = load_plan_py(path, room=room)
-    new_steps: list[PlanStep] = []
-    found = False
-    for step in doc.steps:
-        if step.step_id != step_id:
-            new_steps.append(step)
-            continue
-        found = True
-        proof = dict(step.proof)
-        if "proof" in updates:
-            proof = dict(updates.pop("proof") or {})
-        new_steps.append(
-            PlanStep(
-                step_id=step.step_id,
-                title=step.title,
-                reason=step.reason,
-                tool_id=step.tool_id,
-                purpose=step.purpose,
-                status=str(updates.get("status", step.status)),
-                proof=proof,
+    def _mutate(doc: PlanDocument) -> PlanDocument:
+        new_steps: list[PlanStep] = []
+        found = False
+        for step in doc.steps:
+            if step.step_id != step_id:
+                new_steps.append(step)
+                continue
+            found = True
+            proof = dict(step.proof)
+            local_updates = dict(updates)
+            if "proof" in local_updates:
+                proof = dict(local_updates.pop("proof") or {})
+            new_steps.append(
+                PlanStep(
+                    step_id=step.step_id,
+                    title=step.title,
+                    reason=step.reason,
+                    tool_id=step.tool_id,
+                    purpose=step.purpose,
+                    status=str(local_updates.get("status", step.status)),
+                    proof=proof,
+                )
             )
+        if not found:
+            raise ValueError(f"unknown step id {step_id}")
+        return PlanDocument(
+            case_id=doc.case_id,
+            room=doc.room,
+            steps=new_steps,
+            attestation=doc.attestation,
         )
-    if not found:
-        raise ValueError(f"unknown step id {step_id}")
-    updated = PlanDocument(
-        case_id=doc.case_id,
-        room=doc.room,
-        steps=new_steps,
-        attestation=doc.attestation,
-    )
-    write_plan_py(path, updated, room=room)
-    return updated
+
+    return mutate_plan_py(path, room=room, mutate=_mutate)
 
 
 def stamp_tools_attestation(path: Path, *, room: str, value: str) -> PlanDocument:
-    doc = load_plan_py(path, room=room)
-    doc.attestation.tools_catalog_reviewed = value.strip()
-    write_plan_py(path, doc, room=room)
-    return doc
+    def _mutate(doc: PlanDocument) -> PlanDocument:
+        doc.attestation.tools_catalog_reviewed = value.strip()
+        return doc
+
+    return mutate_plan_py(path, room=room, mutate=_mutate)

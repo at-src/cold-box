@@ -83,8 +83,15 @@ def list_tools_dict(
     category: str | None = None,
     runnable_only: bool = False,
 ) -> list[dict]:
-    return [t.to_list_dict() for t in list_tools(category=category, runnable_only=runnable_only)]
+    from cold_box_room.tools.agent_guidance import enrich_tool_dict
+
+    return [
+        enrich_tool_dict(t.to_list_dict())
+        for t in list_tools(category=category, runnable_only=runnable_only)
+    ]
 
 
 def describe_tool(tool_id: str) -> dict:
-    return get_tool(tool_id).to_describe_dict()
+    from cold_box_room.tools.agent_guidance import enrich_describe_dict
+
+    return enrich_describe_dict(get_tool(tool_id).to_describe_dict())

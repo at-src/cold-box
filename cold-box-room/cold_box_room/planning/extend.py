@@ -6,7 +6,7 @@ from typing import Any
 
 from cold_box_room.planning.models import PlanDocument, PlanStep
 from cold_box_room.planning.paths import plan_py_path
-from cold_box_room.planning.plan_py import load_plan_py, validate_plan_structure, write_plan_py
+from cold_box_room.planning.plan_py import load_plan_py, mutate_plan_py, validate_plan_structure
 from cold_box_room.planning.scoring import compute_plan_score
 
 
@@ -46,17 +46,19 @@ def extend_plan_step(
         status="pending",
         proof={"added_in_execution": True, "room": room.upper()},
     )
-    updated = PlanDocument(
-        case_id=doc.case_id or case_id,
-        room=doc.room or room.upper(),
-        steps=[*doc.steps, new_step],
-        attestation=doc.attestation,
-    )
+
+    def _mutate(current: PlanDocument) -> PlanDocument:
+        return PlanDocument(
+            case_id=current.case_id or case_id,
+            room=current.room or room.upper(),
+            steps=[*current.steps, new_step],
+            attestation=current.attestation,
+        )
+
+    updated = mutate_plan_py(path, room=room, mutate=_mutate)
     errors = validate_plan_structure(updated)
     if errors:
         raise PlanExtendError("; ".join(errors))
-
-    write_plan_py(path, updated, room=room)
     score = compute_plan_score(updated)
     return {
         "ok": True,
