@@ -159,7 +159,10 @@ flowchart TB
   RST --> AUD --> SL1 --> RL1
   RL1 --> WPB --> FPB --> RSK
   RSK --> SL2 --> REP --> ACC
-  RSK -.->|gap found| RTR -.->|return| RSK
+  RSK -.->|gap found| RTR
+  RTR -.->|return_to_room A| WPA
+  RTR -.->|return_to_room 2| RST
+  RTR -.->|return_to_room B| WPB
   AUD --> TRAIL
 ```
 
