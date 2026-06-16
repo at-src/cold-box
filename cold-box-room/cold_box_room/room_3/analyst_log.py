@@ -102,7 +102,7 @@ def parse_analyst_log(case_id: str) -> dict[str, Any] | None:
         re.DOTALL,
     )
     corrections_match = re.search(
-        r"## Corrections\s*\n+(.*?)(?=\n_|\\Z)",
+        r"## Corrections\s*\n+(.*?)(?=\n_|\Z)",
         text,
         re.DOTALL,
     )

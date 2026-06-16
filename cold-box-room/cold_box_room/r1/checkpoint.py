@@ -33,7 +33,7 @@ def r1_checkpoint(case_id: str) -> dict[str, Any]:
         "non_empty_files": non_empty,
         "reasons": reasons,
         "checked_at": datetime.now(timezone.utc).isoformat(),
-        "promote_to_room": 2 if ok else None,
+        "promote_to_room": "A" if ok else None,
     }
 
 

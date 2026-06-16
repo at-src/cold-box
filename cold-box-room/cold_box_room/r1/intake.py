@@ -30,6 +30,8 @@ def _stage_sources(
             continue
         if link_only:
             dest.symlink_to(src, target_is_directory=src.is_dir())
+        elif src.is_dir():
+            shutil.copytree(src, dest)
         else:
             shutil.copy2(src, dest)
         staged.append(dest.name)

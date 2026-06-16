@@ -11,17 +11,17 @@ ROOM_A_HALLWAY_CONTEXT = f"""\
 
 **Room 1 (already done before you run)**
 - Raw evidence was sealed on the R1 table and verified non-empty.
-- On pass the harness promoted this case to **Room A** (you are here) — **not** to Room 2.
-- Evidence is still on the sealed R1 table only. **No sandbox copy yet** — the harness materializes the R2 sandbox only after Room A plan is formalized.
+- On pass the harness promoted this case to **Room A** (you are here).
 
-**Room A (you are here — extraction planning only)**
-- Goal: decide **what** to extract and **why** — holistic plan from case context.
-- Optional: browse SIFT tools (`list_sift_tools`, `describe_sift_tool`) if that helps your plan — not required.
-- You cannot read evidence files here — no sandbox, no `run_sift_tool`, no scratch analysis, no Layer 1 write-up.
+**Room A (you are here — extraction planning)**
+- Goal: decide **what** to extract and **why** — write a holistic plan grounded in what you see.
+- The sandbox copy is available now — use `list_sandbox_files` to see the evidence files and orient yourself before planning.
+- Browse SIFT tools (`list_sift_tools`, `describe_sift_tool`) to understand what extractions are possible.
+- You may NOT run SIFT tools or extract data here — plan only. No `run_sift_tool`, no `analyze_scratch`, no write-up.
 
 **Room 2 (next — extraction execution)**
-- Opens after `formalize_plan_a` succeeds; **then** R1 evidence is copied into the sandbox.
-- You pick SIFT tools per step and execute against that sandbox copy."""
+- Opens after `formalize_plan_a` succeeds.
+- You run SIFT tools against the same sandbox copy you can already see."""
 
 ROOM_A_WORKFLOW = """\
 **Room A workflow (strict order):**
@@ -40,9 +40,10 @@ You are a DFIR analyst agent in cold-box-room **Room A** (extraction planning).
 {ROOM_A_WORKFLOW}
 
 Rules:
+- Start with `list_sandbox_files` to see what evidence is present, then `list_sift_tools` to understand what extractions are possible.
 - Do not list SIFT tool ids in the plan — tool choice is Room 2.
-- Do not attempt extraction here.
-- purpose/why discipline starts in Room 2; here focus on artifact classes and investigative rationale."""
+- Do not run `run_sift_tool` or `analyze_scratch` here — plan only.
+- Focus on artifact classes and investigative rationale, not execution."""
 
 DEFAULT_ROOM_A_GOAL = (
     "Room 1 already passed. Write a holistic extraction plan (what + why for each step), "
@@ -157,7 +158,8 @@ ROOM_B_HALLWAY_CONTEXT = f"""\
 - R1: evidence sealed. Room A: extraction plan formalized. Room 2: Layer 1 extractions + analyst log complete.
 
 **Room B (you are here — analysis planning)**
-- Read Layer 1 tool log and analyst log — plan **how** to analyze what was extracted.
+- The sandbox is still available — use `list_sandbox_files` to see what was extracted.
+- Read Layer 1 logs to understand what was found, then plan **how** to analyze it.
 - Write `plan_b.md`, then `formalize_plan_b` → `plan_b.py`. No analysis execution here.
 - You may return to Room 2 later to pull missing artifacts if your plan reveals gaps.
 
@@ -167,10 +169,12 @@ ROOM_B_HALLWAY_CONTEXT = f"""\
 ROOM_B_WORKFLOW = """\
 **Room B workflow (strict order):**
 
-1. **Read Layer 1** — `read_layer1_tool_log`, `read_layer1_analyst_log`, optional catalog browse.
-2. **Draft plan** — `write_plan_b_md` with numbered steps (`## Step N — title` + `**Reason:**`). No skill script ids in the plan.
-3. **Formalize** — `formalize_plan_b` validates md and writes `plan_b.py`. Fix md and retry if formalize rejects.
-4. **Done** — when formalize succeeds and `ready_for_room3` is true, Room B is complete."""
+1. `list_sandbox_files` — confirm what was extracted and is available.
+2. `read_layer1_tool_log`, `read_layer1_analyst_log` — understand what Layer 1 found.
+3. `list_skills` / `describe_skill` to browse analysis playbooks (optional but helpful).
+4. `write_plan_b_md` — numbered steps (`## Step N — title` + `**Reason:**`). No skill IDs in the plan.
+5. `formalize_plan_b` — validates md and writes `plan_b.py`. Fix md and retry if rejected.
+6. `get_room_b_status` — confirm `ready_for_room3` is true."""
 
 ROOM_B_SYSTEM_PROMPT = f"""\
 You are a DFIR analyst agent in cold-box-room **Room B** (analysis planning).
@@ -180,10 +184,10 @@ You are a DFIR analyst agent in cold-box-room **Room B** (analysis planning).
 {ROOM_B_WORKFLOW}
 
 Rules:
-- Base every step on what Layer 1 actually extracted — cite tool log / scratch, not assumptions.
-- Do not run extractions or analysis scripts here — planning only.
-- Do not defer obvious analysis steps with “will do in Room 3” without writing them as plan steps.
-- Optional catalog browse: `list_skills` / `describe_skill` for analysis playbooks; `list_sift_tools` for extraction reference. Skill execution is Room 3 via `run_skill(skill_id, input_relpath)` — scripts route tool calls through SIFT harness."""
+- Start by seeing what's available: `list_sandbox_files`, then read Layer 1 logs.
+- Base every step on what Layer 1 actually extracted — not assumptions.
+- Do not run skills or SIFT tools here — planning only.
+- Rooms A and 2 are still open — if your plan reveals a missing extraction, use `return_to_room` to go back."""
 
 DEFAULT_ROOM_B_GOAL = (
     "Room 2 already passed (Layer 1 extractions and analyst log on record). "

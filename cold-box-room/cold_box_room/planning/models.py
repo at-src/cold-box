@@ -3,7 +3,7 @@
 This is not business logic — only the shapes the harness reads and writes:
 
 - ``PlanStep`` — one extraction/analysis step (checkbox in plan_*.py)
-- ``PlanDocument`` — md + py pair for a case (steps + attestation gate)
+- ``PlanDocument`` — md + py pair for a case (steps)
 - ``STEP_STATUSES`` — same four outcomes as design.md Room 3/R4
 
 Room A uses ``plan_a.md`` / ``plan_a.py`` (PLAN_A).
@@ -66,36 +66,16 @@ class PlanStep:
 
 
 @dataclass
-class PlanAttestation:
-    """Bouncer gate — stamped into plan_*.py when agent answers YES at the door."""
-
-    tools_catalog_reviewed: str = ""
-
-    def to_dict(self) -> dict[str, Any]:
-        return {"tools_catalog_reviewed": self.tools_catalog_reviewed}
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any] | None) -> PlanAttestation:
-        data = data or {}
-        return cls(tools_catalog_reviewed=str(data.get("tools_catalog_reviewed") or "").strip())
-
-    def tools_gate_open(self) -> bool:
-        return self.tools_catalog_reviewed.strip().lower() == "yes"
-
-
-@dataclass
 class PlanDocument:
     case_id: str
     room: str
     steps: list[PlanStep]
-    attestation: PlanAttestation = field(default_factory=PlanAttestation)
 
     def to_plan_dict(self) -> dict[str, Any]:
         return {
             "case_id": self.case_id,
             "room": self.room.upper(),
             "version": 1,
-            "attestation": self.attestation.to_dict(),
             "steps": [s.to_dict() for s in self.steps],
         }
 
@@ -106,5 +86,4 @@ class PlanDocument:
             case_id=str(data.get("case_id") or ""),
             room=str(data.get("room") or room or "").upper(),
             steps=steps,
-            attestation=PlanAttestation.from_dict(data.get("attestation")),
         )

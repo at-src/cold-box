@@ -24,6 +24,7 @@ cold-box-room-agent-b = "cold_box_room.agent.cli_room_b:main"
 cold-box-room-agent-3 = "cold_box_room.agent.cli_room3:main"
 cold-box-room-e2e = "cold_box_room.e2e.run_layer1:main"
 cold-box-room-hallway = "cold_box_room.e2e.run_hallway:main"
+cold-box-room-hallway-cc = "cold_box_room.e2e.run_hallway_cc:main"
 cold-box-room-formalize-plan-a = "cold_box_room.room_a.cli:main"
 
 [tool.setuptools.packages.find]

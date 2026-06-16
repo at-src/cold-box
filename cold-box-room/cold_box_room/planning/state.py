@@ -1,4 +1,4 @@
-"""Planning room session state — formalize timestamps, bouncer attestation."""
+"""Planning room session state — formalize timestamps."""
 
 from __future__ import annotations
 
@@ -41,26 +41,6 @@ def record_plan_formalized(case_id: str, *, room: str) -> dict[str, Any]:
 
 def plan_was_formalized(case_id: str, *, room: str) -> bool:
     return bool(load_state(case_id, room=room).get("plan_formalized_at"))
-
-
-def record_bouncer_answer(case_id: str, *, room: str, tools_catalog_reviewed: str) -> dict[str, Any]:
-    answer = tools_catalog_reviewed.strip().upper()
-    data = load_state(case_id, room=room)
-    data["bouncer_tools_reviewed"] = answer
-    data["bouncer_answered_at"] = _now()
-    events = list(data.get("events") or [])
-    events.append({"ts": data["bouncer_answered_at"], "event": "bouncer_answer", "answer": answer})
-    data["events"] = events[-50:]
-    save_state(case_id, room=room, data=data)
-    return {
-        "ok": True,
-        "bouncer_tools_reviewed": answer,
-        "bouncer_answered_at": data["bouncer_answered_at"],
-    }
-
-
-def bouncer_tools_reviewed_yes(case_id: str, *, room: str) -> bool:
-    return load_state(case_id, room=room).get("bouncer_tools_reviewed", "").upper() == "YES"
 
 
 def record_tools_catalog_browse(

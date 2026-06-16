@@ -31,17 +31,17 @@ def expand_ewf_chain(path: Path) -> list[Path]:
 
 
 def list_directory_evidence(directory: Path) -> list[Path]:
-    """All regular files in a directory (non-recursive), sorted by name."""
+    """All non-hidden items (files and subdirectories) in a directory, sorted by name."""
     resolved = directory.expanduser().resolve()
     if not resolved.is_dir():
         raise StagingError(f"Not a directory: {resolved}")
-    files = sorted(
-        (p for p in resolved.iterdir() if p.is_file() and not p.name.startswith(".")),
+    items = sorted(
+        (p for p in resolved.iterdir() if not p.name.startswith(".")),
         key=lambda p: p.name.lower(),
     )
-    if not files:
-        raise StagingError(f"No evidence files in directory: {resolved}")
-    return files
+    if not items:
+        raise StagingError(f"No evidence in directory: {resolved}")
+    return items
 
 
 def resolve_evidence_sources(source: Path) -> list[Path]:

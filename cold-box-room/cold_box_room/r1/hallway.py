@@ -80,23 +80,33 @@ def record_r1_check(case_id: str) -> dict[str, Any]:
 
 
 def promote_to_room_a(case_id: str) -> dict[str, Any]:
-    """R1 checkpoint passed → Room A (extraction planning; sandbox not copied yet)."""
+    """R1 checkpoint passed → Room A; sandbox materialized now so agent can see evidence."""
     require_room(case_id, ROOM_1)
     require_r1_checkpoint(case_id)
     check = record_r1_check(case_id)
+
+    from cold_box_room.r2.sandbox import materialize_sandbox
+
+    sandbox_record = materialize_sandbox(case_id)
 
     data = _load(case_id)
     data["room"] = ROOM_A
     data["promoted_to_room_a_at"] = datetime.now(timezone.utc).isoformat()
     data["r1_checkpoint"] = check
+    data["r2_sandbox"] = {
+        "sandbox_dir": sandbox_record["sandbox_dir"],
+        "file_count": sandbox_record["file_count"],
+        "materialized_at": sandbox_record["materialized_at"],
+    }
     data["updated_at"] = data["promoted_to_room_a_at"]
     _save(case_id, data)
     return data
 
 
 def promote_to_room2(case_id: str) -> dict[str, Any]:
-    """Room A gate open → copy R1 evidence to R2 sandbox."""
+    """Room A gate open → Room 2 (sandbox already materialized in Room A)."""
     from cold_box_room.room_a import room_a_checkpoint
+    from cold_box_room.r2.sandbox import load_sandbox_record
 
     require_room(case_id, ROOM_A)
     room_a = room_a_checkpoint(case_id)
@@ -104,9 +114,7 @@ def promote_to_room2(case_id: str) -> dict[str, Any]:
         reasons = ", ".join(room_a["blocked_reasons"]) or "Room A gate closed"
         raise StagingError(f"Room A checkpoint failed: {reasons}")
 
-    from cold_box_room.r2.sandbox import materialize_sandbox
-
-    sandbox_record = materialize_sandbox(case_id)
+    sandbox_record = load_sandbox_record(case_id)
 
     data = _load(case_id)
     data["room"] = ROOM_2

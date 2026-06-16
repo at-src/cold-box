@@ -131,14 +131,7 @@ def validate_plan_structure(doc: PlanDocument) -> list[str]:
         errors.append("plan case_id is empty")
     if not doc.steps:
         errors.append("plan has no steps")
-    ids = [s.step_id for s in doc.steps]
-    if ids != list(range(1, len(doc.steps) + 1)):
-        errors.append(f"step ids must be contiguous 1..N, got {ids}")
     for step in doc.steps:
-        if not step.title:
-            errors.append(f"step {step.step_id} missing title")
-        if not step.reason:
-            errors.append(f"step {step.step_id} missing reason")
         if step.status not in {
             "pending",
             "passed",
@@ -194,7 +187,6 @@ def merge_execution_state(base: PlanDocument, current: PlanDocument) -> PlanDocu
         case_id=base.case_id,
         room=base.room,
         steps=merged,
-        attestation=base.attestation,
     )
 
 
@@ -234,15 +226,6 @@ def update_step_in_plan(
             case_id=doc.case_id,
             room=doc.room,
             steps=new_steps,
-            attestation=doc.attestation,
         )
-
-    return mutate_plan_py(path, room=room, mutate=_mutate)
-
-
-def stamp_tools_attestation(path: Path, *, room: str, value: str) -> PlanDocument:
-    def _mutate(doc: PlanDocument) -> PlanDocument:
-        doc.attestation.tools_catalog_reviewed = value.strip()
-        return doc
 
     return mutate_plan_py(path, room=room, mutate=_mutate)

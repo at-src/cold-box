@@ -9,15 +9,16 @@ from cold_box_room.agent.prompts import (
 from cold_box_room.agent.situation import format_room_a_briefing
 
 
-def test_room_a_prompt_no_sandbox_yet():
+def test_room_a_prompt_has_sandbox():
     text = ROOM_A_SYSTEM_PROMPT.lower()
-    assert "no sandbox" in text or "not copied" in text
+    assert "list_sandbox_files" in text
     assert "room a" in text
     assert "formalize_plan_a" in text
 
 
-def test_room_a_prompt_r1_does_not_skip_to_r2():
-    assert "not** to room 2" in ROOM_A_SYSTEM_PROMPT.lower() or "not to room 2" in ROOM_A_SYSTEM_PROMPT.lower()
+def test_room_a_prompt_plan_only_no_sift_execution():
+    text = ROOM_A_SYSTEM_PROMPT.lower()
+    assert "plan only" in text or "do not run" in text
 
 
 def test_layer1_prompt_room_a_before_sandbox():
@@ -49,7 +50,7 @@ def test_default_goals_reference_room_a():
     assert "sandbox is ready" in DEFAULT_LAYER1_GOAL.lower()
 
 
-def test_room_a_briefing_no_sandbox_access(tmp_path, monkeypatch):
+def test_room_a_briefing_sandbox_available(tmp_path, monkeypatch):
     staging = tmp_path / "r1-staging"
     records = tmp_path / "records"
     staging.mkdir()
@@ -70,6 +71,6 @@ def test_room_a_briefing_no_sandbox_access(tmp_path, monkeypatch):
     promote_to_room_a(case_id)
 
     text = format_room_a_briefing(case_id)
-    assert "do not have sandbox access" in text.lower()
+    assert "sandbox is available" in text.lower() or "list_sandbox_files" in text
     assert "r1 table" in text.lower()
     assert "disk.e01" in text

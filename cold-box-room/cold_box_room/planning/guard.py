@@ -8,10 +8,10 @@ ROOM_A_ALLOWED_TOOLS = frozenset(
     {
         "list_sift_tools",
         "describe_sift_tool",
+        "list_sandbox_files",
         "write_plan_a_md",
         "formalize_plan_a",
         "get_room_a_status",
-        "room_a_checkpoint",
         "return_to_room",
         "list_unlocked_rooms",
     }
@@ -23,10 +23,10 @@ ROOM_B_ALLOWED_TOOLS = frozenset(
         "describe_sift_tool",
         "list_skills",
         "describe_skill",
+        "list_sandbox_files",
         "write_plan_b_md",
         "formalize_plan_b",
         "get_room_b_status",
-        "room_b_checkpoint",
         "read_layer1_tool_log",
         "read_layer1_analyst_log",
         "get_layer1_status",

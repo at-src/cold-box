@@ -52,7 +52,6 @@ def extend_plan_step(
             case_id=current.case_id or case_id,
             room=current.room or room.upper(),
             steps=[*current.steps, new_step],
-            attestation=current.attestation,
         )
 
     updated = mutate_plan_py(path, room=room, mutate=_mutate)

@@ -1,0 +1,75 @@
+{
+  "case_id": "cfreds-leakage",
+  "room": "3",
+  "r1_checkpoint": {
+    "room": 1,
+    "ok": true,
+    "file_count": 4,
+    "non_empty_files": [
+      "cfreds_2015_data_leakage_pc.E01",
+      "cfreds_2015_data_leakage_pc.E02",
+      "cfreds_2015_data_leakage_pc.E03",
+      "cfreds_2015_data_leakage_pc.E04"
+    ],
+    "checked_at": "2026-06-15T11:50:29.291031+00:00",
+    "promote_to_room": "A"
+  },
+  "promoted_to_room_a_at": "2026-06-15T11:52:00.820161+00:00",
+  "r2_sandbox": {
+    "sandbox_dir": "<records>/cfreds-leakage/r2-sandbox",
+    "file_count": 4,
+    "materialized_at": "2026-06-15T11:52:00.817701+00:00"
+  },
+  "room_a_checkpoint": {
+    "case_id": "cfreds-leakage",
+    "room": "A",
+    "step_count": 12,
+    "plan_formalized": true,
+    "plan_md_valid": true,
+    "plan_py_valid": true,
+    "plans_aligned": true,
+    "ready_for_room2": true,
+    "blocked_reasons": []
+  },
+  "promoted_at": "2026-06-15T11:53:57.852330+00:00",
+  "promoted_to_room_b_at": "2026-06-15T12:05:01.306042+00:00",
+  "layer1_checkpoint": {
+    "case_id": "cfreds-leakage",
+    "room": 2,
+    "successful_extractions": 32,
+    "extraction_gate": true,
+    "plan_gate": {
+      "plan_present": true,
+      "all_steps_resolved": true,
+      "plan_score_gate": true,
+      "plan_score_pct": 100.0,
+      "plan_score_min_pct": 70.0,
+      "plan_score": {
+        "scoring_pool_size": 12,
+        "passed_count": 12,
+        "fail_count": 0,
+        "not_relevant_count": 0,
+        "held_for_later_count": 0,
+        "pending_count": 0,
+        "plan_score_pct": 100.0
+      }
+    },
+    "self_score": 9,
+    "score_gate": true,
+    "ready_for_room_b": true,
+    "blocked_reasons": []
+  },
+  "promoted_to_room3_at": "2026-06-15T12:06:12.804718+00:00",
+  "room_b_checkpoint": {
+    "case_id": "cfreds-leakage",
+    "room": "B",
+    "step_count": 10,
+    "plan_formalized": true,
+    "plan_md_valid": true,
+    "plan_py_valid": true,
+    "plans_aligned": true,
+    "ready_for_room3": true,
+    "blocked_reasons": []
+  },
+  "_note": "Absolute paths sanitised. Full hallway.json at records/cfreds-leakage/hallway.json on the evaluation VM."
+}

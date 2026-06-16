@@ -672,6 +672,30 @@ LAYER1_TOOL_SCHEMAS: list[dict[str, Any]] = [
     },
 ]
 
+ALL_HARNESS_TOOL_SCHEMAS: list[dict[str, Any]] = []
+
+
+def _merge_tool_schemas(*groups: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    merged: dict[str, dict[str, Any]] = {}
+    for group in groups:
+        for schema in group:
+            merged[str(schema["name"])] = schema
+    return list(merged.values())
+
+
+ALL_HARNESS_TOOL_SCHEMAS = _merge_tool_schemas(
+    ROOM_A_TOOL_SCHEMAS,
+    ROOM_B_TOOL_SCHEMAS,
+    LAYER1_TOOL_SCHEMAS,
+    ROOM_3_TOOL_SCHEMAS,
+)
+
+
+def all_harness_tool_schemas() -> list[dict[str, Any]]:
+    """Unique MCP/native harness tools across all hallway rooms."""
+    return list(ALL_HARNESS_TOOL_SCHEMAS)
+
+
 TOOL_SCHEMAS = LAYER1_TOOL_SCHEMAS
 
 

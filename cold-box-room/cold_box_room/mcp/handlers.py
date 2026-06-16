@@ -203,9 +203,23 @@ def handle_write_plan_a_md(*, case_id: str, markdown: str) -> dict[str, Any]:
 
 def handle_formalize_plan_a(case_id: str) -> dict[str, Any]:
     try:
-        return formalize_plan_a(case_id=case_id)
+        result = formalize_plan_a(case_id=case_id)
     except PlanningCheckpointError as exc:
         return {"ok": False, "error": str(exc), "case_id": case_id}
+
+    if result.get("ready_for_room2"):
+        try:
+            from cold_box_room.r1.hallway import current_room, promote_to_room2
+            if current_room(case_id) == "A":
+                hallway = promote_to_room2(case_id)
+                result["promoted"] = True
+                result["room"] = "2"
+                result["hallway"] = hallway
+                result["next_step"] = "run_sift_tool"
+        except Exception as exc:
+            result["promotion_error"] = str(exc)
+
+    return result
 
 
 def handle_apply_plan_a_step_status(
@@ -264,9 +278,23 @@ def handle_write_plan_b_md(*, case_id: str, markdown: str) -> dict[str, Any]:
 
 def handle_formalize_plan_b(case_id: str) -> dict[str, Any]:
     try:
-        return formalize_plan_b(case_id=case_id)
+        result = formalize_plan_b(case_id=case_id)
     except PlanningCheckpointError as exc:
         return {"ok": False, "error": str(exc), "case_id": case_id}
+
+    if result.get("ready_for_room3"):
+        try:
+            from cold_box_room.r1.hallway import current_room, promote_to_room3
+            if current_room(case_id) == "B":
+                hallway = promote_to_room3(case_id)
+                result["promoted"] = True
+                result["room"] = "3"
+                result["hallway"] = hallway
+                result["next_step"] = "run_skill"
+        except Exception as exc:
+            result["promotion_error"] = str(exc)
+
+    return result
 
 
 def handle_get_plan_b_status(case_id: str) -> dict[str, Any]:
