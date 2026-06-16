@@ -159,8 +159,9 @@ flowchart TB
   RST --> AUD --> SL1 --> RL1
   RL1 --> WPB --> FPB --> RSK
   RSK --> SL2 --> REP --> ACC
-  RSK -.->|"return_to_room(2) — run missed tool"| RST
-  RSK -.->|"return_to_room(A/B) — amend plan"| FPA
+  RST <-.->|return_to_room| WPA
+  RSK <-.->|return_to_room| RST
+  RSK <-.->|return_to_room| WPB
   AUD --> TRAIL
 ```
 
