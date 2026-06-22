@@ -111,7 +111,9 @@ def test_dispatch_list_sandbox_files_room3():
     assert result["r2_status"]["file_count"] >= 1
 
 
-def test_dispatch_list_sandbox_files_blocked_in_room_a():
+def test_dispatch_list_sandbox_files_allowed_in_room_a():
+    # list_sandbox_files is allowed in Room A so the agent can see what files
+    # exist while planning extraction (matches the real Claude Code run).
     case_id = "sandbox-dispatch-a"
     _intake(case_id)
     from cold_box_room.r1.hallway import promote_to_room_a
@@ -119,8 +121,8 @@ def test_dispatch_list_sandbox_files_blocked_in_room_a():
     promote_to_room_a(case_id)
     result = dispatch_tool("list_sandbox_files", {"case_id": case_id})
     assert result["ok"] is True
-    assert result["outcome"] == "room_gated"
-    assert "Room A" in result["error"]
+    assert "files" in result
+    assert result["room"] == "A"
 
 
 def test_dispatch_list_skills_in_room_b():

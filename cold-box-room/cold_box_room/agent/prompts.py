@@ -137,7 +137,7 @@ Rules:
 **Tool cost & parallelism:**
 - Multiple tool calls in one turn run **in parallel** — batch independent extractions/scratch reads together.
 - One slow tool no longer blocks siblings in the same turn, but a single heavy tool in its own turn still waits.
-- `list_sift_tools` may show `execution_profile: heavy`; always read `describe_sift_tool` before blkls, ewfexport, tsk_recover, bulk_extractor.
+- Heavy tools (blkls, ewfexport, tsk_recover, bulk_extractor) have `execution_profile: heavy`; always read `describe_sift_tool` before running them.
 - For deleted files / keyloggers / URLs, prefer **fls → icat → strings/grep** before blkls or bulk recovery."""
 
 DEFAULT_LAYER1_GOAL = (

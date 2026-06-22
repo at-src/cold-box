@@ -198,9 +198,8 @@ Plan markdown: steps + reasons only — **no skill ids** in the plan (skill choi
 
 **Skills catalog (committed)**
 
-- **171** agent-runnable skills (`has_script`, not `partial`, not reference-only)  
-- **42** partial skills excluded from agent catalog (in manifest but not `run_skill`-able)  
-- **126** reference-only playbooks live in `skills/unused/` locally (gitignored) — browse-only if copied back, not in GitHub manifest  
+- **213** agent-runnable skills (`has_script`, not `partial`) — the full committed catalog  
+- **126** reference-only playbooks live in `skills/unused/` locally (gitignored) — browse-only if copied back, not in the committed manifest  
 
 `list_skills` defaults to `agent_catalog_only=true`.
 

@@ -32,7 +32,7 @@ Self-correction: `return_to_room` → fix → document in `corrections` on Layer
 ## Catalogs
 
 - **SIFT:** `SIFT-###` via `run_sift_tool` — 234 tools in manifest, not 234 MCP functions
-- **Skills:** `SKILL-###` via `run_skill` — 171 runnable skills
+- **Skills:** `SKILL-###` via `run_skill` — 213 runnable skills
 
 ## Native track (alternative)
 

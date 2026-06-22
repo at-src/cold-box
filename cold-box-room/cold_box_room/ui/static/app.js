@@ -135,7 +135,7 @@ function linkAuditIds(text) {
 }
 
 function render(snapshot) {
-  const reportBecameAvailable = snapshot.report.available && !state.snapshot?.report?.available;
+  const reportBecameAvailable = state.snapshot !== null && snapshot.report.available && !state.snapshot?.report?.available;
   const prevRoom = state.snapshot?.room;
   if (prevRoom && prevRoom !== snapshot.room) {
     state.roomJustActivated = snapshot.room;
@@ -198,52 +198,131 @@ function showEvidenceDialog(title, html) {
   $("evidenceDialog").showModal();
 }
 
+function renderPlanPy(content) {
+  // Formalized plans are stored as: PLAN_X = json.loads("<escaped json>").
+  // Decode and render them as a readable step list with status + proof.
+  const match = content.match(/json\.loads\(\s*"((?:\\.|[^"\\])*)"\s*\)/);
+  if (!match) return null;
+  let plan;
+  try {
+    plan = JSON.parse(JSON.parse('"' + match[1] + '"'));
+  } catch (error) {
+    return null;
+  }
+  if (!plan || !Array.isArray(plan.steps)) return null;
+  const steps = plan.steps.map((step) => {
+    const status = String(step.status || "pending").toLowerCase();
+    const proof = step.proof || {};
+    const ids = [proof.audit_id, proof.run_id].filter(Boolean)
+      .map((id) => `<button class="audit-link" data-audit="${escapeHtml(id)}">${escapeHtml(id)}</button>`).join(" ");
+    return `<div class="plan-step">
+      <div class="plan-step-head"><strong>Step ${escapeHtml(String(step.id ?? ""))} — ${escapeHtml(step.title || "")}</strong><span class="plan-status ${escapeHtml(status)}">${escapeHtml(status)}</span></div>
+      ${step.reason ? `<p class="plan-reason">${escapeHtml(step.reason)}</p>` : ""}
+      ${proof.note ? `<p class="plan-proof">${escapeHtml(proof.note)}</p>` : ""}
+      ${ids ? `<p class="plan-ids">${ids}</p>` : ""}
+    </div>`;
+  }).join("");
+  return `<div class="artifact-md plan-view"><h2>${escapeHtml(plan.case_id || "")} — Room ${escapeHtml(plan.room || "")} plan · ${plan.steps.length} steps</h2>${steps}</div>`;
+}
+
 async function openArtifact(name) {
-  showEvidenceDialog(name, `<p class="empty">Opening case artifactâ€¦</p>`);
+  showEvidenceDialog(name, `<p class="empty">Opening case artifact…</p>`);
   try {
     const payload = await api(`/api/cases/${encodeURIComponent(state.caseId)}/artifacts/${encodeURIComponent(name)}`);
-    $("evidenceContent").innerHTML = `<pre class="artifact-content">${escapeHtml(payload.content || "This artifact is empty.")}</pre>`;
+    const content = payload.content || "This artifact is empty.";
+    const planHtml = name.endsWith(".py") ? renderPlanPy(content) : null;
+    if (name.endsWith(".md")) {
+      // Markdown artifacts (plans, analyst logs) render formatted, not raw.
+      $("evidenceContent").innerHTML = `<div class="artifact-md">${linkAuditIds(marked.parse(content))}</div>`;
+      $("evidenceContent").querySelectorAll("[data-audit]").forEach((b) =>
+        b.addEventListener("click", () => openEvidence(b.dataset.audit)));
+    } else if (planHtml) {
+      // Formalized plan (.py) → readable steps with status + clickable proof.
+      $("evidenceContent").innerHTML = planHtml;
+      $("evidenceContent").querySelectorAll("[data-audit]").forEach((b) =>
+        b.addEventListener("click", () => openEvidence(b.dataset.audit)));
+    } else if (name.endsWith(".json")) {
+      // Pretty-print JSON with indentation instead of one minified line.
+      let pretty = content;
+      try { pretty = JSON.stringify(JSON.parse(content), null, 2); } catch (e) { /* keep raw */ }
+      $("evidenceContent").innerHTML = `<pre class="artifact-content">${escapeHtml(pretty)}</pre>`;
+    } else if (name.endsWith(".jsonl")) {
+      // Pretty-print each JSON line (skip unparseable/truncated lines gracefully).
+      const blocks = content.split("\n").filter((l) => l.trim()).map((line) => {
+        try { return JSON.stringify(JSON.parse(line), null, 2); } catch (e) { return line; }
+      });
+      $("evidenceContent").innerHTML = `<pre class="artifact-content">${escapeHtml(blocks.join("\n\n────────\n\n"))}</pre>`;
+    } else {
+      // Other code/data artifacts stay as monospace text.
+      $("evidenceContent").innerHTML = `<pre class="artifact-content">${escapeHtml(content)}</pre>`;
+    }
   } catch (error) {
     $("evidenceContent").innerHTML = `<p class="evidence-missing">${escapeHtml(error.message)}</p>`;
   }
 }
 
-async function openEvidence(auditId) {
-  const evidence = state.snapshot?.audit_evidence?.[auditId];
-  if (!evidence) {
-    showEvidenceDialog(auditId, `<p class=”evidence-missing”>Evidence reference not found in this case bundle. Run the full investigation to generate traceable audit records.</p>`);
+function openSkillEvidence(runId) {
+  const skill = state.snapshot?.skill_evidence?.[runId];
+  if (!skill) {
+    showEvidenceDialog(runId, `<p class="evidence-missing">Skill run not found in this case bundle.</p>`);
     return;
   }
   const rows = [
-    [“Forensic tool”, `${evidence.tool_name || “Unknown”}${evidence.tool_id ? ` (${evidence.tool_id})` : “”}`],
-    [“Purpose”, evidence.purpose], [“Why selected”, evidence.why], [“Evidence input”, evidence.input],
-    [“Input fingerprint”, evidence.input_sha256], [“Exit code”, evidence.exit_code], [“Timestamp”, evidence.timestamp],
+    ["Analysis skill", `${skill.skill_id || "Unknown"}${skill.journal_id ? ` (${skill.journal_id})` : ""}`],
+    ["Playbook", skill.library_slug], ["Purpose", skill.purpose], ["Why selected", skill.why],
+    ["Input", skill.input], ["Outcome", skill.outcome], ["Exit code", skill.exit_code], ["Plan step", skill.plan_step_id],
+  ];
+  const audits = (skill.audit_ids || [])
+    .map((a) => `<button class="audit-link" data-audit="${escapeHtml(a)}">${escapeHtml(a)}</button>`).join(" ");
+  showEvidenceDialog(runId, `
+    <div class="evidence-grid">${rows.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? "—")}</strong></div>`).join("")}</div>
+    ${audits ? `<h3>Forensic tool runs in this skill</h3><p class="plan-ids">${audits}</p>` : ""}
+    ${skill.error ? `<h3>Error</h3><pre>${escapeHtml(skill.error)}</pre>` : ""}`);
+  $("evidenceContent").querySelectorAll(".audit-link").forEach((b) =>
+    b.addEventListener("click", () => openEvidence(b.dataset.audit)));
+}
+
+async function openEvidence(auditId) {
+  // Skill run_ids (CB-skill-…) come from the Room 3 skill log, not audit.jsonl.
+  if (/^CB-skill-/i.test(auditId)) {
+    openSkillEvidence(auditId);
+    return;
+  }
+  const evidence = state.snapshot?.audit_evidence?.[auditId];
+  if (!evidence) {
+    showEvidenceDialog(auditId, `<p class="evidence-missing">Evidence reference not found in this case bundle. Run the full investigation to generate traceable audit records.</p>`);
+    return;
+  }
+  const rows = [
+    ["Forensic tool", `${evidence.tool_name || "Unknown"}${evidence.tool_id ? ` (${evidence.tool_id})` : ""}`],
+    ["Purpose", evidence.purpose], ["Why selected", evidence.why], ["Evidence input", evidence.input],
+    ["Input fingerprint", evidence.input_sha256], ["Exit code", evidence.exit_code], ["Timestamp", evidence.timestamp],
   ];
   const scratchFiles = evidence.scratch_files || [];
   const fileButtons = scratchFiles.length
-    ? `<h3>Artifact files</h3><div class=”artifact-chips”>${scratchFiles.map((f, i) =>
-        `<button class=”ghost compact evidence-file-btn” data-idx=”${i}”>${escapeHtml(f.split(“/”).at(-1) || f)}</button>`
-      ).join(“”)}</div><div id=”evidenceFileContent”></div>`
-    : “”;
+    ? `<h3>Artifact files</h3><div class="artifact-chips">${scratchFiles.map((f, i) =>
+        `<button class="ghost compact evidence-file-btn" data-idx="${i}">${escapeHtml(f.split("/").at(-1) || f)}</button>`
+      ).join("")}</div><div id="evidenceFileContent"></div>`
+    : "";
   showEvidenceDialog(auditId, `
-    <div class=”evidence-grid”>${rows.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? “—“)}</strong></div>`).join(“”)}</div>
-    <h3>Recorded output</h3><pre id=”evidencePreview”>${escapeHtml(evidence.stdout_preview || evidence.error || “No output preview recorded.”)}</pre>
+    <div class="evidence-grid">${rows.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? "—")}</strong></div>`).join("")}</div>
+    <h3>Recorded output</h3><pre id="evidencePreview">${escapeHtml(evidence.stdout_preview || evidence.error || "No output preview recorded.")}</pre>
     ${fileButtons}`);
-  $(“evidenceContent”).querySelectorAll(“.evidence-file-btn”).forEach((btn) => {
-    btn.addEventListener(“click”, async () => {
+  $("evidenceContent").querySelectorAll(".evidence-file-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
       const f = scratchFiles[parseInt(btn.dataset.idx, 10)];
-      $(“evidenceFileContent”).innerHTML = `<p class=”empty”>Loading…</p>`;
+      $("evidenceFileContent").innerHTML = `<p class="empty">Loading…</p>`;
       try {
         const payload = await api(`/api/cases/${encodeURIComponent(state.caseId)}/artifacts/${encodeURIComponent(f)}`);
-        $(“evidenceFileContent”).innerHTML = `<pre class=”artifact-content”>${escapeHtml(payload.content || “Empty file.”)}</pre>`;
+        $("evidenceFileContent").innerHTML = `<pre class="artifact-content">${escapeHtml(payload.content || "Empty file.")}</pre>`;
       } catch (err) {
-        $(“evidenceFileContent”).innerHTML = `<p class=”evidence-missing”>${escapeHtml(err.message)}</p>`;
+        $("evidenceFileContent").innerHTML = `<p class="evidence-missing">${escapeHtml(err.message)}</p>`;
       }
     });
   });
   if (scratchFiles.length) {
-    const first = scratchFiles.find((f) => f.endsWith(“stdout.txt”)) || scratchFiles[0];
-    const firstBtn = $(“evidenceContent”).querySelector(`.evidence-file-btn[data-idx=”${scratchFiles.indexOf(first)}”]`);
+    const first = scratchFiles.find((f) => f.endsWith("stdout.txt")) || scratchFiles[0];
+    const firstBtn = $("evidenceContent").querySelector(`.evidence-file-btn[data-idx="${scratchFiles.indexOf(first)}"]`);
     if (firstBtn) firstBtn.click();
   }
 }
@@ -301,4 +380,6 @@ function scheduleNextPoll() {
   }, delay);
 }
 
-loadCases().then(() => { scheduleNextPoll(); });
+loadCases()
+  .then(() => { scheduleNextPoll(); })
+  .finally(() => { document.body.classList.add("ready"); });

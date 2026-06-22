@@ -84,3 +84,28 @@ main{padding:18px 0 20px}
   .activity-stage{padding-bottom:0}
 }
 @media(max-width:1080px){body{overflow:auto}.room-layout{height:auto}.findings-panel{height:500px}}
+
+#bootVeil{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;gap:11px;background:var(--bg);color:var(--muted);font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;transition:opacity .35s ease}
+#bootVeil .boot-dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan);animation:hover 1s ease-in-out infinite}
+body.ready #bootVeil{opacity:0;pointer-events:none}
+
+.artifact-md{color:var(--text);font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.artifact-md h1,.artifact-md h2,.artifact-md h3{color:var(--cyan);margin:14px 0 6px;line-height:1.3}
+.artifact-md h1{font-size:18px}.artifact-md h2{font-size:15px}.artifact-md h3{font-size:13px}
+.artifact-md p{margin:6px 0}
+.artifact-md strong{color:var(--text)}
+.artifact-md code{background:rgba(0,0,0,.28);padding:1px 5px;border-radius:5px;font:12px/1.5 ui-monospace,monospace}
+.artifact-md pre{background:rgba(0,0,0,.28);padding:10px;border-radius:8px;overflow-x:auto}
+.artifact-md ul,.artifact-md ol{margin:6px 0;padding-left:20px}
+.artifact-md li{margin:3px 0}
+
+.plan-view h2{margin-bottom:10px}
+.plan-step{border-left:2px solid var(--line);padding:6px 0 8px 12px;margin:12px 0}
+.plan-step-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.plan-status{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:rgba(121,220,156,.15);color:var(--green)}
+.plan-status.fail{background:rgba(255,137,125,.15);color:var(--danger)}
+.plan-status.pending,.plan-status.held_for_later{background:rgba(245,185,94,.15);color:var(--amber)}
+.plan-status.not_relevant{background:rgba(143,167,176,.15);color:var(--muted)}
+.plan-reason{color:var(--muted);margin:5px 0}
+.plan-proof{color:var(--text);font-size:12px;margin:5px 0;line-height:1.55}
+.plan-ids{margin-top:5px}

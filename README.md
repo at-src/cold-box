@@ -146,7 +146,7 @@ Cold Box has completed full autonomous investigations on real forensic disk imag
 |------|-----------|----------|
 | USB keylogger holdout | `terry_usb` | **100%** (4/4 required · 2/2 optional) |
 | NIST CFReDS Data Leakage PC | `ndlc_leakage_pc` | **100%** (4/4 required · 1/1 optional) |
-| Automated test suite | harness + guards + executor | **183/183 tests pass** |
+| Automated test suite | harness + guards + executor | **188/188 tests pass** |
 
 ### USB keylogger holdout
 
@@ -225,55 +225,56 @@ cd cold-box-room
 pytest tests/ -q
 ```
 
-Runs **183 tests** against the hallway, seal logic, executor security, and accuracy scoring. No API spend.
+Runs **188 tests** against the hallway, seal logic, executor security, and accuracy scoring. No API spend.
 
 ### Run an investigation
 
-Evidence can be a **single image**, an **EWF chain** (E02–E04 auto-attach from the same folder), or a **directory**.
+**Point Cold Box at your evidence and run one command.** Evidence can be a **single disk image**, an **EWF/E01 chain** (E02–E04 auto-attach from the same folder), or a **directory** of files.
 
-**Option A: Claude Code (interactive, recommended)**
-
-Open Claude Code in `cold-box-room/`. MCP loads from `.mcp.json` in that directory.
+#### Recommended — Claude Code, fully autonomous, with the live dashboard
 
 ```bash
 cd cold-box/cold-box-room
+source ../.venv/bin/activate
 
-# Stage and seal evidence first
-cold-box-room intake --case-id my-case --source /path/to/evidence.E01 --link
-cold-box-room r1-check --case-id my-case --promote
-
-# Start Claude Code and investigate via MCP tools
-claude
-```
-
-**Option B: Claude Code (headless, fully autonomous)**
-
-Intake runs in Python, then Claude Code executes the full hallway with live terminal output:
-
-```bash
 cold-box-room-hallway-cc \
   --case-id my-case \
-  --evidence /path/to/evidence.E01
+  --evidence /path/to/YOUR-evidence.E01 \
+  --ui
 ```
 
-**Option C: Native Python agent (same harness)**
+| Flag | What to put there |
+|------|-------------------|
+| `--case-id` | Any name you choose — it's the case title shown in the dashboard. |
+| `--evidence` | The path to **your** disk image, E01 chain, or folder. |
+| `--ui` | Starts the live dashboard at `http://127.0.0.1:8765` so you watch the agent walk the five rooms in real time. Use `--no-open` on a headless server. |
+
+Cold Box seals the evidence read-only, then drives Claude Code through the full hallway (Room 1 → A → 2 → B → 3) and writes the final report — no further input. The case stays in the dashboard afterward with every finding linked to its proof.
+
+On a remote VM, forward the dashboard port from your laptop first:
 
 ```bash
-cold-box-room-hallway \
-  --run-id my-case \
-  --case-id my-case \
-  --evidence /path/to/evidence.E01
+ssh -L 8765:localhost:8765 user@<vm-ip>
+# then open http://localhost:8765/?case=my-case
 ```
 
-To also score against a known benchmark when the run completes:
+#### Interactive Claude Code (drive the MCP tools yourself)
 
 ```bash
-cold-box-room-hallway \
-  --run-id my-case \
-  --case-id my-case \
-  --evidence /path/to/evidence.E01 \
-  --benchmark terry_usb
+cd cold-box/cold-box-room
+cold-box-room intake   --case-id my-case --source /path/to/YOUR-evidence.E01
+cold-box-room r1-check --case-id my-case --promote
+claude     # then: "investigate case my-case using the cold-box-room MCP tools"
 ```
+
+#### Native Python agent (no Claude Code; uses `ANTHROPIC_API_KEY` directly)
+
+```bash
+cold-box-room-hallway --run-id my-case --case-id my-case \
+  --evidence /path/to/YOUR-evidence.E01 --ui
+```
+
+Add `--benchmark terry_usb` (or another benchmark id) to score the run against a known answer key when it completes.
 
 One-time Claude Code setup (optional): `cold-box-room/scripts/setup_claude_code.sh`
 

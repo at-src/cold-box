@@ -43,9 +43,13 @@ def test_expand_ewf_chain_non_e01_returns_single_file(tmp_path):
 
 
 def test_resolve_directory_lists_all_files(tmp_path):
-    (tmp_path / "a.E01").write_bytes(b"1")
-    (tmp_path / "b.E01").write_bytes(b"2")
-    names = [p.name for p in resolve_evidence_sources(tmp_path)]
+    # Use a dedicated evidence subdir so the autouse fixture's r1-staging/records
+    # dirs (created in tmp_path) don't leak into the directory listing.
+    evdir = tmp_path / "evidence"
+    evdir.mkdir()
+    (evdir / "a.E01").write_bytes(b"1")
+    (evdir / "b.E01").write_bytes(b"2")
+    names = [p.name for p in resolve_evidence_sources(evdir)]
     assert names == ["a.E01", "b.E01"]
 
 
@@ -73,7 +77,7 @@ def test_intake_directory_stages_all_files(tmp_path):
 def test_list_directory_evidence_rejects_empty(tmp_path):
     empty = tmp_path / "empty"
     empty.mkdir()
-    with pytest.raises(StagingError, match="No evidence files"):
+    with pytest.raises(StagingError, match="No evidence in directory"):
         list_directory_evidence(empty)
 
 

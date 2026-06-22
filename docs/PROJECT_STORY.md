@@ -12,7 +12,7 @@ Forensic investigators repeat the same Sleuth Kit workflows case after case. Age
 
 ## What it does
 
-Autonomous analyst for the SANS SIFT Workstation. Five hallway rooms — seal, plan extraction, run **234 SIFT tools**, plan analysis, run **171 skill playbooks** — producing Layer 1 and Layer 2 write-ups. Every tool run gets an `audit_id` in `audit.jsonl`; plan steps cannot pass without proof.
+Autonomous analyst for the SANS SIFT Workstation. Five hallway rooms — seal, plan extraction, run **234 SIFT tools**, plan analysis, run **213 skill playbooks** — producing Layer 1 and Layer 2 write-ups. Every tool run gets an `audit_id` in `audit.jsonl`; plan steps cannot pass without proof.
 
 **Measured on real images:** Terry USB holdout **100%** benchmark accuracy in ~16 min; NIST CFReDS Data Leakage PC **100%** required checks in ~18 min.
 
@@ -38,7 +38,7 @@ Deterministic hallway state machine with harness-gated promotion. Per-room tool 
 
 - Full hallway E2E: R1 → A → 2 → B → 3 — **183 automated tests**
 - Architectural room guards + sealed R1 + scratch-only executor
-- **234 SIFT + 171 skills** in committed catalogs
+- **234 SIFT + 213 skills** in committed catalogs
 - **100% Terry holdout** · **100% NDLC required checks**
 - Traceable audit trail: analyst log → `audit_id` → scratch stdout
 

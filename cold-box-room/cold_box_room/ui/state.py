@@ -80,20 +80,80 @@ def _markdown_section(text: str, heading: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+def _report_body(content: str) -> str:
+    """Lead the report with the analyst's actual findings.
+
+    Strips the harness boilerplate that precedes the substance: the H1 title
+    ("# Layer 2 — Analysis (analyst log)"), the "_Agent write-up…_" note, and
+    the empty "## Findings" wrapper. Everything from the real analysis onward
+    (the Layer 2 findings, then self-score/why/corrections) is kept.
+    """
+    marker = re.search(r"^##\s+Findings\s*$", content, re.MULTILINE)
+    if marker:
+        body = content[marker.end():].lstrip("\n")
+        if body.strip():
+            return body
+    return content
+
+
+def _report_for_display(raw: str) -> str:
+    """Reshape any Layer 2 report for the dashboard, deterministically:
+
+    1. lead with the analyst findings (drop harness boilerplate),
+    2. relabel the confusing "Layer 2 Analysis" as "Final Analysis",
+    3. lift the conclusion/synthesis section to the top as a "Bottom line"
+       executive summary, with the per-step work under "Supporting analysis".
+
+    Applies to every report (old and future runs); the raw file is untouched.
+    """
+    body = _report_body(raw)
+    # Keep the procedural footer (self-score / why / corrections) at the bottom.
+    meta_match = re.search(r"^##\s+Self-score\b", body, re.MULTILINE)
+    main = body[:meta_match.start()].rstrip() if meta_match else body.rstrip()
+    meta = body[meta_match.start():].strip() if meta_match else ""
+    # Relabel any "Layer 2 …" title as "Final …" (covers "Layer 2 Analysis",
+    # "Layer 2 Deep-Analysis", etc.) — only on the title line, not the body.
+    title_match = re.match(r"(##\s+.*)", main)
+    title = re.sub(r"Layer\s*2\b", "Final", title_match.group(1)) if title_match else "## Final Analysis"
+    rest = main[title_match.end():].strip() if title_match else main
+    headings = list(re.finditer(r"^###\s+(.*)$", rest, re.MULTILINE))
+    if not headings:
+        out = f"{title}\n\n{rest}"
+    else:
+        # Prefer an explicitly named conclusion; otherwise the agent always
+        # synthesizes in the LAST section, so fall back to that.
+        concl_idx = next(
+            (i for i, h in enumerate(headings)
+             if re.search(r"conclusion|synthesis|operational picture|bottom line|overall assessment",
+                          h.group(1), re.IGNORECASE)),
+            len(headings) - 1,
+        )
+        start = headings[concl_idx].start()
+        end = headings[concl_idx + 1].start() if concl_idx + 1 < len(headings) else len(rest)
+        concl_block = rest[start:end].strip()
+        concl_body = re.sub(r"^###\s+.*\n?", "", concl_block, count=1).strip()
+        support = (rest[:start] + rest[end:]).strip()
+        out = f"{title}\n\n## Bottom line\n\n{concl_body}\n\n## Supporting analysis\n\n{support}"
+    if meta:
+        out += "\n\n" + meta
+    return out.strip()
+
+
 def _read_report(case_dir: Path) -> dict[str, Any]:
-    layer2_path = case_dir / "layer2_analyst_log.md"
-    layer1_path = case_dir / "layer1_analyst_log.md"
-    path = layer2_path if layer2_path.is_file() else layer1_path
+    # The final report is the Layer 2 analyst log, written only when Room 3
+    # completes via submit_layer2_writeup. Do NOT fall back to the Layer 1
+    # writeup — that would surface a "final report" before analysis is done.
+    path = case_dir / "layer2_analyst_log.md"
     if not path.is_file():
         return {"available": False, "content": "", "findings": "", "source": ""}
-    content = path.read_text(encoding="utf-8", errors="replace")
-    findings = _markdown_section(content, "Findings") or content
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    content = _report_for_display(raw)
     return {
         "available": True,
         "content": content,
-        "findings": findings,
-        "why": _markdown_section(content, "Why"),
-        "corrections": _markdown_section(content, "Corrections"),
+        "findings": _markdown_section(raw, "Findings") or content,
+        "why": _markdown_section(raw, "Why"),
+        "corrections": _markdown_section(raw, "Corrections"),
         "source": path.name,
     }
 
@@ -163,6 +223,11 @@ def _evidence_names(hallway: dict[str, Any], case_dir: Path) -> list[str]:
     ]
 
 
+def _nonnull(data: dict[str, Any]) -> dict[str, Any]:
+    """Drop keys whose value is None so the technical view never shows 'null'."""
+    return {key: value for key, value in data.items() if value is not None}
+
+
 def _event_from_audit(row: dict[str, Any]) -> dict[str, Any]:
     ok = int(row.get("exit_code", 1)) == 0
     tool = str(row.get("tool_name") or row.get("tool_id") or "forensic tool")
@@ -174,13 +239,13 @@ def _event_from_audit(row: dict[str, Any]) -> dict[str, Any]:
         "level": "success" if ok else "warning",
         "title": f"Completed {tool}" if ok else f"{tool} could not complete",
         "detail": purpose if ok else str(row.get("error") or purpose),
-        "technical": {
+        "technical": _nonnull({
             "tool_id": row.get("tool_id"),
             "tool_name": row.get("tool_name"),
             "audit_id": row.get("audit_id"),
             "input": row.get("input_relpath"),
             "exit_code": row.get("exit_code"),
-        },
+        }),
     }
 
 
@@ -196,7 +261,7 @@ def _event_from_agent(row: dict[str, Any], index: int) -> dict[str, Any] | None:
             "level": "active",
             "title": name.title(),
             "detail": str(args.get("purpose") or args.get("why") or "The analyst advanced the investigation."),
-            "technical": {"tool": row.get("tool"), "turn": row.get("turn")},
+            "technical": _nonnull({"tool": row.get("tool"), "turn": row.get("turn")}),
         }
     if kind in {"session_start", "session_end", "finalize_error"}:
         return {
@@ -206,7 +271,7 @@ def _event_from_agent(row: dict[str, Any], index: int) -> dict[str, Any] | None:
             "level": "warning" if kind == "finalize_error" else "info",
             "title": kind.replace("_", " ").title(),
             "detail": str(row.get("error") or "Investigation session state changed."),
-            "technical": {"turn": row.get("turn")},
+            "technical": _nonnull({"turn": row.get("turn")}),
         }
     return None
 
@@ -218,6 +283,31 @@ def case_events(case_dir: Path) -> list[dict[str, Any]]:
         if event:
             events.append(event)
     return sorted(events, key=lambda row: row.get("ts") or "")
+
+
+def case_skill_evidence(case_dir: Path) -> dict[str, Any]:
+    """Room 3 skill runs, keyed by run_id (CB-skill-…), so the report's skill
+    references resolve. Each run links to the tool audit_ids it triggered."""
+    out: dict[str, Any] = {}
+    for row in _jsonl(case_dir / "layer2_skill_log.jsonl"):
+        run_id = row.get("run_id")
+        if not run_id:
+            continue
+        out[str(run_id)] = _nonnull({
+            "run_id": run_id,
+            "skill_id": row.get("skill_id"),
+            "journal_id": row.get("journal_id"),
+            "library_slug": row.get("library_slug"),
+            "input": row.get("input_relpath"),
+            "outcome": row.get("outcome"),
+            "exit_code": row.get("exit_code"),
+            "purpose": row.get("purpose"),
+            "why": row.get("why"),
+            "error": row.get("error") or None,
+            "audit_ids": list(row.get("audit_ids") or []),
+            "plan_step_id": row.get("plan_step_id"),
+        })
+    return out
 
 
 def _latest_activity(events: list[dict[str, Any]], room: str, complete: bool) -> dict[str, str]:
@@ -275,7 +365,7 @@ def case_snapshot(case_id: str) -> dict[str, Any]:
     plan_a_md = _read_text(case_dir / "plan_a.md")
     plan_b_md = _read_text(case_dir / "plan_b.md")
     layer1 = _read_text(case_dir / "layer1_analyst_log.md")
-    layer2 = _read_text(case_dir / "layer2_analyst_log.md")
+    layer2 = report["content"]  # display-formatted (Bottom line first, "Final Analysis")
     seal = _json(case_dir / "seal.json", {}) or {}
     room_outputs = {
         "1": {
@@ -314,6 +404,12 @@ def case_snapshot(case_id: str) -> dict[str, Any]:
             "data": layer2_state,
         },
     }
+    # Rooms the investigation has not advanced to yet get a clear placeholder
+    # instead of "not in this bundle" wording that reads like an error.
+    for rid, out in room_outputs.items():
+        if ROOM_INDEX.get(rid, 0) > index:
+            out["summary"] = "Cold Box has not reached this room yet."
+            out["content"] = "This room becomes active once the investigation advances here."
     return {
         "case_id": case_id,
         "room": room,
@@ -334,6 +430,7 @@ def case_snapshot(case_id: str) -> dict[str, Any]:
             if path.is_file() and path.name not in {"hallway.json", "seal.json", "manifest.json"}
         ),
         "audit_evidence": audit_evidence,
+        "skill_evidence": case_skill_evidence(case_dir),
         "revisits": revisits,
         "plans": {
             "collection": _plan_steps(case_dir / "plan_a.py"),

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "enableAllProjectMcpServers": true,
+  "env": {
+    "MCP_TIMEOUT": "120000",
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6"
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "mcp__cold-box-room__*",
+      "Read(./records/**)",
+      "Read(./docs/**)",
+      "Read(./CLAUDE.md)",
+      "Edit(./records/**)",
+      "Edit(./docs/**)"
+    ],
+    "deny": [
+      "Bash(*)",
+      "Read(./../.env)",
+      "Read(./../.env.*)",
+      "Read(./../secrets/**)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__cold-box-room__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/log-mcp-tool.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send -u critical 'Claude Code' 'Needs your attention (cold-box-room)' 2>/dev/null || echo 'Claude Code needs attention' >&2"
+          }
+        ]
+      }
+    ]
+  }
+}
