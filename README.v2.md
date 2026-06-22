@@ -1,0 +1,348 @@
+<p align="center">
+  <img src="./cold-box-logo.jpg" alt="Cold Box logo" width="320">
+</p>
+
+<h1 align="center">Cold Box</h1>
+
+<p align="center">
+  <strong>Autonomous agentic digital forensics and incident reporting.</strong><br>
+  Cold Box investigates compromised systems end-to-end and delivers a complete, evidence-backed report without any human in the loop.
+</p>
+
+<p align="center">
+  <a href="./LICENSE">MIT License</a>
+</p>
+
+---
+
+## Why Cold Box
+
+Digital forensics and incident response require sustained expert effort: manual tool execution, artifact correlation, and report writing over hours or days. The work is repetitive, exhausting, and high stakes. Accuracy at every step is not optional.
+
+**Typical AI assistants make this worse, not better.** Models with open-ended access can assert findings without proof, mix inference with fact, and provide no chain of custody. In serious IR work, that is not usable. Stakeholders need to know how each conclusion was reached. An answer without an audit trail cannot be trusted.
+
+**Rule-based automation is not enough either.** Fixed rule trees assume familiar attack patterns. Real incidents do not. An approach that only handles known scenarios fails when an adversary takes an unexpected path.
+
+**Cold Box closes that gap.** It runs full investigations on compromised systems without human intervention. Each step is reasoned, logged, and tied to evidence. The output is a detailed incident report where every finding cites the action and artifact that supports it. The full reasoning remains available for audit. The investigation is complete, reliable, and grounded in proof.
+
+---
+
+## How it works
+
+Cold Box runs each case through an **investigation hallway**: five gated stages in a fixed order. Cold Box cannot skip ahead or act outside the current stage. Each gate protects evidence, forces deliberate planning, and requires proof before the case advances.
+
+The system ships **234 forensic extraction tools** and **213 analysis skills**. The agent selects from this catalog at runtime under harness control.
+
+```mermaid
+flowchart TB
+  R1["Room 1 · Seal evidence"]
+  RA["Room A · Plan extraction"]
+  R2["Room 2 · Extract artifacts"]
+  RB["Room B · Plan analysis"]
+  R3["Room 3 · Analyze and report"]
+
+  R1 --> RA --> R2 --> RB --> R3
+```
+
+The diagram below shows the full pipeline: evidence intake, gated phases, audit logging, self-correction loops, and final output.
+
+```mermaid
+flowchart TB
+  subgraph evidence["Evidence (read-only)"]
+    E01["disk image / E01 / directory"]
+  end
+
+  subgraph phase1["Phase 1 | SEALED FOREVER"]
+    INT["intake + EWF auto-chain"]
+    SEAL["manifest + chmod read-only"]
+    LOCK["return_to_room('1') → error"]
+  end
+
+  subgraph phaseA["Phase A | plan only"]
+    LSF["list_sandbox_files"]
+    LST["browse tool catalog"]
+    WPA["write_plan_a_md"]
+    FPA["formalize_plan_a → plan_a.py"]
+  end
+
+  subgraph phase2["Phase 2 | artifact extraction"]
+    SBX["sandbox copy"]
+    RST["run forensic tools (234)"]
+    AUD["audit.jsonl ← every run"]
+    SL1["submit_layer1_writeup"]
+  end
+
+  subgraph phaseB["Phase B | plan only"]
+    RL1["read layer1 logs from Cold Box"]
+    WPB["write_plan_b_md"]
+    FPB["formalize_plan_b → plan_b.py"]
+  end
+
+  subgraph phase3["Phase 3 | analysis"]
+    RSK["run analysis skills (213)"]
+    SL2["submit_layer2_writeup + corrections"]
+    RTR["return_to_room (A / 2 / B)"]
+  end
+
+  subgraph out["Output"]
+    REP["DFIR report"]
+    ACC["accuracy score"]
+    TRAIL["full audit trail"]
+  end
+
+  E01 --> INT --> SEAL --> LSF
+  SEAL --> SBX
+  LSF --> WPA --> FPA --> RST
+  RST --> AUD --> SL1 --> RL1
+  RL1 --> WPB --> FPB --> RSK
+  RSK --> SL2 --> REP --> ACC
+  RST <-.->|return_to_room| WPA
+  RSK <-.->|return_to_room| RST
+  RSK <-.->|return_to_room| WPB
+  AUD --> TRAIL
+```
+
+### Room 1 · Seal evidence
+
+Evidence enters once: disk images, files, or other artifacts supplied for the case. Cold Box records what was received, locks the original material read-only, and creates a working copy for investigation. The sealed source is never modified again. Chain of custody starts here.
+
+### Room A · Plan extraction
+
+Cold Box reviews the working copy and decides what to pull out next: registry hives, event logs, filesystem listings, browser history, and other artifacts relevant to the incident. No extraction runs in this stage. Planning comes first so the investigation is intentional, not a random sequence of tool calls.
+
+### Room 2 · Extract artifacts
+
+Cold Box executes the extraction plan against the working copy using **234 forensic extraction tools** covering filesystem, registry, logs, memory artifacts, and related sources. Every action is logged with a unique proof identifier, command output, and timestamps. Findings must cite that proof before a plan step can pass. If extraction is incomplete, the stage does not close.
+
+### Room B · Plan analysis
+
+Cold Box reads what was actually extracted, not what was expected. It then plans how to interpret and connect those artifacts: timelines, user activity, persistence mechanisms, data movement, and related analysis tasks. No analysis runs until the plan is written and validated.
+
+### Room 3 · Analyze and report
+
+Cold Box executes the analysis plan across **213 analysis skills**, correlates artifacts, and resolves open questions. If analysis reveals a gap in extraction, the case returns to Room 2, completes the missing work, and continues with corrections on record. When analysis is complete, Cold Box produces the final evidence-backed incident report.
+
+Each stage enforces **when** Cold Box may act and **how** it must prove its work. **What** to investigate within those boundaries is decided by the agent at runtime. That separation keeps the run fully autonomous without sacrificing rigor.
+
+---
+
+## Screenshots
+
+Investigation hallway and live case progress:
+
+![Cold Box investigation hallway](docs/assets/screenshots/investigation-hallway.png)
+
+Every report finding links to proof. Click an evidence reference to open the matching audit record and tool output:
+
+![Cold Box traceable evidence](docs/assets/screenshots/traceable-evidence.png)
+
+---
+
+## Results
+
+Cold Box has completed full autonomous investigations on real forensic disk images with no human in the loop. Every finding in the reports below traces to a logged action in `audit.jsonl`.
+
+| Case | Benchmark | Accuracy |
+|------|-----------|----------|
+| USB keylogger holdout | `terry_usb` | **100%** (4/4 required · 2/2 optional) |
+| NIST CFReDS Data Leakage PC | `ndlc_leakage_pc` | **100%** (4/4 required · 1/1 optional) |
+| Automated test suite | harness + guards + executor | **183/183 tests pass** |
+
+### USB keylogger holdout
+
+| Metric | Result |
+|--------|--------|
+| Required recall | **100%** (4/4) |
+| Optional recall | **100%** (2/2) |
+| Precision | **100%** |
+| F1 | **1.0** |
+| Layer 1 / 2 self-score | 9 / 9 |
+
+Key findings: EWF disk image verified, FAT32 filesystem, volume label **TERRYS WORK**, **Advanced Keylogger / R54402.EXE** identified, partition layout and image integrity confirmed.
+
+### NIST CFReDS Data Leakage PC
+
+| Metric | Result |
+|--------|--------|
+| Required recall | **100%** (4/4) |
+| Optional recall | **100%** (1/1 in scope) |
+| Precision | **100%** |
+| F1 | **1.0** |
+| Layer 1 / 2 self-score | 9 / 9 |
+
+Key findings: Windows 7 host, suspect user **admin11**, USB device connection, batch file deletion at identical timestamps (anti-forensic cleanup), full artifact chain from USB history through shellbags, jump lists, event logs, and filesystem metadata. Web exfiltration ruled out from browser history.
+
+Sample run artifacts: [`docs/runs/cfreds-leakage/`](docs/runs/cfreds-leakage/). Reproduce a score:
+
+```bash
+cd cold-box-room
+python scripts/score_e2e_accuracy.py --case-id CASE_ID --benchmark BENCHMARK_ID
+```
+
+Full methodology: [`docs/ACCURACY.md`](docs/ACCURACY.md).
+
+---
+
+## Run Cold Box
+
+### Prerequisites
+
+- **Python 3.10+**
+- **Linux** (Ubuntu 22.04+ recommended) with standard forensic CLI tools on `PATH`
+- **Anthropic API key** for autonomous investigation runs
+- **Evidence** locally (disk image, E01/EWF chain, or directory). Images are not bundled in this repository.
+
+### Install
+
+```bash
+git clone https://github.com/at-src/cold-box.git
+cd cold-box
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e "cold-box-room/[dev,mcp]"
+```
+
+### API key
+
+Set your Anthropic key before any autonomous run:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Optional: store it in a `.env` file at the repository root (`cold-box/.env`) so native agent runs pick it up automatically.
+
+For large disk images, also set:
+
+```bash
+export COLD_BOX_R1_STAT_ONLY=1
+```
+
+### Verify the harness (no API key)
+
+```bash
+cd cold-box-room
+pytest tests/ -q
+```
+
+Runs **183 tests** against the hallway, seal logic, executor security, and accuracy scoring. No API spend.
+
+### Run an investigation
+
+Evidence can be a **single image**, an **EWF chain** (E02–E04 auto-attach from the same folder), or a **directory**.
+
+**Option A: Claude Code (interactive, recommended)**
+
+Open Claude Code in `cold-box-room/`. MCP loads from `.mcp.json` in that directory.
+
+```bash
+cd cold-box/cold-box-room
+
+# Stage and seal evidence first
+cold-box-room intake --case-id my-case --source /path/to/evidence.E01 --link
+cold-box-room r1-check --case-id my-case --promote
+
+# Start Claude Code and investigate via MCP tools
+claude
+```
+
+**Option B: Claude Code (headless, fully autonomous)**
+
+Intake runs in Python, then Claude Code executes the full hallway with live terminal output:
+
+```bash
+cold-box-room-hallway-cc \
+  --case-id my-case \
+  --evidence /path/to/evidence.E01
+```
+
+**Option C: Native Python agent (same harness)**
+
+```bash
+cold-box-room-hallway \
+  --run-id my-case \
+  --case-id my-case \
+  --evidence /path/to/evidence.E01
+```
+
+To also score against a known benchmark when the run completes:
+
+```bash
+cold-box-room-hallway \
+  --run-id my-case \
+  --case-id my-case \
+  --evidence /path/to/evidence.E01 \
+  --benchmark terry_usb
+```
+
+One-time Claude Code setup (optional): `cold-box-room/scripts/setup_claude_code.sh`
+
+### Investigation dashboard
+
+The web dashboard shows room-by-room progress, live audit events, plan steps, and the final report with clickable evidence links.
+
+**Standalone (monitor an existing or in-progress case):**
+
+```bash
+cold-box-room-ui
+# open http://127.0.0.1:8765
+```
+
+On a remote VM, forward the port before opening:
+
+```bash
+ssh -L 8765:localhost:8765 user@<vm-ip>
+```
+
+**Embedded in a native hallway run (recommended):**
+
+Add `--ui` to any `cold-box-room-hallway` command and the dashboard starts automatically alongside the investigation:
+
+```bash
+cold-box-room-hallway \
+  --run-id my-case \
+  --case-id my-case \
+  --evidence /path/to/evidence.E01 \
+  --ui
+# Dashboard: http://127.0.0.1:8765/?case=my-case
+```
+
+Use `--no-open` to suppress the automatic browser launch (useful on headless servers), and `--ui-host 0.0.0.0` to expose the dashboard on all interfaces.
+
+**Launch an investigation from the dashboard:**
+
+Open the dashboard, fill in the case ID and evidence path, and click **Start investigation**. The run executes in the background. Full stdout and stderr are written to `records/<case-id>/hallway_run.log` — open it from the artifact list in the UI or read it directly if anything goes wrong.
+
+> The dashboard requires `ANTHROPIC_API_KEY` to be set before starting (or present in a `.env` file at the repository root).
+
+### Environment variables
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `ANTHROPIC_API_KEY` | Anthropic API access | required for autonomous runs |
+| `COLD_BOX_R1_STAGING` | Sealed evidence root | `./r1-staging` |
+| `COLD_BOX_R2_SANDBOX` | Working copy for tools | `./r2-sandbox` |
+| `COLD_BOX_ROOM_RECORDS` | Plans, logs, audit trail | `./records` |
+| `COLD_BOX_R1_STAT_ONLY` | Skip full hash on large images | unset |
+| `COLD_BOX_DOTENV` | Path to `.env` file | repo root `.env` |
+
+### After a run
+
+Case output lives under `records/<case-id>/`: plans, investigation logs, `audit.jsonl`, Layer 1 and Layer 2 reports.
+
+```bash
+cd cold-box-room
+python scripts/bundle_case.py --case-id my-case
+```
+
+Generates a portable bundle under `records/my-case/bundle/` including the final report with proof links.
+
+---
+
+## Future direction
+
+Cold Box today delivers full digital forensics on compromised systems end to end: sealed evidence, gated investigation, and proof-linked reporting on disk images and host artifacts.
+
+The next phase extends that same autonomous model beyond offline system analysis. Cold Box will investigate web-facing assets directly over the network, applying the same forensic discipline to sites and services that it applies to full system images today.
+
+Beyond detection and analysis, the roadmap includes live incident response: guided containment, mitigation steps, and coordinated action on active systems while preserving evidence and auditability throughout the response.

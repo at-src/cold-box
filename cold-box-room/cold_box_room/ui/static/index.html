@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cold Box â€” Autonomous DFIR</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <img class="brand-logo" src="/cold-box-logo.jpg" alt="Cold Box logo">
+      <span><strong>Cold Box</strong><small>Autonomous DFIR analyst</small></span>
+    </a>
+    <div class="case-switcher">
+      <label for="caseSelect">Investigation</label>
+      <select id="caseSelect"></select>
+      <button class="primary compact" id="newCaseButton">New case</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1 id="caseTitle">Loading caseâ€¦</h1>
+        <p class="hero-copy" id="caseSubtitle"></p>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel investigation-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">INVESTIGATION HALLWAY</p></div>
+          <span class="phase-label" id="phaseLabel">0%</span>
+        </div>
+        <div class="room-layout">
+          <div class="room-tower" id="roomTower"></div>
+          <div class="activity-stage">
+            <div class="activity-copy">
+              <p class="eyebrow">CURRENT STATUS</p>
+              <h3 id="activityTitle">Reviewing case state</h3>
+              <p id="activityDetail"></p>
+            </div>
+            <div class="inline-evidence">
+              <div class="inline-section-heading"><p class="eyebrow">FILES PROVIDED</p></div>
+              <div id="evidenceList" class="evidence-list"></div>
+            </div>
+            <div class="room-output">
+              <div class="room-output-heading">
+                <div><p class="eyebrow">ROOM OUTPUT</p><h3 id="roomOutputTitle">Evidence secured</h3></div>
+                <span id="roomOutputBadge">Room 1</span>
+              </div>
+              <p id="roomOutputSummary"></p>
+              <div class="artifact-chips" id="roomArtifacts"></div>
+              <div id="roomOutputContent" class="room-output-content"></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel findings-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow" id="sideEyebrow">LIVE INVESTIGATION STREAM</p><h2 id="sideTitle">What Cold Box is doing</h2></div>
+          <div class="view-toggle">
+            <button class="ghost compact active" id="plainToggle">Plain</button>
+            <button class="ghost compact" id="technicalToggle">Technical</button>
+            <button class="ghost compact" id="streamToggle">Live stream</button>
+            <button class="ghost compact" id="finalToggle">Final report</button>
+          </div>
+        </div>
+        <div class="event-feed" id="eventFeed"></div>
+        <div class="side-report" id="sideReport"></div>
+      </aside>
+    </section>
+
+  </main>
+
+  <dialog id="newCaseDialog">
+    <form id="newCaseForm">
+      <button type="button" class="dialog-close" id="closeDialog">&times;</button>
+      <p class="eyebrow">NEW INVESTIGATION</p>
+      <h2>Give Cold Box the evidence</h2>
+      <p class="dialog-copy">Provide a local evidence file or folder and tell the analyst what you need to know.</p>
+      <label>Case ID<input name="case_id" required placeholder="incident-2026-001"></label>
+      <label>Evidence path<input name="evidence" required placeholder="/evidence/disk-image.E01"></label>
+      <label>Investigation objective<textarea name="goal" rows="4" placeholder="Determine whether data was exfiltrated and identify the responsible account."></textarea></label>
+      <p class="form-error" id="formError"></p>
+      <button class="primary" type="submit">Start investigation</button>
+    </form>
+  </dialog>
+
+  <dialog id="reportDialog" class="report-dialog">
+    <button type="button" class="dialog-close" id="closeReport">&times;</button>
+    <p class="eyebrow">COLD BOX DFIR REPORT</p>
+    <h2 id="reportDialogTitle">Investigation report</h2>
+    <div id="reportContent" class="report-content"></div>
+  </dialog>
+
+  <dialog id="evidenceDialog" class="evidence-dialog">
+    <button type="button" class="dialog-close" id="closeEvidence">&times;</button>
+    <p class="eyebrow">TRACEABLE EVIDENCE</p>
+    <h2 id="evidenceDialogTitle">Audit evidence</h2>
+    <div id="evidenceContent" class="evidence-content"></div>
+  </dialog>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

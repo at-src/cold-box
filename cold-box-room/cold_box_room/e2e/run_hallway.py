@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -17,7 +18,6 @@ from cold_box_room.agent.prompts import (
 )
 from cold_box_room.e2e.report import collect_case_report
 from cold_box_room.e2e.run_layer1 import (
-    DEFAULT_JO_E01,
     bind_workspace,
     deliver_to_room_a,
     prepare_fresh_workspace,
@@ -310,9 +310,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Full hallway E2E — R1 → A → 2 → B → 3 → case report",
     )
-    parser.add_argument("--run-id", default="m57-jo-hallway")
+    parser.add_argument("--run-id", required=True)
     parser.add_argument("--case-id", default="")
-    parser.add_argument("--evidence", default=str(DEFAULT_JO_E01))
+    parser.add_argument("--evidence", required=True, help="Disk image, E01 chain, or directory")
     parser.add_argument("--room-a-goal", default="")
     parser.add_argument("--layer1-goal", default="")
     parser.add_argument("--room-b-goal", default="")
@@ -357,7 +357,50 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Skip wipe + intake; run agents on existing workspace",
     )
+    parser.add_argument(
+        "--ui", "--display",
+        dest="display",
+        action="store_true",
+        help="Open the live Cold Box dashboard while the investigation runs",
+    )
+    parser.add_argument(
+        "--ui-port", "--display-port",
+        dest="display_port",
+        type=int,
+        default=8765,
+        help="Dashboard port used with --ui (default: 8765)",
+    )
+    parser.add_argument(
+        "--ui-host",
+        default="127.0.0.1",
+        help="Host for the UI server (use 0.0.0.0 to expose on all interfaces for remote access)",
+    )
+    parser.add_argument(
+        "--no-open",
+        action="store_true",
+        help="Do not open a browser automatically (useful on headless servers)",
+    )
+    parser.add_argument(
+        "--keep-sandbox",
+        action="store_true",
+        help="Keep the R2 sandbox copy after run (default: delete to reclaim disk space)",
+    )
     args = parser.parse_args(argv)
+
+    if args.display:
+        from cold_box_room.ui import start_ui_server
+
+        display_case = args.case_id or args.run_id
+        start_ui_server(
+            host=args.ui_host,
+            port=args.display_port,
+            open_browser=not args.no_open,
+            case_id=display_case,
+        )
+        url = f"http://{args.ui_host}:{args.display_port}/?case={display_case}"
+        print(f"Cold Box dashboard: {url}", flush=True)
+        if args.ui_host == "127.0.0.1":
+            print(f"  SSH tunnel: ssh -L {args.display_port}:localhost:{args.display_port} user@<vm-ip>", flush=True)
 
     started_at = datetime.now(timezone.utc).isoformat()
     t0 = time.monotonic()
@@ -409,6 +452,17 @@ def main(argv: list[str] | None = None) -> int:
             f"RUN_ID={args.run_id}\nBENCHMARK={args.benchmark}\nSTATUS={out.get('status')}\n",
             encoding="utf-8",
         )
+    if not args.keep_sandbox:
+        try:
+            from cold_box_room.r2.paths import case_sandbox_dir
+            sandbox = case_sandbox_dir(out.get("case_id") or args.run_id)
+            if sandbox.is_dir():
+                shutil.rmtree(sandbox)
+                out["sandbox_cleaned"] = True
+                print(f"[cleanup] removed sandbox {sandbox}", flush=True)
+        except Exception as exc:
+            out["sandbox_cleanup_error"] = str(exc)
+
     print(json.dumps(out, indent=2))
     if args.kitchen_only:
         return 0

@@ -7,13 +7,35 @@ import os
 from pathlib import Path
 from typing import Any
 
+from cold_box_room.r1.paths import REPO_ROOT
+
+
+def _dotenv_candidates() -> list[Path]:
+    candidates: list[Path] = []
+    explicit = os.environ.get("COLD_BOX_DOTENV", "").strip()
+    if explicit:
+        candidates.append(Path(explicit).expanduser())
+    candidates.extend(
+        [
+            REPO_ROOT.parent / ".env",
+            REPO_ROOT / ".env",
+            Path.cwd() / ".env",
+            Path("/opt/postmortem/.env"),
+        ]
+    )
+    seen: set[Path] = set()
+    unique: list[Path] = []
+    for path in candidates:
+        resolved = path.expanduser()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        unique.append(resolved)
+    return unique
+
 
 def load_dotenv() -> None:
-    candidates = [
-        Path(os.environ.get("COLD_BOX_DOTENV", "/opt/postmortem/.env")),
-        Path("/opt/postmortem/.env"),
-    ]
-    for path in candidates:
+    for path in _dotenv_candidates():
         if not path.is_file():
             continue
         for line in path.read_text(encoding="utf-8").splitlines():
@@ -32,7 +54,8 @@ def anthropic_api_key() -> str:
     key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not key or "paste" in key.lower():
         raise RuntimeError(
-            "ANTHROPIC_API_KEY missing — set in /opt/postmortem/.env"
+            "ANTHROPIC_API_KEY missing — set ANTHROPIC_API_KEY or add it to "
+            f"{REPO_ROOT.parent / '.env'} (or set COLD_BOX_DOTENV)"
         )
     return key
 

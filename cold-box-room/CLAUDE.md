@@ -5,7 +5,7 @@ You are the forensic analyst. Use **MCP tools only** for investigation — do no
 ## Before you start (terminal once per case)
 
 ```bash
-cd /opt/postmortem/cold-box-room
+cd /path/to/cold-box-room
 source ../.venv/bin/activate
 pip install -e ".[dev,mcp]"
 

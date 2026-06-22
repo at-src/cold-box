@@ -22,9 +22,7 @@ from cold_box_room.r2.paths import get_sandbox_root
 from cold_box_room.r2.sandbox import list_sandbox_files
 from cold_box_room.room_a import fast_pass_room_a, room_a_checkpoint
 
-DEFAULT_JO_E01 = Path(
-    "/opt/cold-box-final/operation-table/m57-jo/jo-2009-12-11-002.E01"
-)
+DEFAULT_JO_E01 = None  # no built-in default — pass --evidence explicitly
 E2E_RUNS_ROOT = REPO_ROOT / "e2e-runs"
 
 
@@ -33,11 +31,16 @@ def prepare_fresh_workspace(*, run_id: str, wipe: bool = True) -> dict[str, str]
     if wipe and root.exists():
         force_remove_tree(root)
 
+    # If the caller (e.g. the UI server) already configured COLD_BOX_ROOM_RECORDS,
+    # honour it so case records land where the UI can find them.
+    existing_records = os.environ.get("COLD_BOX_ROOM_RECORDS", "").strip()
+    records_path = existing_records if existing_records else str(root / "records")
+
     paths = {
         "run_root": str(root),
         "r1_staging": str(root / "r1-staging"),
         "r2_sandbox": str(root / "r2-sandbox"),
-        "records": str(root / "records"),
+        "records": records_path,
     }
     for key in ("r1_staging", "r2_sandbox", "records"):
         Path(paths[key]).mkdir(parents=True, exist_ok=True)
@@ -55,11 +58,13 @@ def bind_workspace(*, run_id: str) -> dict[str, str]:
     root = E2E_RUNS_ROOT / run_id
     if not root.is_dir():
         raise FileNotFoundError(f"E2E run not found: {root}")
+    existing_records = os.environ.get("COLD_BOX_ROOM_RECORDS", "").strip()
+    records_path = existing_records if existing_records else str(root / "records")
     paths = {
         "run_root": str(root),
         "r1_staging": str(root / "r1-staging"),
         "r2_sandbox": str(root / "r2-sandbox"),
-        "records": str(root / "records"),
+        "records": records_path,
     }
     os.environ["COLD_BOX_R1_STAGING"] = paths["r1_staging"]
     os.environ["COLD_BOX_R2_SANDBOX"] = paths["r2_sandbox"]
@@ -106,7 +111,9 @@ def deliver_to_room_a(
     link_only: bool = True,
 ) -> dict[str, Any]:
     """Kitchen — R1 intake, seal, check, promote to Room A (no sandbox yet)."""
-    src = (evidence_path or DEFAULT_JO_E01).expanduser().resolve()
+    if not evidence_path:
+        raise ValueError("evidence_path is required — pass a disk image, E01 chain, or directory")
+    src = evidence_path.expanduser().resolve()
     if not src.exists():
         raise FileNotFoundError(f"Evidence not found: {src}")
     if not src.is_file() and not src.is_dir():
@@ -278,9 +285,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Layer 1 E2E — R1 → Room A → R2 → optional agents",
     )
-    parser.add_argument("--run-id", default="m57-jo-fresh")
+    parser.add_argument("--run-id", required=True)
     parser.add_argument("--case-id", default="")
-    parser.add_argument("--evidence", default=str(DEFAULT_JO_E01))
+    parser.add_argument("--evidence", required=True, help="Disk image, E01 chain, or directory")
     parser.add_argument("--goal", default="")
     parser.add_argument("--room-a-goal", default="")
     parser.add_argument("--max-turns", type=int, default=45)

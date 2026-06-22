@@ -1,9 +1,6 @@
 # Cold-box — Autonomous DFIR Analyst on the SIFT Workstation
 
 > *The evidence is sealed. The plan is written. Every tool run is on the record. The analyst investigates — the harness enforces discipline.*
-
-**Submission:** [SANS FIND EVIL! Hackathon 2026](https://findevil.devpost.com/)  
-**Repository:** [github.com/at-src/cold-box](https://github.com/at-src/cold-box)  
 **License:** [MIT](./LICENSE)  
 **Architecture:** Custom MCP Server + Claude Code as the agentic framework
 

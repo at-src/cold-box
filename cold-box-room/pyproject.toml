@@ -26,10 +26,14 @@ cold-box-room-e2e = "cold_box_room.e2e.run_layer1:main"
 cold-box-room-hallway = "cold_box_room.e2e.run_hallway:main"
 cold-box-room-hallway-cc = "cold_box_room.e2e.run_hallway_cc:main"
 cold-box-room-formalize-plan-a = "cold_box_room.room_a.cli:main"
+cold-box-room-ui = "cold_box_room.ui.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["cold_box_room*"]
+
+[tool.setuptools.package-data]
+"cold_box_room.ui" = ["static/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

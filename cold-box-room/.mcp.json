@@ -2,11 +2,11 @@
   "mcpServers": {
     "cold-box-room": {
       "type": "stdio",
-      "command": "/opt/postmortem/.venv/bin/cold-box-room-mcp",
+      "command": "../.venv/bin/cold-box-room-mcp",
       "env": {
-        "COLD_BOX_R1_STAGING": "/opt/postmortem/cold-box-room/r1-staging",
-        "COLD_BOX_R2_SANDBOX": "/opt/postmortem/cold-box-room/r2-sandbox",
-        "COLD_BOX_ROOM_RECORDS": "/opt/postmortem/cold-box-room/records",
+        "COLD_BOX_R1_STAGING": "r1-staging",
+        "COLD_BOX_R2_SANDBOX": "r2-sandbox",
+        "COLD_BOX_ROOM_RECORDS": "records",
         "COLD_BOX_R1_STAT_ONLY": "1",
         "COLD_BOX_ROOM_STRICT": "0"
       }

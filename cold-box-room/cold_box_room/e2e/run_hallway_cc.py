@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -116,7 +117,25 @@ def run_hallway_cc(
     evidence: Path | None = None,
     model: str | None = None,
     reuse_kitchen: bool = False,
+    display: bool = False,
+    display_port: int = 8765,
+    ui_host: str = "127.0.0.1",
+    no_open: bool = False,
+    keep_sandbox: bool = False,
 ) -> int:
+    if display:
+        from cold_box_room.ui import start_ui_server
+
+        start_ui_server(
+            host=ui_host,
+            port=display_port,
+            open_browser=not no_open,
+            case_id=case_id,
+        )
+        url = f"http://{ui_host}:{display_port}/?case={case_id}"
+        print(f"[cbr-cc] dashboard  {url}", flush=True)
+        if ui_host == "127.0.0.1":
+            print(f"[cbr-cc] SSH tunnel: ssh -L {display_port}:localhost:{display_port} user@<vm-ip>", flush=True)
     if not reuse_kitchen:
         if evidence is None:
             print("[cbr-cc] --evidence is required unless --reuse-kitchen", file=sys.stderr)
@@ -144,6 +163,17 @@ def run_hallway_cc(
 
     print(f"[cbr-cc] launching Claude Code agent — case={case_id}", flush=True)
     result = subprocess.run(cmd, cwd=str(REPO_ROOT), env=env)
+
+    if not keep_sandbox:
+        try:
+            from cold_box_room.r2.paths import case_sandbox_dir
+            sandbox = case_sandbox_dir(case_id)
+            if sandbox.is_dir():
+                shutil.rmtree(sandbox)
+                print(f"[cbr-cc] cleanup  removed sandbox {sandbox}", flush=True)
+        except Exception as exc:
+            print(f"[cbr-cc] cleanup error: {exc}", flush=True)
+
     return result.returncode
 
 
@@ -174,12 +204,39 @@ Examples:
         action="store_true",
         help="Skip intake; resume agent on existing case workspace",
     )
+    parser.add_argument(
+        "--ui", "--display",
+        dest="display",
+        action="store_true",
+        help="Open the live Cold Box dashboard",
+    )
+    parser.add_argument("--ui-port", "--display-port", dest="display_port", type=int, default=8765)
+    parser.add_argument(
+        "--ui-host",
+        default="127.0.0.1",
+        help="Host for the UI server (use 0.0.0.0 to expose on all interfaces for remote access)",
+    )
+    parser.add_argument(
+        "--no-open",
+        action="store_true",
+        help="Do not open a browser automatically (useful on headless servers)",
+    )
+    parser.add_argument(
+        "--keep-sandbox",
+        action="store_true",
+        help="Keep the R2 sandbox copy after run (default: delete to reclaim disk space)",
+    )
     args = parser.parse_args(argv)
     return run_hallway_cc(
         case_id=args.case_id,
         evidence=Path(args.evidence) if args.evidence else None,
         model=args.model or None,
         reuse_kitchen=args.reuse_kitchen,
+        display=args.display,
+        display_port=args.display_port,
+        ui_host=args.ui_host,
+        no_open=args.no_open,
+        keep_sandbox=args.keep_sandbox,
     )
 
 
