@@ -126,6 +126,12 @@ Each stage enforces **when** Cold Box may act and **how** it must prove its work
 
 ---
 
+## Demo
+
+▶️ **[Watch the demo](https://vimeo.com/1203757809)** — Cold Box investigating a disk image end-to-end in the live dashboard: sealing evidence, walking the five rooms, and producing a proof-linked final report.
+
+---
+
 ## Screenshots
 
 Investigation hallway and live case progress:
