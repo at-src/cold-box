@@ -150,11 +150,11 @@ Cold Box has completed full autonomous investigations on real forensic disk imag
 
 | Case | Benchmark | Accuracy |
 |------|-----------|----------|
-| USB keylogger holdout | `terry_usb` | **100%** (4/4 required · 2/2 optional) |
+| Terry work USB holdout | `terry_usb` | **100%** (4/4 required · 2/2 optional) |
 | NIST CFReDS Data Leakage PC | `ndlc_leakage_pc` | **100%** (4/4 required · 1/1 optional) |
 | Automated test suite | harness + guards + executor | **188/188 tests pass** |
 
-### USB keylogger holdout
+### Terry work USB holdout
 
 | Metric | Result |
 |--------|--------|
@@ -164,7 +164,7 @@ Cold Box has completed full autonomous investigations on real forensic disk imag
 | F1 | **1.0** |
 | Layer 1 / 2 self-score | 9 / 9 |
 
-Key findings: EWF disk image verified, FAT32 filesystem, volume label **TERRYS WORK**, **Advanced Keylogger / R54402.EXE** identified, partition layout and image integrity confirmed.
+Key findings: EWF disk image verified, FAT32 filesystem, volume label **TERRYS WORK**, the suspect executable **R54402.EXE** and automated browsing scripts (**webauto.py / patentauto.py**) identified, partition layout and image integrity confirmed.
 
 ### NIST CFReDS Data Leakage PC
 
@@ -195,7 +195,7 @@ Full methodology: [`docs/ACCURACY.md`](docs/ACCURACY.md).
 
 - **Python 3.10+**
 - **Linux** (Ubuntu 22.04+ recommended) with standard forensic CLI tools on `PATH`
-- **Anthropic API key** for autonomous investigation runs
+- **Claude Code** (the default), or an **Anthropic API key** to run the native Python agent instead
 - **Evidence** locally (disk image, E01/EWF chain, or directory). Images are not bundled in this repository.
 
 ### Install
@@ -208,21 +208,15 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -e "cold-box-room/[dev,mcp]"
 ```
 
-### API key
+### Authentication
 
-Set your Anthropic key before any autonomous run:
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-```
-
-Optional: store it in a `.env` file at the repository root (`cold-box/.env`) so native agent runs pick it up automatically.
-
-For large disk images, also set:
+Cold Box runs through **Claude Code** — point it at this project and run. Alternatively, set an **Anthropic API key** to run the native Python (terminal) agent only:
 
 ```bash
-export COLD_BOX_R1_STAT_ONLY=1
+export ANTHROPIC_API_KEY=sk-ant-...        # or add it to cold-box/.env
 ```
+
+For large disk images, also set `export COLD_BOX_R1_STAT_ONLY=1`.
 
 ### Verify the harness (no API key)
 
@@ -237,7 +231,7 @@ Runs **188 tests** against the hallway, seal logic, executor security, and accur
 
 **Point Cold Box at your evidence and run one command.** Evidence can be a **single disk image**, an **EWF/E01 chain** (E02–E04 auto-attach from the same folder), or a **directory** of files.
 
-#### Recommended — Claude Code, fully autonomous, with the live dashboard
+#### Claude Code — fully autonomous, with the live dashboard
 
 ```bash
 cd cold-box/cold-box-room
@@ -288,17 +282,23 @@ One-time Claude Code setup (optional): `cold-box-room/scripts/setup_claude_code.
 
 The web dashboard shows room-by-room progress, live audit events, plan steps, and the final report with clickable evidence links.
 
-**Standalone (monitor an existing or in-progress case):**
+**Standalone — browse any completed or in-progress case:**
 
 ```bash
-cold-box-room-ui
-# open http://127.0.0.1:8765
+cold-box-room-ui                 # serves the dashboard on http://127.0.0.1:8765
 ```
 
-On a remote VM, forward the port before opening:
+Open the URL and pick any case from the **dropdown** (top right) to view its rooms, live stream, and final report — completed runs stay browsable indefinitely.
+
+**Running on a remote Linux VM?** The dashboard binds to the VM's `localhost`, so tunnel it to your laptop over SSH — no extra inbound ports needed:
 
 ```bash
+# 1) on the VM: start the dashboard
+cold-box-room-ui
+# 2) on YOUR machine (new terminal): forward the port through SSH
 ssh -L 8765:localhost:8765 user@<vm-ip>
+# 3) on YOUR machine: open the browser
+#    http://localhost:8765/?case=<case-id>
 ```
 
 **Embedded in a native hallway run (recommended):**
@@ -326,7 +326,7 @@ Open the dashboard, fill in the case ID and evidence path, and click **Start inv
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `ANTHROPIC_API_KEY` | Anthropic API access | required for autonomous runs |
+| `ANTHROPIC_API_KEY` | Anthropic API access | native agent / dashboard only |
 | `COLD_BOX_R1_STAGING` | Sealed evidence root | `./r1-staging` |
 | `COLD_BOX_R2_SANDBOX` | Working copy for tools | `./r2-sandbox` |
 | `COLD_BOX_ROOM_RECORDS` | Plans, logs, audit trail | `./records` |
